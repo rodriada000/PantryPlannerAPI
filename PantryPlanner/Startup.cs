@@ -34,7 +34,7 @@ namespace PantryPlanner
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            string connection = "Data Source=DESKTOP-ADAMR;Initial Catalog=dev_PantryPlanner;Integrated Security=True";
+            string connection = "Data Source=DESKTOP-ADAMR;Initial Catalog=dev_PantryPlanner;Integrated Security=True;MultipleActiveResultSets=true";
             services.AddDbContext<Services.PantryPlannerContext>(options => options.UseSqlServer(connection));
 
             services.AddAuthentication()
@@ -65,6 +65,7 @@ namespace PantryPlanner
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseCookiePolicy();
 
             app.UseMvc(routes =>

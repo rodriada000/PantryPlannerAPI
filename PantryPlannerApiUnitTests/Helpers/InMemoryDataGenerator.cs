@@ -18,7 +18,7 @@ namespace PantryPlannerApiUnitTests.Helpers
 
         public static void InitializeKitchen(PantryPlannerContext context)
         {
-            // Look for any board games.
+            // Look for any kitchens.
             if (context.Kitchen.Any())
             {
                 return;   // Data was already seeded
