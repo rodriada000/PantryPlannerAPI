@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ namespace PantryPlanner.Controllers
 
         // GET: api/KitchenUser
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<KitchenUser>>> GetKitchenUser()
         {
             return await _context.KitchenUser.ToListAsync();
@@ -30,6 +32,7 @@ namespace PantryPlanner.Controllers
 
         // GET: api/KitchenUser/5
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<ActionResult<KitchenUser>> GetKitchenUser(long id)
         {
             var kitchenUser = await _context.KitchenUser.FindAsync(id);
@@ -44,6 +47,7 @@ namespace PantryPlanner.Controllers
 
         // PUT: api/KitchenUser/5
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> PutKitchenUser(long id, KitchenUser kitchenUser)
         {
             if (id != kitchenUser.KitchenUserId)
@@ -74,6 +78,7 @@ namespace PantryPlanner.Controllers
 
         // POST: api/KitchenUser
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<KitchenUser>> PostKitchenUser(KitchenUser kitchenUser)
         {
             _context.KitchenUser.Add(kitchenUser);
@@ -98,6 +103,7 @@ namespace PantryPlanner.Controllers
 
         // DELETE: api/KitchenUser/5
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<ActionResult<KitchenUser>> DeleteKitchenUser(long id)
         {
             var kitchenUser = await _context.KitchenUser.FindAsync(id);

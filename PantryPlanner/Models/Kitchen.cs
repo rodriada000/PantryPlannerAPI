@@ -7,6 +7,7 @@ namespace PantryPlanner.Models
     {
         public Kitchen()
         {
+            Category = new HashSet<Category>();
             IngredientTag = new HashSet<IngredientTag>();
             KitchenIngredient = new HashSet<KitchenIngredient>();
             KitchenList = new HashSet<KitchenList>();
@@ -20,7 +21,9 @@ namespace PantryPlanner.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime DateCreated { get; set; }
+        public string CreatedByUserId { get; set; }
 
+        public virtual ICollection<Category> Category { get; set; }
         public virtual ICollection<IngredientTag> IngredientTag { get; set; }
         public virtual ICollection<KitchenIngredient> KitchenIngredient { get; set; }
         public virtual ICollection<KitchenList> KitchenList { get; set; }

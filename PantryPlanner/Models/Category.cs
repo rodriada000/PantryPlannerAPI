@@ -16,8 +16,10 @@ namespace PantryPlanner.Models
         public long CategoryId { get; set; }
         public int? CategoryTypeId { get; set; }
         public string Name { get; set; }
+        public long CreatedByKitchenId { get; set; }
 
         public virtual CategoryType CategoryType { get; set; }
+        public virtual Kitchen CreatedByKitchen { get; set; }
         public virtual ICollection<KitchenIngredient> KitchenIngredient { get; set; }
         public virtual ICollection<KitchenList> KitchenList { get; set; }
         public virtual ICollection<KitchenRecipe> KitchenRecipe { get; set; }

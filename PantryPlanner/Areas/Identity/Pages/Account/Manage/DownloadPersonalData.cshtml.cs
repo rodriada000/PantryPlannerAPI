@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using PantryPlanner.Areas.Identity.Data;
+using PantryPlanner.Models;
 
 namespace PantryPlanner.Areas.Identity.Pages.Account.Manage
 {

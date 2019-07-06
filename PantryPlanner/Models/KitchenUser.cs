@@ -13,13 +13,13 @@ namespace PantryPlanner.Models
         }
 
         public long KitchenUserId { get; set; }
-        public long UserId { get; set; }
+        public string UserId { get; set; }
         public long KitchenId { get; set; }
         public bool IsOwner { get; set; }
         public DateTime DateAdded { get; set; }
 
         public virtual Kitchen Kitchen { get; set; }
-        public virtual User User { get; set; }
+        public virtual PantryPlannerUser User { get; set; }
         public virtual ICollection<IngredientTag> IngredientTag { get; set; }
         public virtual ICollection<KitchenIngredient> KitchenIngredient { get; set; }
         public virtual ICollection<MealPlan> MealPlan { get; set; }

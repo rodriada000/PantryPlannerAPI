@@ -6,10 +6,11 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PantryPlanner.Models;
+using PantryPlanner.Services;
 
 namespace PantryPlanner.Migrations
 {
-    [DbContext(typeof(PantryPlannerIdentityContext))]
+    [DbContext(typeof(PantryPlannerContext))]
     [Migration("20190704180846_CreateIdentitySchema")]
     partial class CreateIdentitySchema
     {

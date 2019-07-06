@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using PantryPlanner.Models;
 
 namespace PantryPlanner.Services
 {
-    public partial class PantryPlannerContext : DbContext
+    public partial class PantryPlannerContext : IdentityDbContext<PantryPlannerUser>
     {
         public PantryPlannerContext()
         {
@@ -33,7 +32,6 @@ namespace PantryPlanner.Services
         public virtual DbSet<Recipe> Recipe { get; set; }
         public virtual DbSet<RecipeIngredient> RecipeIngredient { get; set; }
         public virtual DbSet<RecipeStep> RecipeStep { get; set; }
-        public virtual DbSet<User> User { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -45,6 +43,8 @@ namespace PantryPlanner.Services
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+
             modelBuilder.HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
 
             modelBuilder.Entity<Category>(entity =>
@@ -68,6 +68,12 @@ namespace PantryPlanner.Services
                     .HasForeignKey(d => d.CategoryTypeId)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("TypeToCategoryFK");
+
+                entity.HasOne(d => d.CreatedByKitchen)
+                    .WithMany(p => p.Category)
+                    .HasForeignKey(d => d.CreatedByKitchenId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("KitchenToCategoryFK");
             });
 
             modelBuilder.Entity<CategoryType>(entity =>
@@ -157,6 +163,8 @@ namespace PantryPlanner.Services
                 entity.ToTable("Kitchen", "app");
 
                 entity.Property(e => e.KitchenId).HasColumnName("KitchenID");
+
+                entity.Property(e => e.CreatedByUserId).HasMaxLength(450);
 
                 entity.Property(e => e.Description).HasMaxLength(255);
 
@@ -299,7 +307,9 @@ namespace PantryPlanner.Services
                 entity.HasIndex(e => e.RecipeId)
                     .HasName("fkIdx_100");
 
-                entity.Property(e => e.KitchenRecipeId).HasColumnName("KitchenRecipeID");
+                entity.Property(e => e.KitchenRecipeId)
+                    .HasColumnName("KitchenRecipeID")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.KitchenId).HasColumnName("KitchenID");
 
@@ -343,7 +353,9 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.KitchenId).HasColumnName("KitchenID");
 
-                entity.Property(e => e.UserId).HasColumnName("UserID");
+                entity.Property(e => e.UserId)
+                    .IsRequired()
+                    .HasColumnName("UserID");
 
                 entity.HasOne(d => d.Kitchen)
                     .WithMany(p => p.KitchenUser)
@@ -437,15 +449,19 @@ namespace PantryPlanner.Services
                 entity.HasIndex(e => e.CreatedByUserId)
                     .HasName("fkIdx_69");
 
-                entity.Property(e => e.RecipeId)
-                    .HasColumnName("RecipeID")
-                    .ValueGeneratedNever();
+                entity.Property(e => e.RecipeId).HasColumnName("RecipeID");
 
                 entity.Property(e => e.CreatedByUserId).HasColumnName("CreatedByUserID");
+
+                entity.Property(e => e.DateCreated).HasDefaultValueSql("(getutcdate())");
 
                 entity.Property(e => e.Description)
                     .IsRequired()
                     .HasMaxLength(500);
+
+                entity.Property(e => e.IsPublic)
+                    .IsRequired()
+                    .HasDefaultValueSql("((1))");
 
                 entity.Property(e => e.Name)
                     .IsRequired()
@@ -524,26 +540,6 @@ namespace PantryPlanner.Services
                     .WithMany(p => p.RecipeStep)
                     .HasForeignKey(d => d.RecipeId)
                     .HasConstraintName("RecipeToStepFK");
-            });
-
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.ToTable("User", "app");
-
-                entity.Property(e => e.UserId).HasColumnName("UserID");
-
-                entity.Property(e => e.Email)
-                    .IsRequired()
-                    .HasMaxLength(100)
-                    .IsUnicode(false);
-
-                entity.Property(e => e.FirstName).HasMaxLength(50);
-
-                entity.Property(e => e.LastName).HasMaxLength(100);
-
-                entity.Property(e => e.UserName)
-                    .IsRequired()
-                    .HasMaxLength(100);
             });
         }
     }
