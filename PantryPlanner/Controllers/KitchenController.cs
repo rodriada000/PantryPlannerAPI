@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PantryPlanner.Models;
@@ -12,30 +13,32 @@ using PantryPlanner.Services;
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class KitchenController : ControllerBase
     {
-        private readonly PantryPlannerContext _context;
+        private readonly KitchenService _service;
+        private readonly UserManager<PantryPlannerUser> _userManager;
 
-        public KitchenController(PantryPlannerContext context)
+        public KitchenController(PantryPlannerContext context, UserManager<PantryPlannerUser> userManager)
         {
-            _context = context;
+            _service = new KitchenService(context);
+            _userManager = userManager;
         }
 
         // GET: api/Kitchen
         [HttpGet]
-        [Authorize]
-        public async Task<ActionResult<IEnumerable<Kitchen>>> GetKitchen()
+        public async Task<ActionResult<List<Kitchen>>> GetKitchenAsync()
         {
-            return await _context.Kitchen.ToListAsync();
+            var user = await _userManager.GetUserAsync(this.User);
+            return _service.GetAllKitchensForUser(user);
         }
 
         // GET: api/Kitchen/5
         [HttpGet("{id}")]
-        [Authorize]
-        public async Task<ActionResult<Kitchen>> GetKitchen(long id)
+        public ActionResult<Kitchen> GetKitchen(long id)
         {
-            var kitchen = await _context.Kitchen.FindAsync(id);
+            var kitchen = _service.GetKitchenById(id);
 
             if (kitchen == null)
             {
@@ -47,7 +50,6 @@ namespace PantryPlanner.Controllers
 
         // PUT: api/Kitchen/5
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> PutKitchen(long id, Kitchen kitchen)
         {
             if (id != kitchen.KitchenId)
@@ -55,72 +57,63 @@ namespace PantryPlanner.Controllers
                 return BadRequest();
             }
 
-            _context.Entry(kitchen).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _service.UpdateKitchenAsync(kitchen);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                if (!KitchenExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+
+                return new UnprocessableEntityResult();
             }
+
 
             return NoContent();
         }
 
         // POST: api/Kitchen
         [HttpPost]
-        [Authorize]
-        public async Task<ActionResult<Kitchen>> PostKitchen(Kitchen kitchen)
+        public async Task<ActionResult<Kitchen>> PostKitchenAsync(Kitchen kitchen)
         {
-            _context.Kitchen.Add(kitchen);
-            try
+            PantryPlannerUser user = null;
+
+            if (_userManager != null)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (KitchenExists(kitchen.KitchenId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                user = await _userManager?.GetUserAsync(this.User);
             }
 
-            return CreatedAtAction("GetKitchen", new { id = kitchen.KitchenId }, kitchen);
+            try
+            {
+                _service.AddKitchen(kitchen, user);
+            }
+            catch (Exception e)
+            {
+                return UnprocessableEntity(e.Message);
+            }
+
+            return CreatedAtAction("PostKitchen", new { id = kitchen.KitchenId }, kitchen);
         }
 
         // DELETE: api/Kitchen/5
         [HttpDelete("{id}")]
-        [Authorize]
-        public async Task<ActionResult<Kitchen>> DeleteKitchen(long id)
+        public ActionResult<Kitchen> DeleteKitchen(long id)
         {
-            var kitchen = await _context.Kitchen.FindAsync(id);
-            if (kitchen == null)
+            try
             {
-                return NotFound();
+                Kitchen deletedKitchen = _service.DeleteKitchenById(id);
+
+                if (deletedKitchen == null)
+                {
+                    return NotFound();
+                }
+
+                return deletedKitchen;
             }
-
-            _context.Kitchen.Remove(kitchen);
-            await _context.SaveChangesAsync();
-
-            return kitchen;
+            catch (Exception e)
+            {
+                return UnprocessableEntity(e.Message);
+            }
         }
 
-        private bool KitchenExists(long id)
-        {
-            return _context.Kitchen.Any(e => e.KitchenId == id);
-        }
     }
 }

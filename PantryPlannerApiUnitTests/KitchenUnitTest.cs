@@ -6,70 +6,95 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using PantryPlanner.Services;
 using PantryPlannerApiUnitTests.Helpers;
+using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
+using Moq;
+using System.Threading.Tasks;
 
 namespace PantryPlannerApiUnitTests
 {
     public class KitchenUnitTest
     {
-        PantryPlanner.Services.PantryPlannerContext _context;
+        PantryPlannerContext _context;
         PantryPlanner.Controllers.KitchenController _controller;
+        FakeUserManager _userManager;
 
         public KitchenUnitTest()
         {
             var options = new DbContextOptionsBuilder<PantryPlannerContext>().UseInMemoryDatabase("PantryDB").Options;
-            _context = new PantryPlanner.Services.PantryPlannerContext(options);
+            _context = new PantryPlannerContext(options);
 
             InMemoryDataGenerator.InitializeKitchen(_context);
 
-            _controller = new PantryPlanner.Controllers.KitchenController(_context);
+            _userManager = new FakeUserManager();
+
+            _controller = new PantryPlanner.Controllers.KitchenController(_context, _userManager);
         }
 
         [Fact]
-        public async void Post_ValidKitchen_ReturnsCreatedAtActionResult()
+        public void Post_ValidKitchen_ReturnsCreatedAtActionResult()
         {
             Kitchen kitchen = new Kitchen
             {
                 KitchenId = 69,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
-                DateCreated = DateTime.Now,
-                UniquePublicGuid = Guid.NewGuid()
             };
 
-            var result = await _controller.PostKitchen(kitchen);
-            Assert.IsType<CreatedAtActionResult>(result.Result);
+            var result = _controller.PostKitchenAsync(kitchen);
+            Assert.IsType<CreatedAtActionResult>(result.Result.Result);
         }
 
         [Fact]
-        public async void Post_ValidKitchen_ReturnsKitcheninResult()
+        public void Post_ValidKitchen_ReturnsKitcheninResult()
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 69,
+                KitchenId = 70,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
-                DateCreated = DateTime.Now,
-                UniquePublicGuid = Guid.NewGuid()
             };
 
-            var result = await _controller.PostKitchen(kitchen);
-            var returnedItem = ((result.Result as CreatedAtActionResult).Value as Kitchen);
+            var result = _controller.PostKitchenAsync(kitchen);
+            var actionResult = result.Result.Result as CreatedAtActionResult;
 
-            Assert.Equal(kitchen, returnedItem);
+            Assert.Equal(kitchen, (actionResult.Value as Kitchen));
         }
 
         [Fact]
-        public async void Delete_ValidKitchen_ReturnsKitchenDeleted()
+        public void Post_ValidKitchen_ReturnsKitchenWithFieldsSet()
         {
-            var result = await _controller.DeleteKitchen(2);
+            Kitchen kitchen = new Kitchen
+            {
+                KitchenId = 71,
+                Name = "Bobs Burgers II",
+                Description = "Delicious burgers. again",
+            };
+
+            var guidBefore = kitchen.UniquePublicGuid;
+            var dateBefore = kitchen.DateCreated;
+
+            var result = _controller.PostKitchenAsync(kitchen);
+            var actionResult = result.Result.Result as CreatedAtActionResult;
+
+            Assert.Equal(_userManager.TestUser.Id, (actionResult.Value as Kitchen).CreatedByUserId);
+            Assert.NotEqual(guidBefore, (actionResult.Value as Kitchen).UniquePublicGuid);
+            Assert.NotEqual(dateBefore, (actionResult.Value as Kitchen).DateCreated);
+        }
+
+        [Fact]
+        public void Delete_ValidKitchen_ReturnsKitchenDeleted()
+        {
+            var result = _controller.DeleteKitchen(2);
 
             Assert.Equal(2, result.Value.KitchenId);
         }
 
         [Fact]
-        public async void Delete_UnknownKitchen_ReturnsNotFound()
+        public void Delete_UnknownKitchen_ReturnsNotFound()
         {
-            var result = await _controller.DeleteKitchen(-5);
+
+            var result = _controller.DeleteKitchen(-5);
 
             Assert.IsType<NotFoundResult>(result.Result);
         }
