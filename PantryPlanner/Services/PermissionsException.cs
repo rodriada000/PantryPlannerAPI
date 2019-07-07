@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace PantryPlanner.Services
 {
     [Serializable]
-    internal class PermissionsException : Exception
+    public class PermissionsException : Exception
     {
         public PermissionsException()
         {

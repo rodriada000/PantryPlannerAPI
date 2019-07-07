@@ -43,23 +43,10 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("you do not have rights to this kitchen");
             }
 
-            try
-            {
-                Context.Entry(kitchen).State = EntityState.Modified;
-                Context.SaveChanges();
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!KitchenExists(kitchen.KitchenId))
-                {
-                    return false;
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            Context.Entry(kitchen).State = EntityState.Modified;
+            Context.SaveChanges();
+            return true;
         }
 
         public async Task<bool> UpdateKitchenAsync(Kitchen kitchen, PantryPlannerUser user)
@@ -74,24 +61,9 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("you do not have rights to this kitchen");
             }
 
-            try
-            {
-                Context.Entry(kitchen).State = EntityState.Modified;
-                await Context.SaveChangesAsync();
-                return true;
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!KitchenExists(kitchen.KitchenId))
-                {
-                    return false;
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            Context.Entry(kitchen).State = EntityState.Modified;
+            await Context.SaveChangesAsync();
+            return true;
         }
 
         public List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)

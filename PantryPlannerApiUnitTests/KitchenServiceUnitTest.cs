@@ -32,6 +32,8 @@ namespace PantryPlannerApiUnitTests
             _kitchenService = new KitchenService(_context);
         }
 
+        #region Add Test Methods
+
         [Fact]
         public void AddKitchen_ReturnsTrueOnSuccess()
         {
@@ -81,6 +83,10 @@ namespace PantryPlannerApiUnitTests
             Assert.True(relationshipResult);
         }
 
+        #endregion
+
+        #region Delete Test Methods
+
         [Fact]
         public void Delete_ValidKitchen_ReturnsKitchenDeleted()
         {
@@ -97,5 +103,102 @@ namespace PantryPlannerApiUnitTests
 
             Assert.True(result == null);
         }
+
+        #endregion
+
+        #region Update Test Methods
+
+        [Fact]
+        public void Update_ValidKitchen_ReturnsTrue()
+        {
+            // do modifications on Kitchen with ID = 1
+            long key = 1;
+            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+
+            kitchenToUpdate.Description = "my new description";
+
+            var result = _kitchenService.UpdateKitchen(kitchenToUpdate, _testUser);
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void Update_ValidKitchen_KitchenIsUpdatedInContext()
+        {
+            // do modifications on Kitchen with ID = 1
+            long key = 1;
+            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+
+            string expectedDescription = "my new description";
+            kitchenToUpdate.Description = expectedDescription;
+
+            var result = _kitchenService.UpdateKitchen(kitchenToUpdate, _testUser);
+
+            Assert.Equal(expectedDescription, _context.Kitchen.Find(key).Description);
+        }
+
+        [Fact]
+        public void Update_InvalidKitchen_ExceptionThrown()
+        {
+            // do modifications on Kitchen with ID = 1
+            long key = 1;
+            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+
+            string expectedDescription = "my invalid description";
+            kitchenToUpdate.Description = expectedDescription;
+            kitchenToUpdate.KitchenId = 999; // change ID so it becomes invalid
+
+            try
+            {
+                var result = _kitchenService.UpdateKitchen(kitchenToUpdate, _testUser);
+            }
+            catch (Exception)
+            {
+                Assert.True(true);
+            }
+
+        }
+
+        [Fact]
+        public void Update_NullKitchen_ArgumentNullExceptionThrown()
+        {
+            try
+            {
+                var result = _kitchenService.UpdateKitchen(null, _testUser);
+            }
+            catch (Exception e)
+            {
+                Assert.IsType<ArgumentNullException>(e);
+            }
+
+        }
+
+        [Fact]
+        public void Update_NullUser_PermissionsExceptionThrown()
+        {
+            // do modifications on Kitchen with ID = 1
+            long key = 1;
+            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+
+            string expectedDescription = "my new description";
+            kitchenToUpdate.Description = expectedDescription;
+
+            try
+            {
+                var result = _kitchenService.UpdateKitchen(kitchenToUpdate, null);
+            }
+            catch (Exception e)
+            {
+                Assert.IsType<PermissionsException>(e);
+            }
+
+        }
+
+
+        #endregion
+
+        #region Get Test Methods
+
+        #endregion
     }
 }

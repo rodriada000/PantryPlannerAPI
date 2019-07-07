@@ -81,11 +81,12 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void Delete_ValidKitchen_ReturnsKitchenDeleted()
+        public async Task Delete_ValidKitchen_ReturnsKitchenDeletedAsync()
         {
-            var result = _controller.DeleteKitchenAsync(2);
+            Kitchen kitchenToDelete = await _context.Kitchen.FirstOrDefaultAsync();
+            var result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
 
-            Assert.Equal(2, (result.Result.Value as Kitchen).KitchenId);
+            Assert.Equal(kitchenToDelete.KitchenId, (result.Value as Kitchen).KitchenId);
         }
 
         [Fact]
