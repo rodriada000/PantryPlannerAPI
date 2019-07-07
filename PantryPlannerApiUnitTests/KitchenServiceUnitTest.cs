@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 using PantryPlannerApiUnitTests.Helpers;

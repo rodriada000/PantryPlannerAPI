@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace PantryPlanner.Services
+namespace PantryPlanner.Exceptions
 {
     [Serializable]
     public class PermissionsException : Exception
