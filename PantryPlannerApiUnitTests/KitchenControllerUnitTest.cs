@@ -13,20 +13,20 @@ using System.Threading.Tasks;
 
 namespace PantryPlannerApiUnitTests
 {
-    public class KitchenUnitTest
+    public class KitchenControllerUnitTest
     {
         PantryPlannerContext _context;
         PantryPlanner.Controllers.KitchenController _controller;
         FakeUserManager _userManager;
 
-        public KitchenUnitTest()
+        public KitchenControllerUnitTest()
         {
             var options = new DbContextOptionsBuilder<PantryPlannerContext>().UseInMemoryDatabase("PantryDB").Options;
             _context = new PantryPlannerContext(options);
 
-            InMemoryDataGenerator.InitializeKitchen(_context);
-
             _userManager = new FakeUserManager();
+
+            InMemoryDataGenerator.InitializeAll(_context, _userManager.TestUser);
 
             _controller = new PantryPlanner.Controllers.KitchenController(_context, _userManager);
         }
@@ -36,7 +36,6 @@ namespace PantryPlannerApiUnitTests
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 69,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
@@ -66,7 +65,6 @@ namespace PantryPlannerApiUnitTests
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 71,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
@@ -85,18 +83,18 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void Delete_ValidKitchen_ReturnsKitchenDeleted()
         {
-            var result = _controller.DeleteKitchen(2);
+            var result = _controller.DeleteKitchenAsync(2);
 
-            Assert.Equal(2, result.Value.KitchenId);
+            Assert.Equal(2, (result.Result.Value as Kitchen).KitchenId);
         }
 
         [Fact]
         public void Delete_UnknownKitchen_ReturnsNotFound()
         {
 
-            var result = _controller.DeleteKitchen(-5);
+            var result = _controller.DeleteKitchenAsync(-5);
 
-            Assert.IsType<NotFoundResult>(result.Result);
+            Assert.IsType<NotFoundResult>(result.Result.Result);
         }
     }
 }

@@ -13,9 +13,12 @@ namespace PantryPlanner.Services
 
         public PantryPlannerContext Context { get; set; }
 
+        public PermissionService Permissions { get; set; }
+
         public KitchenService(PantryPlannerContext context)
         {
             Context = context;
+            Permissions = new PermissionService(Context);
         }
 
         public List<Kitchen> GetAllKitchens()
@@ -28,12 +31,52 @@ namespace PantryPlanner.Services
             return Context?.Kitchen.Find(id);
         }
 
-        internal async Task<bool> UpdateKitchenAsync(Kitchen kitchen)
+        public bool UpdateKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
-            Context.Entry(kitchen).State = EntityState.Modified;
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("cannot update kitchen; kitchen is null");
+            }
+
+            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            {
+                throw new PermissionsException("you do not have rights to this kitchen");
+            }
 
             try
             {
+                Context.Entry(kitchen).State = EntityState.Modified;
+                Context.SaveChanges();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!KitchenExists(kitchen.KitchenId))
+                {
+                    return false;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        public async Task<bool> UpdateKitchenAsync(Kitchen kitchen, PantryPlannerUser user)
+        {
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("cannot update kitchen; kitchen is null");
+            }
+
+            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            {
+                throw new PermissionsException("you do not have rights to this kitchen");
+            }
+
+            try
+            {
+                Context.Entry(kitchen).State = EntityState.Modified;
                 await Context.SaveChangesAsync();
                 return true;
             }
@@ -51,7 +94,7 @@ namespace PantryPlanner.Services
 
         }
 
-        internal List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)
+        public List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)
         {
             if (Context == null || user == null)
             {
@@ -62,11 +105,16 @@ namespace PantryPlanner.Services
             user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
 
             // join KitchenUsers to Kitchens to get kitchens they have rights to
-            return Context.Kitchen.Join(user.KitchenUser, x => x.KitchenId, x => x.KitchenId, (k,u) => k).ToList();
+            return Context.Kitchen.Join(user.KitchenUser, x => x.KitchenId, x => x.KitchenId, (k, u) => k).ToList();
         }
 
-        internal void AddKitchen(Kitchen kitchen, PantryPlannerUser user)
+        public bool AddKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("cannot create kitchen; kitchen is null");
+            }
+
             if (user == null)
             {
                 throw new ArgumentNullException("cannot create kitchen; user is null");
@@ -108,14 +156,26 @@ namespace PantryPlanner.Services
                 }
             }
 
+
+            return true;
         }
 
-        internal Kitchen DeleteKitchenById(long id)
+        public Kitchen DeleteKitchenById(long id, PantryPlannerUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException("cannot delete kitchen; user is null");
+            }
+
             var kitchen = Context.Kitchen.Find(id);
             if (kitchen == null)
             {
                 return null;
+            }
+
+            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            {
+                throw new PermissionsException("you do not have rights to this kitchen");
             }
 
 

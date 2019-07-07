@@ -57,9 +57,16 @@ namespace PantryPlanner.Controllers
                 return BadRequest();
             }
 
+            PantryPlannerUser user = null;
+
+            if (_userManager != null)
+            {
+                user = await _userManager?.GetUserAsync(this.User);
+            }
+
             try
             {
-                await _service.UpdateKitchenAsync(kitchen);
+                await _service.UpdateKitchenAsync(kitchen, user);
             }
             catch (Exception e)
             {
@@ -96,11 +103,18 @@ namespace PantryPlanner.Controllers
 
         // DELETE: api/Kitchen/5
         [HttpDelete("{id}")]
-        public ActionResult<Kitchen> DeleteKitchen(long id)
+        public async Task<ActionResult<Kitchen>> DeleteKitchenAsync(long id)
         {
+            PantryPlannerUser user = null;
+
+            if (_userManager != null)
+            {
+                user = await _userManager?.GetUserAsync(this.User);
+            }
+
             try
             {
-                Kitchen deletedKitchen = _service.DeleteKitchenById(id);
+                Kitchen deletedKitchen = _service.DeleteKitchenById(id, user);
 
                 if (deletedKitchen == null)
                 {

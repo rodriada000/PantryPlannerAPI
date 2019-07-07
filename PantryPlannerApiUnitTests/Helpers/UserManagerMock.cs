@@ -57,7 +57,7 @@ namespace PantryPlannerApiUnitTests.Helpers
                   new Mock<IServiceProvider>().Object,
                   new Mock<ILogger<UserManager<PantryPlannerUser>>>().Object)
         {
-            TestUser = new PantryPlannerUser { Id = "test123456", Email = "test@test.com", UserName = "Iliketurtles" };
+            TestUser = new PantryPlannerUser { Id = "test12345", Email = "test@test.com", UserName = "Iliketurtles" };
         }
 
         public override Task<PantryPlannerUser> FindByEmailAsync(string email)
