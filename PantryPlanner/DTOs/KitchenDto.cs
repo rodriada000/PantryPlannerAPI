@@ -1,11 +1,11 @@
 ﻿using PantryPlanner.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PantryPlanner.DTOs
 {
+    /// <summary>
+    /// DTO of <see cref="Kitchen"/> that excludes any Collections.
+    /// </summary>
     public class KitchenDto
     {
         public KitchenDto(Kitchen kitchen)
