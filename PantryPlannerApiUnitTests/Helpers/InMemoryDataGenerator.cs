@@ -42,6 +42,13 @@ namespace PantryPlannerApiUnitTests.Helpers
                         Description = "generic kitchen description",
                         UniquePublicGuid = Guid.NewGuid(),
                         DateCreated = DateTime.Now,
+                    },
+                    new Kitchen
+                    {
+                        Name = "Not Mine Kitchen",
+                        Description = "some persons kitchen",
+                        UniquePublicGuid = Guid.NewGuid(),
+                        DateCreated = DateTime.Now,
                     }
                 };
             }

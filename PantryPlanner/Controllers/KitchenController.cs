@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PantryPlanner.DTOs;
+using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
@@ -28,17 +30,39 @@ namespace PantryPlanner.Controllers
 
         // GET: api/Kitchen
         [HttpGet]
-        public async Task<ActionResult<List<Kitchen>>> GetKitchenAsync()
+        public async Task<ActionResult<List<KitchenDto>>> GetKitchenAsync()
         {
             var user = await _userManager.GetUserAsync(this.User);
-            return _service.GetAllKitchensForUser(user);
+
+            try
+            {
+                return _service.GetAllKitchensForUser(user);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         // GET: api/Kitchen/5
         [HttpGet("{id}")]
-        public ActionResult<Kitchen> GetKitchen(long id)
+        public async Task<ActionResult<Kitchen>> GetKitchenAsync(long id)
         {
-            var kitchen = _service.GetKitchenById(id);
+            PantryPlannerUser user = await _userManager?.GetUserAsync(this.User); ;
+            Kitchen kitchen = null;
+
+            try
+            {
+                kitchen = _service.GetKitchenById(id, user);
+            }
+            catch (PermissionsException e)
+            {
+                return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
             if (kitchen == null)
             {
@@ -57,12 +81,7 @@ namespace PantryPlanner.Controllers
                 return BadRequest();
             }
 
-            PantryPlannerUser user = null;
-
-            if (_userManager != null)
-            {
-                user = await _userManager?.GetUserAsync(this.User);
-            }
+            PantryPlannerUser user = await _userManager?.GetUserAsync(this.User);
 
             try
             {
@@ -82,12 +101,7 @@ namespace PantryPlanner.Controllers
         [HttpPost]
         public async Task<ActionResult<Kitchen>> PostKitchenAsync(Kitchen kitchen)
         {
-            PantryPlannerUser user = null;
-
-            if (_userManager != null)
-            {
-                user = await _userManager?.GetUserAsync(this.User);
-            }
+            PantryPlannerUser user = await _userManager?.GetUserAsync(this.User);
 
             try
             {
@@ -105,12 +119,7 @@ namespace PantryPlanner.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<Kitchen>> DeleteKitchenAsync(long id)
         {
-            PantryPlannerUser user = null;
-
-            if (_userManager != null)
-            {
-                user = await _userManager?.GetUserAsync(this.User);
-            }
+            PantryPlannerUser user = await _userManager?.GetUserAsync(this.User); ;
 
             try
             {

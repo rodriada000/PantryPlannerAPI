@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using System;
@@ -27,9 +28,35 @@ namespace PantryPlanner.Services
             return Context?.Kitchen.ToList();
         }
 
-        public Kitchen GetKitchenById(long id)
+        public Kitchen GetKitchenById(long id, PantryPlannerUser user)
         {
-            return Context?.Kitchen.Find(id);
+            Kitchen kitchen = Context?.Kitchen.Find(id);
+
+            if (kitchen == null)
+            {
+                return null;
+            }
+
+            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            {
+                throw new PermissionsException("User does not have rights to kitchen.");
+            }
+
+            return kitchen;
+        }
+
+        public List<KitchenDto> GetAllKitchensForUser(PantryPlannerUser user)
+        {
+            if (Context == null || user == null)
+            {
+                return null;
+            }
+
+            // get all KitchenUsers for the user first
+            user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
+
+            // join KitchenUsers to Kitchens to get kitchens they have rights to
+            return Context.Kitchen.Join(user.KitchenUser, x => x.KitchenId, x => x.KitchenId, (k, u) => new KitchenDto(k)).ToList();
         }
 
         public bool UpdateKitchen(Kitchen kitchen, PantryPlannerUser user)
@@ -65,20 +92,6 @@ namespace PantryPlanner.Services
             Context.Entry(kitchen).State = EntityState.Modified;
             await Context.SaveChangesAsync();
             return true;
-        }
-
-        public List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)
-        {
-            if (Context == null || user == null)
-            {
-                return null;
-            }
-
-            // get all KitchenUsers for the user first
-            user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
-
-            // join KitchenUsers to Kitchens to get kitchens they have rights to
-            return Context.Kitchen.Join(user.KitchenUser, x => x.KitchenId, x => x.KitchenId, (k, u) => k).ToList();
         }
 
         public bool AddKitchen(Kitchen kitchen, PantryPlannerUser user)

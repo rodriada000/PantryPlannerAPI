@@ -69,7 +69,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task AddKitchen_DoesCreateKitchenUserRelationshipAsync()
+        public async void AddKitchen_DoesCreateKitchenUserRelationshipAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -110,11 +110,10 @@ namespace PantryPlannerApiUnitTests
         #region Update Test Methods
 
         [Fact]
-        public void Update_ValidKitchen_ReturnsTrue()
+        public async void Update_ValidKitchen_ReturnsTrueAsync()
         {
-            // do modifications on Kitchen with ID = 1
-            long key = 1;
-            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+            // do modifications on first Kitchen in collection
+            Kitchen kitchenToUpdate = await _context.Kitchen.FirstOrDefaultAsync();
 
             kitchenToUpdate.Description = "my new description";
 
@@ -139,11 +138,10 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void Update_InvalidKitchen_ExceptionThrown()
+        public async void Update_InvalidKitchen_ExceptionThrownAsync()
         {
             // do modifications on Kitchen with ID = 1
-            long key = 1;
-            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+            Kitchen kitchenToUpdate = await _context.Kitchen.FirstOrDefaultAsync();
 
             string expectedDescription = "my invalid description";
             kitchenToUpdate.Description = expectedDescription;
