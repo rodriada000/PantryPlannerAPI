@@ -15,6 +15,12 @@ namespace PantryPlanner.Services
             Context = context;
         }
 
+        internal bool UserHasRightsToKitchen(PantryPlannerUser user, long kitchenId)
+        {
+            Kitchen kitchen = Context.Kitchen.Find(kitchenId);
+            return UserHasRightsToKitchen(user, kitchen);
+        }
+
         internal bool UserHasRightsToKitchen(PantryPlannerUser user, Kitchen kitchen)
         {
             if (Context == null || user == null || kitchen == null || Context.KitchenUser == null)
@@ -24,5 +30,31 @@ namespace PantryPlanner.Services
 
             return Context.KitchenUser.Any(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id);
         }
+
+        internal bool UserOwnsKitchen(PantryPlannerUser user, long kitchenId)
+        {
+            Kitchen kitchen = Context.Kitchen.Find(kitchenId);
+            return UserOwnsKitchen(user, kitchen);
+        }
+
+        internal bool UserOwnsKitchen(PantryPlannerUser user, Kitchen kitchen)
+        {
+            if (user == null || kitchen == null)
+            {
+                return false;
+            }
+
+            KitchenUser kitchenUser = Context.KitchenUser
+                                             .Where(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id)
+                                             .FirstOrDefault();
+
+            if (kitchenUser == null)
+            {
+                return false;
+            }
+
+            return kitchenUser.IsOwner;
+        }
+
     }
 }
