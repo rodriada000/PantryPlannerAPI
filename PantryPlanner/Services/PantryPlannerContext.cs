@@ -107,6 +107,8 @@ namespace PantryPlanner.Services
                     .IsRequired()
                     .HasMaxLength(100);
 
+                entity.Property(e => e.DateAdded).HasDefaultValueSql("(getutcdate())");
+
                 entity.Property(e => e.PreviewPicture).HasColumnType("image");
 
                 entity.HasOne(d => d.AddedByUser)
@@ -168,6 +170,8 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.Description).HasMaxLength(255);
 
+                entity.Property(e => e.DateCreated).HasDefaultValueSql("(getutcdate())");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50);
@@ -206,6 +210,8 @@ namespace PantryPlanner.Services
                 entity.Property(e => e.Note)
                     .IsRequired()
                     .HasMaxLength(255);
+
+                entity.Property(e => e.LastUpdated).HasDefaultValueSql("(getutcdate())");
 
                 entity.HasOne(d => d.AddedByKitchenUser)
                     .WithMany(p => p.KitchenIngredient)
@@ -286,6 +292,13 @@ namespace PantryPlanner.Services
                     .HasForeignKey(d => d.IngredientId)
                     .HasConstraintName("IngredientToListIngredientFK");
 
+                entity.HasOne(d => d.Recipe)
+                    .WithMany(p => p.KitchenListIngredient)
+                    .HasForeignKey(d => d.AddedFromRecipeId)
+                    .HasConstraintName("RecipeToListIngredientFK")
+                    .OnDelete(DeleteBehavior.SetNull);
+                    
+
                 entity.HasOne(d => d.KitchenList)
                     .WithMany(p => p.KitchenListIngredient)
                     .HasForeignKey(d => d.KitchenListId)
@@ -357,6 +370,10 @@ namespace PantryPlanner.Services
                     .IsRequired()
                     .HasColumnName("UserID");
 
+                entity.Property(e => e.HasAcceptedInvite)
+                    .IsRequired()
+                    .HasDefaultValueSql("((0))");
+
                 entity.HasOne(d => d.Kitchen)
                     .WithMany(p => p.KitchenUser)
                     .HasForeignKey(d => d.KitchenId)
@@ -395,6 +412,9 @@ namespace PantryPlanner.Services
                     .IsRequired()
                     .HasMaxLength(50)
                     .IsUnicode(false);
+
+                entity.Property(e => e.DateCreated).HasDefaultValueSql("(getutcdate())");
+
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.MealPlan)

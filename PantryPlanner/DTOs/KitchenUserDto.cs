@@ -18,7 +18,7 @@ namespace PantryPlanner.DTOs
             KitchenId = user.KitchenId;
             IsOwner = user.IsOwner;
             DateAdded = user.DateAdded;
-            HasAcceptedInvite = user.HasAcceptedInvite;
+            HasAcceptedInvite = user.HasAcceptedInvite.Value;
         }
 
         public long KitchenUserId { get; set; }

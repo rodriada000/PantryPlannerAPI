@@ -28,6 +28,7 @@ namespace PantryPlanner.Models
         public virtual ICollection<KitchenRecipe> KitchenRecipe { get; set; }
         public virtual ICollection<MealPlanRecipe> MealPlanRecipe { get; set; }
         public virtual ICollection<RecipeIngredient> RecipeIngredient { get; set; }
+        public virtual ICollection<KitchenListIngredient> KitchenListIngredient { get; set; }
         public virtual ICollection<RecipeStep> RecipeStep { get; set; }
     }
 }

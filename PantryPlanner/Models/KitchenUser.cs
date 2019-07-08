@@ -16,6 +16,7 @@ namespace PantryPlanner.Models
         public string UserId { get; set; }
         public long KitchenId { get; set; }
         public bool IsOwner { get; set; }
+        public bool? HasAcceptedInvite { get; set; }
         public DateTime DateAdded { get; set; }
 
         public virtual Kitchen Kitchen { get; set; }
