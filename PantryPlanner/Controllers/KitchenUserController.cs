@@ -51,7 +51,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                kitchenUsers = _service.GetUsersForKitchenById(kitchenId, user);
+                kitchenUsers = KitchenUserDto.ToList(_service.GetUsersForKitchenById(kitchenId, user));
             }
             catch (ArgumentNullException e)
             {

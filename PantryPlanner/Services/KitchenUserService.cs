@@ -21,7 +21,10 @@ namespace PantryPlanner.Services
             Permissions = new PermissionService(Context);
         }
 
-        public List<KitchenUserDto> GetUsersForKitchen(Kitchen kitchen, PantryPlannerUser user)
+
+        #region Get Methods
+
+        public List<KitchenUser> GetUsersForKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -36,7 +39,7 @@ namespace PantryPlanner.Services
             return GetUsersForKitchenById(kitchen.KitchenId, user);
         }
 
-        public List<KitchenUserDto> GetUsersForKitchenById(long id, PantryPlannerUser user)
+        public List<KitchenUser> GetUsersForKitchenById(long id, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -55,8 +58,13 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("User does not have rights to kitchen.");
             }
 
-            return Context.KitchenUser.Where(x => x.KitchenId == id && (x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value)).Select(k => new KitchenUserDto(k)).ToList();
+            return Context.KitchenUser.Where(x => x.KitchenId == id && (x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value)).Select(k => k).ToList();
         }
+
+        #endregion
+
+
+        #region Invite & Update Methods
 
         public bool InviteUserToKitchenByUsername(string username, Kitchen kitchen, PantryPlannerUser user)
         {
@@ -159,6 +167,11 @@ namespace PantryPlanner.Services
             return true;
         }
 
+        #endregion
+
+
+        #region Delete Methods
+
         public KitchenUser DeleteKitchenUserById(long kitchenUserId, PantryPlannerUser user)
         {
             if (user == null)
@@ -198,5 +211,7 @@ namespace PantryPlanner.Services
 
             return kitchenUser;
         }
+
+        #endregion
     }
 }

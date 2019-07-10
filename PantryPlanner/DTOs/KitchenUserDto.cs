@@ -13,6 +13,11 @@ namespace PantryPlanner.DTOs
     {
         public KitchenUserDto(KitchenUser user)
         {
+            if (user == null)
+            {
+                return;
+            }
+            
             KitchenUserId = user.KitchenUserId;
             UserId = user.UserId;
             KitchenId = user.KitchenId;
@@ -27,5 +32,15 @@ namespace PantryPlanner.DTOs
         public bool IsOwner { get; set; }
         public bool HasAcceptedInvite { get; set; }
         public DateTime DateAdded { get; set; }
+
+        public static List<KitchenUserDto> ToList(List<KitchenUser> users)
+        {
+            if (users == null)
+            {
+                return null;
+            }
+
+            return users.Select(k => new KitchenUserDto(k)).ToList();
+        }
     }
 }
