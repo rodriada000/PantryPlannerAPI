@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using Moq;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace PantryPlannerApiUnitTests
 {
@@ -21,13 +22,8 @@ namespace PantryPlannerApiUnitTests
 
         public KitchenControllerUnitTest()
         {
-            var options = new DbContextOptionsBuilder<PantryPlannerContext>().UseInMemoryDatabase("PantryDB").Options;
-            _context = new PantryPlannerContext(options);
-
             _userManager = new FakeUserManager();
-
-            InMemoryDataGenerator.InitializeAll(_context, _userManager.TestUser);
-
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _userManager.TestUser);
             _controller = new PantryPlanner.Controllers.KitchenController(_context, _userManager);
         }
 
@@ -81,12 +77,20 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public async Task Delete_ValidKitchen_ReturnsKitchenDeletedAsync()
+        public void Delete_ValidKitchen_ReturnsKitchenDeleted()
         {
-            Kitchen kitchenToDelete = await _context.Kitchen.FirstOrDefaultAsync();
-            var result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
+            Kitchen kitchenToDelete = _userManager.TestUser.KitchenUser.Where(k => k.IsOwner == true).FirstOrDefault()?.Kitchen;
 
-            Assert.Equal(kitchenToDelete.KitchenId, (result.Value as Kitchen).KitchenId);
+            if (kitchenToDelete == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            var result = _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
+            var actionResult = result.Result as ActionResult<Kitchen>;
+
+
+            Assert.Equal(kitchenToDelete.KitchenId, (actionResult.Value as Kitchen).KitchenId);
         }
 
         [Fact]

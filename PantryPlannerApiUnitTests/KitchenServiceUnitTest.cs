@@ -5,6 +5,7 @@ using PantryPlanner.Services;
 using PantryPlannerApiUnitTests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -18,18 +19,13 @@ namespace PantryPlannerApiUnitTests
 
         public KitchenServiceUnitTest()
         {
-            var options = new DbContextOptionsBuilder<PantryPlannerContext>().UseInMemoryDatabase("PantryDB").Options;
-            _context = new PantryPlannerContext(options);
-
             _testUser = new PantryPlannerUser()
             {
-                Id = "test12345",
-                UserName = "goatTester",
-                Email = "test@test.com",
+                Id = "Constructor123",
+                UserName = "sharkyShark",
+                Email = "sharks@email.com"
             };
-
-            InMemoryDataGenerator.InitializeAll(_context, _testUser);
-
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
             _kitchenService = new KitchenService(_context);
         }
 
@@ -40,7 +36,6 @@ namespace PantryPlannerApiUnitTests
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 69,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
@@ -54,7 +49,6 @@ namespace PantryPlannerApiUnitTests
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 70,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
@@ -73,7 +67,6 @@ namespace PantryPlannerApiUnitTests
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 71,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
@@ -91,9 +84,17 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void Delete_ValidKitchen_ReturnsKitchenDeleted()
         {
-            var result = _kitchenService.DeleteKitchenById(2, _testUser);
+            Kitchen kitchenToDelete = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
 
-            Assert.Equal(2, result.KitchenId);
+
+            if (kitchenToDelete == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            var result = _kitchenService.DeleteKitchenById(kitchenToDelete.KitchenId, _testUser);
+
+            Assert.Equal(kitchenToDelete, result);
         }
 
         [Fact]
@@ -110,11 +111,16 @@ namespace PantryPlannerApiUnitTests
         #region Update Test Methods
 
         [Fact]
-        public async void Update_ValidKitchen_ReturnsTrueAsync()
+        public void Update_ValidKitchen_ReturnsTrue()
         {
-            // do modifications on first Kitchen in collection
-            Kitchen kitchenToUpdate = await _context.Kitchen.FirstOrDefaultAsync();
+            Kitchen kitchenToUpdate = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
 
+            if (kitchenToUpdate == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            kitchenToUpdate.Name = "my new name";
             kitchenToUpdate.Description = "my new description";
 
             var result = _kitchenService.UpdateKitchen(kitchenToUpdate, _testUser);
@@ -125,16 +131,24 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void Update_ValidKitchen_KitchenIsUpdatedInContext()
         {
-            // do modifications on Kitchen with ID = 1
-            long key = 1;
-            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+            Kitchen kitchenToUpdate = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
+
+            if (kitchenToUpdate == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
 
             string expectedDescription = "my new description";
             kitchenToUpdate.Description = expectedDescription;
 
+            string expectedName = "my new name";
+            kitchenToUpdate.Name = expectedName;
+
             var result = _kitchenService.UpdateKitchen(kitchenToUpdate, _testUser);
 
-            Assert.Equal(expectedDescription, _context.Kitchen.Find(key).Description);
+            Assert.Equal(expectedDescription, _context.Kitchen.Find(kitchenToUpdate.KitchenId).Description);
+            Assert.Equal(expectedName, _context.Kitchen.Find(kitchenToUpdate.KitchenId).Name);
+
         }
 
         [Fact]
@@ -176,8 +190,12 @@ namespace PantryPlannerApiUnitTests
         public void Update_NullUser_PermissionsExceptionThrown()
         {
             // do modifications on Kitchen with ID = 1
-            long key = 1;
-            Kitchen kitchenToUpdate = _context.Kitchen.Find(key);
+            Kitchen kitchenToUpdate = _context.Kitchen.FirstOrDefault();
+
+            if (kitchenToUpdate == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
 
             string expectedDescription = "my new description";
             kitchenToUpdate.Description = expectedDescription;
@@ -186,9 +204,9 @@ namespace PantryPlannerApiUnitTests
             {
                 var result = _kitchenService.UpdateKitchen(kitchenToUpdate, null);
             }
-            catch (Exception e)
+            catch (PermissionsException e)
             {
-                Assert.IsType<PermissionsException>(e);
+                Assert.True(true);
             }
 
         }

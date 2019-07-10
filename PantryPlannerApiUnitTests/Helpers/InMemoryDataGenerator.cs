@@ -15,6 +15,21 @@ namespace PantryPlannerApiUnitTests.Helpers
     /// <remarks> idea thanks to this article: https://exceptionnotfound.net/ef-core-inmemory-asp-net-core-store-database </remarks>
     class InMemoryDataGenerator
     {
+        public static string TestUserID { get => "test12345"; }
+
+        public static PantryPlannerUser TestUser
+        {
+            get
+            {
+                return new PantryPlannerUser()
+                {
+                    Id = TestUserID,
+                    UserName = "goatTester",
+                    Email = "test@test.com",
+                };
+            }
+        }
+
         public static List<Kitchen> Kitchens
         {
             get
@@ -27,7 +42,7 @@ namespace PantryPlannerApiUnitTests.Helpers
                         Description = "The best around",
                         UniquePublicGuid = Guid.NewGuid(),
                         DateCreated = DateTime.Now,
-                        CreatedByUserId = "test12345"
+                        CreatedByUserId = TestUserID
                     },
                     new Kitchen
                     {
@@ -52,7 +67,7 @@ namespace PantryPlannerApiUnitTests.Helpers
                     }
                 };
             }
-        } 
+        }
 
         public static List<KitchenUser> KitchenUsers
         {
@@ -63,26 +78,89 @@ namespace PantryPlannerApiUnitTests.Helpers
                     new KitchenUser()
                     {
                         KitchenId = 1,
-                        UserId = "test12345",
+                        UserId = TestUserID,
                         IsOwner = true,
-                        DateAdded = DateTime.Now
+                        DateAdded = DateTime.Now,
+                        HasAcceptedInvite = true
                     },
                     new KitchenUser()
                     {
                         KitchenId = 2,
-                        UserId = "test12345",
+                        UserId = TestUserID,
                         IsOwner = false,
-                        DateAdded = DateTime.Now
+                        DateAdded = DateTime.Now,
+                        HasAcceptedInvite = true
                     }
                 };
             }
         }
 
 
+        /// <summary>
+        /// Return a <see cref="PantryPlannerContext"/> set to use an InMemoryDatabase.
+        /// Test data is hardcoded and added for testing. <see cref="TestUser"/> is used to generate test data (relationships to Kitchen, Kitchenuser, etc.)
+        /// </summary>
+        /// <param name="dbName"> name for In Memory Database </param>
+        /// <returns> Context to use for testing</returns>
+        public static PantryPlannerContext CreateAndInitializeInMemoryDatabaseContext(string dbName)
+        {
+            PantryPlannerContext context = CreateInMemoryDatabaseContext(dbName);
+            InitializeAll(context, TestUser);
+            return context;
+        }
+
+        /// <summary>
+        /// Return a <see cref="PantryPlannerContext"/> set to use an InMemoryDatabase.
+        /// Test data is hardcoded and added for testing.
+        /// </summary>
+        /// <param name="dbName"> name for In Memory Database </param>
+        /// <param name="testUser"> user to use to generate test data (relationships to Kitchen, Kitchenuser, etc.)</param>
+        /// <returns> Context to use for testing</returns>
+        public static PantryPlannerContext CreateAndInitializeInMemoryDatabaseContext(string dbName, PantryPlannerUser testUser)
+        {
+            PantryPlannerContext context = CreateInMemoryDatabaseContext(dbName);
+            InitializeAll(context, testUser);
+            return context;
+        }
+
+        /// <summary>
+        /// Return an empty <see cref="PantryPlannerContext"/> set to use an InMemoryDatabase.
+        /// </summary>
+        /// <param name="dbName"> name for In Memory Database </param>
+        /// <returns> Context to use for testing; </returns>
+        public static PantryPlannerContext CreateInMemoryDatabaseContext(string dbName)
+        {
+            var options = new DbContextOptionsBuilder<PantryPlannerContext>().UseInMemoryDatabase(dbName).Options;
+            return new PantryPlannerContext(options);
+        }
+
+        /// <summary>
+        /// Adds test data to <paramref name="context"/> and initializes <paramref name="testUser"/> with relationships to the test data.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="testUser"></param>
         public static void InitializeAll(PantryPlannerContext context, PantryPlannerUser testUser)
         {
+            InitializeUser(context, testUser);
             InitializeKitchen(context);
             InitializeKitchenUser(context, testUser);
+        }
+
+        private static void InitializeUser(PantryPlannerContext context, PantryPlannerUser testUser)
+        {
+            if (testUser == null)
+            {
+                testUser = TestUser;
+            }
+
+            // Look for any users with same ID as user to insert.
+            if (context.Users.Any(u => u.Id == testUser.Id))
+            {
+                return;
+            }
+
+            context.Users.Add(testUser);
+            context.SaveChanges();
         }
 
         public static void InitializeKitchen(PantryPlannerContext context)
@@ -107,8 +185,21 @@ namespace PantryPlannerApiUnitTests.Helpers
                 return;   // Data was already seeded
             }
 
-            // insert default kitchen user test data
-            context.KitchenUser.AddRange(KitchenUsers);
+            // generate test data. assumption is Kitchen is already populated
+            foreach (Kitchen kitchen in context.Kitchen)
+            {
+                KitchenUser user = new KitchenUser()
+                {
+                    KitchenId = kitchen.KitchenId,
+                    UserId = TestUserID,
+                    DateAdded = DateTime.Now,
+                    HasAcceptedInvite = true,
+                    IsOwner = true
+                };
+
+                context.KitchenUser.Add(user);
+            }
+
             context.SaveChanges();
 
 
@@ -139,7 +230,8 @@ namespace PantryPlannerApiUnitTests.Helpers
                 KitchenId = testKitchen.KitchenId,
                 UserId = testUser.Id,
                 DateAdded = DateTime.Now,
-                IsOwner = true
+                IsOwner = true,
+                HasAcceptedInvite = true
             };
 
             KitchenUser notOwnerKitchenUser = new KitchenUser()
@@ -147,7 +239,8 @@ namespace PantryPlannerApiUnitTests.Helpers
                 KitchenId = notOwnedKitchen.KitchenId,
                 UserId = testUser.Id,
                 DateAdded = DateTime.Now,
-                IsOwner = false
+                IsOwner = false,
+                HasAcceptedInvite = true
             };
 
             context.KitchenUser.Add(testKitchenUser);
