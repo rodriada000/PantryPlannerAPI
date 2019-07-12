@@ -11,7 +11,7 @@ namespace PantryPlanner.Services
 {
     public class KitchenUserService : IPantryService
     {
-        public PantryPlannerContext Context { get; set ; }
+        public PantryPlannerContext Context { get; set; }
 
         public PermissionService Permissions { get; set; }
 
@@ -24,24 +24,19 @@ namespace PantryPlanner.Services
 
         #region Get Methods
 
-        public List<KitchenUser> GetUsersForKitchen(Kitchen kitchen, PantryPlannerUser user)
+        public List<KitchenUser> GetUsersForKitchen(Kitchen kitchen, PantryPlannerUser userAccessing)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user is null");
-            }
-
             if (kitchen == null)
             {
                 throw new ArgumentNullException("kitchen is null");
             }
 
-            return GetUsersForKitchenById(kitchen.KitchenId, user);
+            return GetUsersForKitchenById(kitchen.KitchenId, userAccessing);
         }
 
-        public List<KitchenUser> GetUsersForKitchenById(long id, PantryPlannerUser user)
+        public List<KitchenUser> GetUsersForKitchenById(long id, PantryPlannerUser userAccessing)
         {
-            if (user == null)
+            if (userAccessing == null)
             {
                 throw new ArgumentNullException("user is null");
             }
@@ -50,15 +45,71 @@ namespace PantryPlanner.Services
 
             if (kitchen == null)
             {
-                throw new ArgumentNullException($"kitchen with ID {id} does not exist");
+                throw new KitchenNotFoundException(id);
             }
 
-            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            if (!Permissions.UserHasRightsToKitchen(userAccessing, kitchen))
             {
-                throw new PermissionsException("User does not have rights to kitchen.");
+                throw new PermissionsException();
             }
 
-            return Context.KitchenUser.Where(x => x.KitchenId == id && (x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value)).Select(k => k).ToList();
+            return Context.KitchenUser
+                    .Where(x => x.KitchenId == id && (x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value))
+                    .Select(k => k).ToList();
+        }
+
+        public List<KitchenUser> GetUsersThatHaveNotAcceptedInvite(Kitchen kitchen, PantryPlannerUser userAccessing)
+        {
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("kitchen is null");
+            }
+
+            return GetUsersThatHaveNotAcceptedInviteByKitchenId(kitchen.KitchenId, userAccessing);
+        }
+
+        public List<KitchenUser> GetUsersThatHaveNotAcceptedInviteByKitchenId(long kitchenId, PantryPlannerUser userAccessing)
+        {
+            if (userAccessing == null)
+            {
+                throw new ArgumentNullException("user is null");
+            }
+
+            Kitchen kitchen = Context?.Kitchen.Find(kitchenId);
+
+            if (kitchen == null)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            if (!Permissions.UserHasRightsToKitchen(userAccessing, kitchen))
+            {
+                throw new PermissionsException();
+            }
+
+            return Context.KitchenUser
+                    .Where(x => x.KitchenId == kitchen.KitchenId && (!x.HasAcceptedInvite.HasValue || !x.HasAcceptedInvite.Value))
+                    .Select(k => k).ToList();
+        }
+
+        public List<KitchenUser> GetMyInvites(PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException("user");
+            }
+
+            return GetMyInvites(user.Id);
+        }
+
+        public List<KitchenUser> GetMyInvites(string userId)
+        {
+            if (Context.UserExists(userId) == false)
+            {
+                throw new UserNotFoundException();
+            }
+
+            return Context.KitchenUser.Where(u => u.UserId == userId && u.HasAcceptedInvite.Value == false).ToList();
         }
 
         #endregion
@@ -66,101 +117,121 @@ namespace PantryPlanner.Services
 
         #region Invite & Update Methods
 
-        public bool InviteUserToKitchenByUsername(string username, Kitchen kitchen, PantryPlannerUser user)
+        public bool InviteUserToKitchenByUsername(string usernameToInvite, Kitchen kitchenToJoin, PantryPlannerUser userEditing)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException("user is null");
-            }
-
-            if (kitchen == null)
+            if (kitchenToJoin == null)
             {
                 throw new ArgumentNullException("kitchen is null");
             }
 
-            if (String.IsNullOrEmpty(username))
-            {
-                throw new ArgumentNullException("username is required");
-            }
-
-            return InviteUserToKitchenByUsername(username, kitchen.KitchenId, user);
+            return InviteUserToKitchenByUsername(usernameToInvite, kitchenToJoin.KitchenId, userEditing);
         }
 
-        public bool InviteUserToKitchenByUsername(string username, long kitchenId, PantryPlannerUser user)
+        public bool InviteUserToKitchenByUsername(string username, long kitchenId, PantryPlannerUser userEditing)
         {
             if (String.IsNullOrEmpty(username))
             {
                 throw new ArgumentNullException("username is required");
             }
 
-            if (user == null)
+            if (userEditing == null)
             {
                 throw new ArgumentNullException("user is null");
-            }
-
-            Kitchen kitchen = Context?.Kitchen.Find(kitchenId);
-
-            if (kitchen == null)
-            {
-                throw new ArgumentNullException($"kitchen with ID {kitchenId} does not exist");
             }
 
             // validate user exists based on username
-            PantryPlannerUser userToInvite = Context.Users.Where(u => u.UserName == username).FirstOrDefault();
-
-            if (userToInvite == null)
+            if (Context.UserExists(username) == false)
             {
-                throw new UserNotFoundException($"No user found with the username {username}");
+                throw new UserNotFoundException(username);
             }
 
-            return InviteUserToKitchenByUserId(userToInvite.Id, kitchenId, user);
+            var userToInvite = Context.Users.Where(u => u.UserName == username).FirstOrDefault();
+
+            return InviteUserToKitchenByUserId(userToInvite.Id, kitchenId, userEditing);
         }
 
-        public bool InviteUserToKitchenByUserId(string userId, long kitchenId, PantryPlannerUser user)
+        private bool InviteUserToKitchenByUserId(string userId, long kitchenId, PantryPlannerUser userEditing)
         {
-            if (user == null)
+            if (String.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException("userId is empty");
+            }
+
+            if (userEditing == null)
             {
                 throw new ArgumentNullException("user is null");
             }
 
-            Kitchen kitchen = Context?.Kitchen.Find(kitchenId);
-
-            if (kitchen == null)
+            if (Context.KitchenExists(kitchenId) == false)
             {
-                throw new ArgumentNullException($"kitchen with ID {kitchenId} does not exist");
+                throw new KitchenNotFoundException(kitchenId);
             }
 
             // validate user has rights to Kitchen
-            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            if (!Permissions.UserHasRightsToKitchen(userEditing, kitchenId))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
 
             // add user to KitchenUser
             Context.KitchenUser.Add(new KitchenUser
             {
-                KitchenId = kitchen.KitchenId,
+                KitchenId = kitchenId,
                 UserId = userId,
                 HasAcceptedInvite = false, // user has not accepted invite 
                 IsOwner = false,
                 DateAdded = DateTime.Now
             });
 
+            Context.SaveChanges();
+
             return true;
         }
 
-        public bool UpdateKitchenUser(KitchenUser kitchenUser, PantryPlannerUser user)
+        public bool AcceptInviteToKitchen(Kitchen kitchenToJoin, PantryPlannerUser userAccepting)
+        {
+            if (kitchenToJoin == null)
+            {
+                throw new ArgumentNullException("kitchen is null");
+            }
+
+            return AcceptInviteToKitchenByKitchenId(kitchenToJoin.KitchenId, userAccepting);
+        }
+
+        public bool AcceptInviteToKitchenByKitchenId(long kitchenId, PantryPlannerUser userAccepting)
+        {
+            if (userAccepting == null)
+            {
+                throw new ArgumentNullException("user is null");
+            }
+
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            KitchenUser kitchenToAccept = Context.KitchenUser.Where(k => k.KitchenId == kitchenId && k.UserId == userAccepting.Id && k.HasAcceptedInvite.Value == false).FirstOrDefault();
+
+            if (kitchenToAccept == null)
+            {
+                throw new InviteNotFoundException(kitchenId);
+            }
+
+            kitchenToAccept.HasAcceptedInvite = true;
+            return UpdateKitchenUser(kitchenToAccept, userAccepting);
+        }
+
+        private bool UpdateKitchenUser(KitchenUser kitchenUser, PantryPlannerUser userEditing)
         {
             if (kitchenUser == null)
             {
                 throw new ArgumentNullException("cannot update; object is null");
             }
 
-            if (!Permissions.UserHasRightsToKitchen(user, kitchenUser.KitchenId))
+            if (!Permissions.UserHasRightsToKitchen(userEditing, kitchenUser.KitchenId))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
-
 
             Context.Entry(kitchenUser).State = EntityState.Modified;
             Context.SaveChanges();
@@ -188,7 +259,7 @@ namespace PantryPlanner.Services
             // validate user has rights to kitchen
             if (!Permissions.UserHasRightsToKitchen(user, kitchenUser.KitchenId))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
 
             // validate user owns the kitchen

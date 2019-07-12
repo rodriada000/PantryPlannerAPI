@@ -39,7 +39,7 @@ namespace PantryPlanner.Services
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
-                throw new PermissionsException("User does not have rights to kitchen.");
+                throw new PermissionsException();
             }
 
             return kitchen;
@@ -68,7 +68,7 @@ namespace PantryPlanner.Services
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
 
 
@@ -86,7 +86,7 @@ namespace PantryPlanner.Services
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
 
             Context.Entry(kitchen).State = EntityState.Modified;
@@ -132,7 +132,7 @@ namespace PantryPlanner.Services
             }
             catch (DbUpdateException)
             {
-                if (KitchenExists(kitchen.KitchenId))
+                if (Context.KitchenExists(kitchen.KitchenId))
                 {
                     throw new Exception("Kitchen already exists");
                 }
@@ -161,7 +161,7 @@ namespace PantryPlanner.Services
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
-                throw new PermissionsException("you do not have rights to this kitchen");
+                throw new PermissionsException();
             }
 
 
@@ -169,11 +169,6 @@ namespace PantryPlanner.Services
             Context.SaveChangesAsync();
 
             return kitchen;
-        }
-
-        public bool KitchenExists(long id)
-        {
-            return Context.Kitchen.Any(e => e.KitchenId == id);
         }
     }
 }

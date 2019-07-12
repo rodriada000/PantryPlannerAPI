@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PantryPlanner.Models;
+using System;
+using System.Linq;
 
 namespace PantryPlanner.Services
 {
@@ -44,6 +46,7 @@ namespace PantryPlanner.Services
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
 
             modelBuilder.HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
 
@@ -561,6 +564,27 @@ namespace PantryPlanner.Services
                     .HasForeignKey(d => d.RecipeId)
                     .HasConstraintName("RecipeToStepFK");
             });
+        }
+
+        public bool UserExists(string usernameOrId)
+        {
+            PantryPlannerUser user = Users.Where(u => u.UserName == usernameOrId || u.Id == usernameOrId).FirstOrDefault();
+            return (user != null);
+        }
+
+        public bool KitchenExists(long kitchenId)
+        {
+            return Kitchen.Any(e => e.KitchenId == kitchenId);
+        }
+
+        public bool KitchenUserExists(long kitchenUserId)
+        {
+            return KitchenUser.Any(e => e.KitchenUserId == kitchenUserId);
+        }
+
+        public bool KitchenUserExists(long kitchenId, string userId)
+        {
+            return KitchenUser.Any(e => e.KitchenId == kitchenId && e.UserId == userId);
         }
     }
 }

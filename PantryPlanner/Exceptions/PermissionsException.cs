@@ -6,7 +6,7 @@ namespace PantryPlanner.Exceptions
     [Serializable]
     public class PermissionsException : Exception
     {
-        public PermissionsException()
+        public PermissionsException() : base("User does not have rights to kitchen.")
         {
         }
 

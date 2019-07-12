@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace PantryPlanner.Services
+namespace PantryPlanner.Exceptions
 {
     [Serializable]
-    internal class UserNotFoundException : Exception
+    public class UserNotFoundException : Exception
     {
-        public UserNotFoundException()
+        public UserNotFoundException() : base("No user found")
         {
+
         }
 
-        public UserNotFoundException(string message) : base(message)
+        public UserNotFoundException(string username) : base($"No user found with the username {username}")
         {
 
         }

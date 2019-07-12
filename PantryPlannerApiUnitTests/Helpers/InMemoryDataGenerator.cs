@@ -69,6 +69,23 @@ namespace PantryPlannerApiUnitTests.Helpers
             }
         }
 
+        internal static PantryPlannerUser AddNewRandomUser(PantryPlannerContext context)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            PantryPlannerUser user = new PantryPlannerUser()
+            {
+                Id = id,
+                UserName = $"user{id.Substring(0, 8)}",
+                Email = $"user{id.Substring(0, 4)}@test.com"
+            };
+
+            context.Users.Add(user);
+            context.SaveChanges();
+
+            return user;
+        }
+
         public static List<KitchenUser> KitchenUsers
         {
             get
@@ -144,6 +161,7 @@ namespace PantryPlannerApiUnitTests.Helpers
             InitializeUser(context, testUser);
             InitializeKitchen(context);
             InitializeKitchenUser(context, testUser);
+            InitializeRandomKitchenUser(context);
         }
 
         private static void InitializeUser(PantryPlannerContext context, PantryPlannerUser testUser)
@@ -186,15 +204,27 @@ namespace PantryPlannerApiUnitTests.Helpers
             }
 
             // generate test data. assumption is Kitchen is already populated
+            bool markUserAsAccepted = true; // flag to have atleast one KitchenUser be generated with HasAcceptedInvite = true
+            bool markUserAsOwner = true; // flag to have atleast one KitchenUser be generated with IsOwner = true
+
+
             foreach (Kitchen kitchen in context.Kitchen)
             {
+                var r = new Random();
+
+                bool hasAccepted = (r.Next(0, 2) == 0 || markUserAsAccepted);
+                bool isOwner = (r.Next(0, 2) == 0 || markUserAsOwner);
+
+                markUserAsAccepted = false;
+                markUserAsOwner = false;
+
                 KitchenUser user = new KitchenUser()
                 {
                     KitchenId = kitchen.KitchenId,
                     UserId = TestUserID,
                     DateAdded = DateTime.Now,
-                    HasAcceptedInvite = true,
-                    IsOwner = true
+                    HasAcceptedInvite = hasAccepted,
+                    IsOwner = isOwner
                 };
 
                 context.KitchenUser.Add(user);
@@ -249,6 +279,56 @@ namespace PantryPlannerApiUnitTests.Helpers
             context.SaveChanges();
 
             return;
+        }
+
+        internal static void InitializeRandomKitchenUser(PantryPlannerContext context)
+        {
+            PantryPlannerUser randomUser = AddNewRandomUser(context);
+
+            Kitchen testKitchen = new Kitchen()
+            {
+                Name = $"Kitchen for {randomUser.UserName}",
+                Description = "auto created for testing",
+                CreatedByUserId = randomUser.Id,
+                DateCreated = DateTime.Now,
+                UniquePublicGuid = Guid.NewGuid()
+            };
+
+            Kitchen notOwnedKitchen = new Kitchen()
+            {
+                Name = $"NOT OWNED Kitchen for {randomUser.UserName}",
+                Description = "auto created for testing",
+                CreatedByUserId = null,
+                DateCreated = DateTime.Now,
+                UniquePublicGuid = Guid.NewGuid()
+            };
+
+            context.Kitchen.Add(testKitchen);
+            context.Kitchen.Add(notOwnedKitchen);
+
+
+            KitchenUser testKitchenUser = new KitchenUser()
+            {
+                KitchenId = testKitchen.KitchenId,
+                UserId = randomUser.Id,
+                DateAdded = DateTime.Now,
+                IsOwner = true,
+                HasAcceptedInvite = true
+            };
+
+            KitchenUser notOwnerKitchenUser = new KitchenUser()
+            {
+                KitchenId = notOwnedKitchen.KitchenId,
+                UserId = randomUser.Id,
+                DateAdded = DateTime.Now,
+                IsOwner = false,
+                HasAcceptedInvite = false
+            };
+
+            context.KitchenUser.Add(testKitchenUser);
+            context.KitchenUser.Add(notOwnerKitchenUser);
+
+            context.SaveChanges();
         }
     }
 
