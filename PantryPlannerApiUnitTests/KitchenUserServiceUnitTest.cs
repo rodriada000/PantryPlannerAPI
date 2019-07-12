@@ -267,7 +267,7 @@ namespace PantryPlannerApiUnitTests
         #region Get Kitchen Users Test Methods
 
         [Fact]
-        public void GetUsersForKitchen_ReturnsCorrectResult()
+        public void GetAcceptedUsersForKitchen_ReturnsCorrectResult()
         {
             var kitchen = (from k in _context.Kitchen
                            join u in _context.KitchenUser on k.KitchenId equals u.KitchenId
@@ -282,7 +282,7 @@ namespace PantryPlannerApiUnitTests
 
             var expectedResult = kitchen.KitchenUser.Where(x => x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value == true).ToList();
 
-            var actualResult = _kitchenUserService.GetUsersForKitchen(kitchen, _testUser);
+            var actualResult = _kitchenUserService.GetAcceptedUsersForKitchen(kitchen, _testUser);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -291,6 +291,78 @@ namespace PantryPlannerApiUnitTests
 
 
         #region Delete Test Methods
+
+        [Fact]
+        public void DeleteKitchenUserFromKitchenByUsername_DeleteMyself_ThrowsInvalidOperationException()
+        {
+            KitchenUser myKitchenUser = _testUser.KitchenUser.Where(u => u.IsOwner).FirstOrDefault();
+
+
+            if (myKitchenUser == null)
+            {
+                throw new Exception("kKitchenUser is not setup for testing");
+            }
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(myKitchenUser.KitchenId, _testUser.UserName,_testUser);
+            });
+        }
+
+        [Fact]
+        public void DeleteKitchenUserFromKitchenByUsername_NotOwnerDelete_ThrowsPermissionsException()
+        {
+            KitchenUser notMyKitchenUser = _testUser.KitchenUser.Where(u => !u.IsOwner).FirstOrDefault();
+
+
+            if (notMyKitchenUser == null)
+            {
+                throw new Exception("kKitchenUser is not setup for testing");
+            }
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(notMyKitchenUser.Kitchen, _testUser.UserName,_testUser);
+            });
+        }
+
+        [Fact]
+        public void DeleteKitchenUserByKitchenUserId_InvalidID_ThrowsKitchenUserNotFound()
+        {
+            Assert.Throws<KitchenUserNotFoundException>(() =>
+            {
+                _kitchenUserService.DeleteKitchenUserByKitchenUserId(-5, _testUser);
+            });
+        }
+
+        [Fact]
+        public void DeleteKitchenUserByKitchenUserId_ValidKitchenUser_ReturnsDeletedUser()
+        {
+            KitchenUser myKitchenUser = _testUser.KitchenUser.Where(u => u.IsOwner).FirstOrDefault();
+
+            if (myKitchenUser == null)
+            {
+                throw new Exception("kKitchenUser is not setup for testing");
+            }
+
+            var newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+
+            _kitchenUserService.InviteUserToKitchenByUsername(newUser.UserName, myKitchenUser.Kitchen, _testUser);
+            _kitchenUserService.AcceptInviteToKitchenByKitchenId(myKitchenUser.KitchenId, newUser);
+
+
+            KitchenUser expectedUserToDelete = myKitchenUser.Kitchen.KitchenUser.Where(u => u.UserId == newUser.Id).FirstOrDefault();
+
+            if (expectedUserToDelete == null)
+            {
+                throw new Exception("expectedUserToDelete is not setup for testing");
+            }
+
+            KitchenUser actualDeletedUser = _kitchenUserService.DeleteKitchenUserByKitchenUserId(expectedUserToDelete.KitchenUserId, _testUser);
+
+            Assert.Equal(expectedUserToDelete, actualDeletedUser);
+        }
+
 
         #endregion
     }
