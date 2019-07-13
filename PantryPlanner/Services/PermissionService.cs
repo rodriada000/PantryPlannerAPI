@@ -44,16 +44,7 @@ namespace PantryPlanner.Services
                 return false;
             }
 
-            KitchenUser kitchenUser = Context.KitchenUser
-                                             .Where(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id)
-                                             .FirstOrDefault();
-
-            if (kitchenUser == null)
-            {
-                return false;
-            }
-
-            return kitchenUser.IsOwner;
+            return Context.KitchenUser.Any(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id && x.IsOwner);
         }
 
     }

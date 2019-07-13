@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
+using PantryPlanner.Extensions;
 using PantryPlanner.Models;
 using System;
 using System.Collections.Generic;

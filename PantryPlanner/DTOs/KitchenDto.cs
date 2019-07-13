@@ -28,7 +28,7 @@ namespace PantryPlanner.DTOs
         public DateTime DateCreated { get; set; }
         public string CreatedByUserId { get; set; }
 
-        internal static List<KitchenDto> ToList(List<Kitchen> list)
+        public static List<KitchenDto> ToList(List<Kitchen> list)
         {
             return list?.Select(k => new KitchenDto(k))?.ToList();
         }

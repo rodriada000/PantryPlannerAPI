@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
+using PantryPlanner.Extensions;
 using PantryPlanner.Models;
 using System;
 using System.Collections.Generic;
@@ -209,7 +210,7 @@ namespace PantryPlanner.Services
             }
 
             // validate user is not already apart of kitchen
-            if (Context.UserExistsInKitchen(userId, kitchenId))
+            if (Context.KitchenUserExists(kitchenId, userId))
             {
                 throw new InvalidOperationException("User is already in the kitchen.");
             }
@@ -430,7 +431,7 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (Context.UserExistsInKitchen(user.Id, kitchen.KitchenId) == false)
+            if (Context.KitchenUserExists(kitchen.KitchenId, user.Id) == false)
             {
                 throw new KitchenUserNotFoundException();
             }
