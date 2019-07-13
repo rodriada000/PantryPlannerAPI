@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Moq;
 using System.Threading.Tasks;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace PantryPlannerApiUnitTests
 {
@@ -28,7 +29,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void Post_ValidKitchen_ReturnsCreatedAtActionResult()
+        public async Task Post_ValidKitchen_ReturnsCreatedAtActionResultAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -36,28 +37,29 @@ namespace PantryPlannerApiUnitTests
                 Description = "Delicious burgers. again",
             };
 
-            var result = _controller.PostKitchenAsync(kitchen);
-            Assert.IsType<CreatedAtActionResult>(result.Result.Result);
+            var result = await _controller.PostKitchenAsync(kitchen);
+            Assert.IsType<CreatedAtActionResult>(result.Result);
         }
 
         [Fact]
-        public void Post_ValidKitchen_ReturnsKitcheninResult()
+        public async Task Post_ValidKitchen_ReturnsKitcheninResultAsync()
         {
             Kitchen kitchen = new Kitchen
             {
-                KitchenId = 70,
                 Name = "Bobs Burgers II",
                 Description = "Delicious burgers. again",
             };
 
-            var result = _controller.PostKitchenAsync(kitchen);
-            var actionResult = result.Result.Result as CreatedAtActionResult;
+            var result = await _controller.PostKitchenAsync(kitchen);
+            var actionResult = result.Result as CreatedAtActionResult;
 
-            Assert.Equal(kitchen, (actionResult.Value as Kitchen));
+            Assert.IsType<Kitchen>(actionResult.Value);
+            Assert.Equal(kitchen.Name, (actionResult.Value as Kitchen).Name);
+            Assert.Equal(kitchen.Description, (actionResult.Value as Kitchen).Description);
         }
 
         [Fact]
-        public void Post_ValidKitchen_ReturnsKitchenWithFieldsSet()
+        public async Task Post_ValidKitchen_ReturnsKitchenWithFieldsSetAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -68,8 +70,8 @@ namespace PantryPlannerApiUnitTests
             var guidBefore = kitchen.UniquePublicGuid;
             var dateBefore = kitchen.DateCreated;
 
-            var result = _controller.PostKitchenAsync(kitchen);
-            var actionResult = result.Result.Result as CreatedAtActionResult;
+            ActionResult<Kitchen> result = await _controller.PostKitchenAsync(kitchen);
+            CreatedAtActionResult actionResult = result.Result as CreatedAtActionResult;
 
             Assert.Equal(_userManager.TestUser.Id, (actionResult.Value as Kitchen).CreatedByUserId);
             Assert.NotEqual(guidBefore, (actionResult.Value as Kitchen).UniquePublicGuid);
@@ -77,7 +79,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void Delete_ValidKitchen_ReturnsKitchenDeleted()
+        public async Task Delete_ValidKitchen_ReturnsKitchenDeletedAsync()
         {
             Kitchen kitchenToDelete = _userManager.TestUser.KitchenUser.Where(k => k.IsOwner == true).FirstOrDefault()?.Kitchen;
 
@@ -86,20 +88,18 @@ namespace PantryPlannerApiUnitTests
                 throw new Exception("kitchen is not setup for testing");
             }
 
-            var result = _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
-            var actionResult = result.Result as ActionResult<Kitchen>;
+            ActionResult<Kitchen> result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
 
-
-            Assert.Equal(kitchenToDelete.KitchenId, (actionResult.Value as Kitchen).KitchenId);
+            Assert.Equal(kitchenToDelete.KitchenId, result.Value.KitchenId);
         }
 
         [Fact]
-        public void Delete_UnknownKitchen_ReturnsNotFound()
+        public async Task Delete_UnknownKitchen_ReturnsNotFoundAsync()
         {
+            ActionResult<Kitchen> result = await _controller.DeleteKitchenAsync(-5);
 
-            var result = _controller.DeleteKitchenAsync(-5);
-
-            Assert.IsType<NotFoundResult>(result.Result.Result);
+            Assert.IsType<NotFoundObjectResult>(result.Result);
+            Assert.Equal(StatusCodes.Status404NotFound, (result.Result as NotFoundObjectResult).StatusCode);
         }
     }
 }

@@ -566,6 +566,18 @@ namespace PantryPlanner.Services
             });
         }
 
+        internal bool UserExistsInKitchen(string userId, long kitchenId)
+        {
+            Kitchen kitchen = Kitchen.Find(kitchenId);
+
+            if (kitchen == null)
+            {
+                return false;
+            }
+
+            return kitchen.KitchenUser.Any(u => u.UserId == userId);
+        }
+
         public bool UserExists(string usernameOrId)
         {
             PantryPlannerUser user = Users.Where(u => u.UserName == usernameOrId || u.Id == usernameOrId).FirstOrDefault();

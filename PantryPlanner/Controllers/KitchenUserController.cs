@@ -51,7 +51,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                kitchenUsers = KitchenUserDto.ToList(_service.GetUsersForKitchenById(kitchenId, user));
+                kitchenUsers = KitchenUserDto.ToList(_service.GetAcceptedUsersForKitchenById(kitchenId, user));
             }
             catch (ArgumentNullException e)
             {
@@ -83,7 +83,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                _service.UpdateKitchenUser(kitchenUser, user);
+                //_service.UpdateKitchenUser(kitchenUser, user);
             }
             catch(ArgumentNullException e)
             {
@@ -136,7 +136,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                kitchenUser = _service.DeleteKitchenUserById(id, user);
+                kitchenUser = _service.OwnerDeleteKitchenUserByKitchenUserId(id, user);
             }
             catch (PermissionsException e)
             {
@@ -148,7 +148,7 @@ namespace PantryPlanner.Controllers
             }
             catch (InvalidOperationException e)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
             }
             catch (Exception e)
             {

@@ -92,18 +92,18 @@ namespace PantryPlannerApiUnitTests
                 throw new Exception("kitchen is not setup for testing");
             }
 
-            var result = _kitchenService.DeleteKitchenById(kitchenToDelete.KitchenId, _testUser);
+            var result = _kitchenService.DeleteKitchen(kitchenToDelete.KitchenId, _testUser);
 
             Assert.Equal(kitchenToDelete, result);
         }
 
         [Fact]
-        public void Delete_UnknownKitchen_ReturnsNull()
+        public void Delete_UnknownKitchen_ThrowsKitchenNotFoundException()
         {
-
-            var result = _kitchenService.DeleteKitchenById(-5, _testUser);
-
-            Assert.True(result == null);
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenService.DeleteKitchen(-5, _testUser);
+            });
         }
 
         #endregion
@@ -189,7 +189,6 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void Update_NullUser_PermissionsExceptionThrown()
         {
-            // do modifications on Kitchen with ID = 1
             Kitchen kitchenToUpdate = _context.Kitchen.FirstOrDefault();
 
             if (kitchenToUpdate == null)
@@ -200,21 +199,86 @@ namespace PantryPlannerApiUnitTests
             string expectedDescription = "my new description";
             kitchenToUpdate.Description = expectedDescription;
 
-            try
-            {
-                var result = _kitchenService.UpdateKitchen(kitchenToUpdate, null);
-            }
-            catch (PermissionsException e)
-            {
-                Assert.True(true);
-            }
 
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenService.UpdateKitchen(kitchenToUpdate, null);
+            });
         }
 
 
         #endregion
 
         #region Get Test Methods
+
+        [Fact]
+        public void GetKitchenById_ValidId_ReturnsKitchen()
+        {
+            Kitchen expectedKitchen = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
+
+            if (expectedKitchen == null)
+            {
+                throw new Exception("expectedKitchen not setup to test");
+            }
+
+            Kitchen actualKitchen = _kitchenService.GetKitchenById(expectedKitchen.KitchenId, _testUser);
+
+            Assert.Equal(expectedKitchen, actualKitchen);
+        }
+
+        [Fact]
+        public void GetKitchenById_InvalidId_ThrowsKitchenNotFoundException()
+        {
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenService.GetKitchenById(-5, _testUser);
+            });
+        }
+
+        [Fact]
+        public void GetKitchenById_NotMyKitchen_ThrowsPermissionsException()
+        {
+            List<long> myKitchenIds = _testUser.KitchenUser.Select(k => k.KitchenId).ToList();
+            Kitchen notMyKitchen = _context.Kitchen.Where(k => myKitchenIds.Contains(k.KitchenId) == false).FirstOrDefault();
+
+            if (notMyKitchen == null)
+            {
+                throw new Exception("notMyKitchen not setup to test");
+            }
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenService.GetKitchenById(notMyKitchen.KitchenId, _testUser);
+            });
+        }
+
+        [Fact]
+        public void GetAllKitchensForUser_ValidUser_ReturnsCorrectResult()
+        {
+            List<Kitchen> expectedKitchens = _context.KitchenUser
+                                                    .Where(ku => ku.UserId == _testUser.Id)
+                                                    .Select(ku => ku.Kitchen).ToList();
+
+            var actualKitchens = _kitchenService.GetAllKitchensForUser(_testUser);
+
+            Assert.Equal(expectedKitchens, actualKitchens);
+        }
+
+        [Fact]
+        public void GetAllKitchensForUser_InvalidUser_ThrowsUserNotFoundException()
+        {
+            PantryPlannerUser invalidUser = new PantryPlannerUser()
+            {
+                Id = "Idontexist",
+                UserName = "liarpants"
+            };
+
+            Assert.Throws<UserNotFoundException>(() =>
+            {
+                _kitchenService.GetAllKitchensForUser(invalidUser);
+            });
+        }
+
 
         #endregion
     }

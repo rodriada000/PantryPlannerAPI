@@ -23,6 +23,8 @@ namespace PantryPlanner.Services
             Permissions = new PermissionService(Context);
         }
 
+        #region Get Methods
+
         public List<Kitchen> GetAllKitchens()
         {
             return Context?.Kitchen.ToList();
@@ -30,12 +32,17 @@ namespace PantryPlanner.Services
 
         public Kitchen GetKitchenById(long id, PantryPlannerUser user)
         {
-            Kitchen kitchen = Context?.Kitchen.Find(id);
-
-            if (kitchen == null)
+            if (Context.KitchenExists(id) == false)
             {
-                return null;
+                throw new KitchenNotFoundException(id);
             }
+
+            if (Context.UserExists(user.Id) == false)
+            {
+                throw new UserNotFoundException(user.UserName);
+            }
+
+            Kitchen kitchen = user.KitchenUser.Where(k => k.KitchenId == id).FirstOrDefault()?.Kitchen;
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
@@ -45,25 +52,37 @@ namespace PantryPlanner.Services
             return kitchen;
         }
 
-        public List<KitchenDto> GetAllKitchensForUser(PantryPlannerUser user)
+        public List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)
         {
-            if (Context == null || user == null)
+            if (user == null)
             {
-                return null;
+                throw new ArgumentNullException(nameof(user));
             }
 
-            // get all KitchenUsers for the user first
-            user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
+            if (Context.UserExists(user.Id) == false)
+            {
+                throw new UserNotFoundException(user.UserName);
+            }
 
-            // join KitchenUsers to Kitchens to get kitchens they have rights to
-            return Context.Kitchen.Join(user.KitchenUser, x => x.KitchenId, x => x.KitchenId, (k, u) => new KitchenDto(k)).ToList();
+            if (user.KitchenUser == null)
+            {
+                // get all KitchenUsers for the user from Context if null for user passed in
+                user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
+            }
+
+            return user.KitchenUser.Select(ku => ku.Kitchen).ToList();
         }
+
+        #endregion
+
+
+        #region Update Methods
 
         public bool UpdateKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
             if (kitchen == null)
             {
-                throw new ArgumentNullException("cannot update kitchen; kitchen is null");
+                throw new ArgumentNullException(nameof(kitchen));
             }
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
@@ -81,7 +100,7 @@ namespace PantryPlanner.Services
         {
             if (kitchen == null)
             {
-                throw new ArgumentNullException("cannot update kitchen; kitchen is null");
+                throw new ArgumentNullException(nameof(kitchen));
             }
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
@@ -94,16 +113,42 @@ namespace PantryPlanner.Services
             return true;
         }
 
+        #endregion
+
+
+        #region Add Methods
+
+        public bool AddKitchen(long kitchenId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var kitchen = Context.Kitchen.Find(kitchenId);
+            if (kitchen == null)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            return AddKitchen(kitchen, user);
+        }
+
         public bool AddKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
             if (kitchen == null)
             {
-                throw new ArgumentNullException("cannot create kitchen; kitchen is null");
+                throw new ArgumentNullException(nameof(kitchen));
             }
 
             if (user == null)
             {
-                throw new ArgumentNullException("cannot create kitchen; user is null");
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (Context.UserExists(user.Id) == false)
+            {
+                throw new UserNotFoundException(user.UserName);
             }
 
             // add the kitchen
@@ -121,7 +166,8 @@ namespace PantryPlanner.Services
                 User = user,
                 Kitchen = kitchen,
                 DateAdded = DateTime.Now,
-                IsOwner = true // the user that created the kitchen is the owner
+                IsOwner = true, // the user that created the kitchen is the owner
+                HasAcceptedInvite = true
             };
 
             Context.KitchenUser.Add(kitchenUser);
@@ -130,7 +176,7 @@ namespace PantryPlanner.Services
             {
                 Context.SaveChangesAsync();
             }
-            catch (DbUpdateException)
+            catch (Exception)
             {
                 if (Context.KitchenExists(kitchen.KitchenId))
                 {
@@ -146,29 +192,50 @@ namespace PantryPlanner.Services
             return true;
         }
 
-        public Kitchen DeleteKitchenById(long id, PantryPlannerUser user)
+        #endregion
+
+
+        #region Delete Methods
+
+        public Kitchen DeleteKitchen(long id, PantryPlannerUser user)
         {
             if (user == null)
             {
-                throw new ArgumentNullException("cannot delete kitchen; user is null");
+                throw new ArgumentNullException(nameof(user));
             }
 
             var kitchen = Context.Kitchen.Find(id);
             if (kitchen == null)
             {
-                return null;
+                throw new KitchenNotFoundException(id);
             }
 
-            if (!Permissions.UserHasRightsToKitchen(user, kitchen))
+            return DeleteKitchen(kitchen, user);
+        }
+
+        public Kitchen DeleteKitchen(Kitchen kitchen, PantryPlannerUser user)
+        {
+            if (user == null)
             {
-                throw new PermissionsException();
+                throw new ArgumentNullException(nameof(user));
             }
 
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException(nameof(kitchen));
+            }
+
+            if (!Permissions.UserOwnsKitchen(user, kitchen))
+            {
+                throw new InvalidOperationException("You must own the kitchen to delete it.");
+            }
 
             Context.Kitchen.Remove(kitchen);
-            Context.SaveChangesAsync();
+            Context.SaveChanges();
 
             return kitchen;
         }
+
+        #endregion
     }
 }

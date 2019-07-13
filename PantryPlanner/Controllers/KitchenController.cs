@@ -36,7 +36,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                return _service.GetAllKitchensForUser(user);
+                return KitchenDto.ToList(_service.GetAllKitchensForUser(user));
             }
             catch (Exception e)
             {
@@ -87,7 +87,7 @@ namespace PantryPlanner.Controllers
             {
                 await _service.UpdateKitchenAsync(kitchen, user);
             }
-            catch (Exception e)
+            catch (Exception)
             {
 
                 return new UnprocessableEntityResult();
@@ -123,7 +123,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                Kitchen deletedKitchen = _service.DeleteKitchenById(id, user);
+                Kitchen deletedKitchen = _service.DeleteKitchen(id, user);
 
                 if (deletedKitchen == null)
                 {
@@ -132,9 +132,25 @@ namespace PantryPlanner.Controllers
 
                 return deletedKitchen;
             }
-            catch (Exception e)
+            catch(ArgumentNullException e)
+            {
+                return StatusCode(500, e.Message);
+            }
+            catch(PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch(KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch(InvalidOperationException e)
             {
                 return UnprocessableEntity(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, e.Message);
             }
         }
 

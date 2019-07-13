@@ -69,23 +69,6 @@ namespace PantryPlannerApiUnitTests.Helpers
             }
         }
 
-        internal static PantryPlannerUser AddNewRandomUser(PantryPlannerContext context)
-        {
-            string id = Guid.NewGuid().ToString();
-
-            PantryPlannerUser user = new PantryPlannerUser()
-            {
-                Id = id,
-                UserName = $"user{id.Substring(0, 8)}",
-                Email = $"user{id.Substring(0, 4)}@test.com"
-            };
-
-            context.Users.Add(user);
-            context.SaveChanges();
-
-            return user;
-        }
-
         public static List<KitchenUser> KitchenUsers
         {
             get
@@ -330,6 +313,24 @@ namespace PantryPlannerApiUnitTests.Helpers
 
             context.SaveChanges();
         }
+
+        internal static PantryPlannerUser AddNewRandomUser(PantryPlannerContext context)
+        {
+            string id = Guid.NewGuid().ToString();
+
+            PantryPlannerUser user = new PantryPlannerUser()
+            {
+                Id = id,
+                UserName = $"user{id.Substring(0, 8)}",
+                Email = $"user{id.Substring(0, 4)}@test.com"
+            };
+
+            context.Users.Add(user);
+            context.SaveChanges();
+
+            return user;
+        }
+
     }
 
 }

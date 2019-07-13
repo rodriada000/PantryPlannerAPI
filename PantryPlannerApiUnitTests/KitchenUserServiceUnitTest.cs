@@ -45,6 +45,22 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
+        public void InviteUserToKitchenByUsername_UserAlreadyInKitchen_ThrowsInvalidOperationException()
+        {
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new Exception("kitchen not setup to test");
+            }
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                _kitchenUserService.InviteUserToKitchenByUsername(_testUser.UserName, kitchen, _testUser);
+            });
+        }
+
+        [Fact]
         public void InviteUserToKitchenByUsername_ValidUserName_KitchenUserIsAdded()
         {
             // add random user to test against
@@ -159,6 +175,84 @@ namespace PantryPlannerApiUnitTests
                 _kitchenUserService.InviteUserToKitchenByUsername(newUser.UserName, notMyKitchen.KitchenId, _testUser);
             });
         }
+
+        [Fact]
+        public void DenyInviteToKitchen_ValidKitchenUser_ReturnsTrue()
+        {
+            // add random user to test against
+            PantryPlannerUser newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+
+            Kitchen kitchenToJoin = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
+
+            if (kitchenToJoin == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            // send invite for new user
+            _kitchenUserService.InviteUserToKitchenByUsername(newUser.UserName, kitchenToJoin.KitchenId, _testUser);
+
+
+            // have new user accept invite
+            Assert.True(_kitchenUserService.DenyInviteToKitchen(kitchenToJoin, newUser));
+        }
+
+        [Fact]
+        public void DenyInviteToKitchen_NoInviteExists_ThrowsKitchenUserNotFoundException()
+        {
+            // add random user to test against
+            PantryPlannerUser newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+
+            Kitchen kitchenToJoin = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+
+            Assert.Throws<KitchenUserNotFoundException>(() =>
+            {
+                _kitchenUserService.DenyInviteToKitchen(kitchenToJoin, newUser);
+
+            });
+        }
+
+        [Fact]
+        public void DenyInviteToKitchen_KitchenNotExists_ThrowsKitchenNotFoundException()
+        {
+            // add random user to test against
+            PantryPlannerUser newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenUserService.DenyInviteToKitchen(-5, newUser);
+
+            });
+        }
+
+        [Fact]
+        public void DenyInviteToKitchen_UserNotExists_ThrowsUserNotFoundException()
+        {
+            Kitchen kitchenToJoin = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            Assert.Throws<UserNotFoundException>(() =>
+            {
+                _kitchenUserService.DenyInviteToKitchen(kitchenToJoin, new PantryPlannerUser() { Id = "iaintrealyo" });
+            });
+        }
+
+        [Fact]
+        public void DenyInviteToKitchen_NullChecks_ThrowsArgumentNullException()
+        {
+            Kitchen kitchenToJoin = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _kitchenUserService.DenyInviteToKitchen(null, new PantryPlannerUser() { Id = "iaintrealyo" });
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _kitchenUserService.DenyInviteToKitchen(kitchenToJoin, null);
+            });
+        }
+
 
 
         #endregion
@@ -382,7 +476,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<InvalidOperationException>(() =>
             {
-                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(myKitchenUser.KitchenId, _testUser.UserName,_testUser);
+                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(myKitchenUser.KitchenId, _testUser.UserName, _testUser);
             });
         }
 
@@ -399,7 +493,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<PermissionsException>(() =>
             {
-                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(notMyKitchenUser.Kitchen, _testUser.UserName,_testUser);
+                _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(notMyKitchenUser.Kitchen, _testUser.UserName, _testUser);
             });
         }
 
@@ -440,7 +534,7 @@ namespace PantryPlannerApiUnitTests
         {
             Assert.Throws<KitchenUserNotFoundException>(() =>
             {
-                _kitchenUserService.DeleteKitchenUserByKitchenUserId(-5, _testUser);
+                _kitchenUserService.OwnerDeleteKitchenUserByKitchenUserId(-5, _testUser);
             });
         }
 
@@ -467,9 +561,74 @@ namespace PantryPlannerApiUnitTests
                 throw new Exception("expectedUserToDelete is not setup for testing");
             }
 
-            KitchenUser actualDeletedUser = _kitchenUserService.DeleteKitchenUserByKitchenUserId(expectedUserToDelete.KitchenUserId, _testUser);
+            KitchenUser actualDeletedUser = _kitchenUserService.OwnerDeleteKitchenUserByKitchenUserId(expectedUserToDelete.KitchenUserId, _testUser);
 
             Assert.Equal(expectedUserToDelete, actualDeletedUser);
+        }
+
+
+        [Fact]
+        public void DeleteMyselfFromKitchen_OnlyOneUserInKitchen_ThrowsInvalidOperationException()
+        {
+            KitchenUser expectedResult = _testUser.KitchenUser.Where(k => k.IsOwner == false).FirstOrDefault();
+            int kitchenCountBefore = _testUser.KitchenUser.Count;
+
+            Kitchen notOwnedKitchen = expectedResult?.Kitchen;
+
+            if (notOwnedKitchen == null)
+            {
+                throw new Exception("kitchen not setup for testing");
+            }
+
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                _kitchenUserService.DeleteMyselfFromKitchen(notOwnedKitchen, _testUser);
+            }); 
+        }
+
+        [Fact]
+        public void DeleteMyselfFromKitchen_ValidKitchenUser_ReturnsKitchenUser()
+        {
+            KitchenUser expectedResult = _testUser.KitchenUser.Where(k => k.IsOwner == false).FirstOrDefault();
+            int kitchenCountBefore = _testUser.KitchenUser.Count;
+
+            Kitchen notOwnedKitchen = expectedResult?.Kitchen;
+
+            if (notOwnedKitchen == null)
+            {
+                throw new Exception("kitchen not setup for testing");
+            }
+
+            // ensure a another user is in Kitchen
+            var newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+            _kitchenUserService.InviteUserToKitchenByUsername(newUser.UserName, notOwnedKitchen, _testUser);
+            _kitchenUserService.AcceptInviteToKitchen(notOwnedKitchen, newUser);
+
+
+            KitchenUser actualResult = _kitchenUserService.DeleteMyselfFromKitchen(notOwnedKitchen, _testUser);
+
+            Assert.Equal(expectedResult, actualResult);
+            Assert.Equal(kitchenCountBefore - 1, _testUser.KitchenUser.Count);
+        }
+
+        [Fact]
+        public void DeleteMyselfFromKitchen_InvalidKitchenUser_ThrowsKitchenUserNotFoundException()
+        {
+            Assert.Throws<KitchenUserNotFoundException>(() =>
+            {
+                _kitchenUserService.DeleteMyselfFromKitchen(-5, _testUser);
+            });
+
+            Kitchen fakeKitchen = new Kitchen()
+            {
+                KitchenId = 99999,
+                Name = "some fake kitchen"
+            };
+
+            Assert.Throws<KitchenUserNotFoundException>(() =>
+            {
+                _kitchenUserService.DeleteMyselfFromKitchen(fakeKitchen, _testUser);
+            });
         }
 
 

@@ -208,6 +208,12 @@ namespace PantryPlanner.Services
                 throw new PermissionsException();
             }
 
+            // validate user is not already apart of kitchen
+            if (Context.UserExistsInKitchen(userId, kitchenId))
+            {
+                throw new InvalidOperationException("User is already in the kitchen.");
+            }
+
             // add user to KitchenUser
             Context.KitchenUser.Add(new KitchenUser
             {
@@ -256,11 +262,51 @@ namespace PantryPlanner.Services
             return UpdateKitchenUser(kitchenToAccept, userAccepting);
         }
 
+        public bool DenyInviteToKitchen(Kitchen kitchen, PantryPlannerUser user)
+        {
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException(nameof(kitchen));
+            }
+
+            return DenyInviteToKitchen(kitchen.KitchenId, user);
+        }
+
+        public bool DenyInviteToKitchen(long kitchenId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            if (Context.UserExists(user.Id) == false)
+            {
+                throw new UserNotFoundException(user.UserName);
+            }
+
+            KitchenUser inviteToDeny = user.KitchenUser.Where(k => k.KitchenId == kitchenId && k.UserId == user.Id).FirstOrDefault();
+
+            if (inviteToDeny == null)
+            {
+                throw new KitchenUserNotFoundException("No invite found for kitchen.");
+            }
+
+            Context.KitchenUser.Remove(inviteToDeny);
+            Context.SaveChangesAsync();
+
+            return true;
+        }
+
         private bool UpdateKitchenUser(KitchenUser kitchenUser, PantryPlannerUser userEditing)
         {
             if (kitchenUser == null)
             {
-                throw new ArgumentNullException("cannot update; object is null");
+                throw new ArgumentNullException(nameof(kitchenUser));
             }
 
             if (!Permissions.UserHasRightsToKitchen(userEditing, kitchenUser.KitchenId))
@@ -336,10 +382,10 @@ namespace PantryPlanner.Services
                 throw new KitchenUserNotFoundException();
             }
 
-            return DeleteKitchenUserByKitchenUserId(userToDelete.KitchenUserId, userDeleting);
+            return OwnerDeleteKitchenUserByKitchenUserId(userToDelete.KitchenUserId, userDeleting);
         }
 
-        public KitchenUser DeleteKitchenUserByKitchenUserId(long kitchenUserId, PantryPlannerUser user)
+        public KitchenUser OwnerDeleteKitchenUserByKitchenUserId(long kitchenUserId, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -363,6 +409,61 @@ namespace PantryPlanner.Services
             if (kitchenUser.UserId == user.Id)
             {
                 throw new InvalidOperationException("You can not remove yourself from the Kitchen because you own it. Transfer ownership or delete the kitchen instead.");
+            }
+
+
+            Context.KitchenUser.Remove(kitchenUser);
+            Context.SaveChanges();
+
+            return kitchenUser;
+        }
+
+        public KitchenUser DeleteMyselfFromKitchen(Kitchen kitchen, PantryPlannerUser user)
+        {
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (Context.UserExistsInKitchen(user.Id, kitchen.KitchenId) == false)
+            {
+                throw new KitchenUserNotFoundException();
+            }
+
+            KitchenUser kitchenUser = user.KitchenUser.Where(ku => ku.KitchenId == kitchen.KitchenId).FirstOrDefault();
+
+            return DeleteMyselfFromKitchen(kitchenUser.KitchenUserId, user);
+        }
+
+        public KitchenUser DeleteMyselfFromKitchen(long kitchenUserId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            var kitchenUser = Context.KitchenUser.Find(kitchenUserId);
+            if (kitchenUser == null)
+            {
+                throw new KitchenUserNotFoundException();
+            }
+
+            // validate user is removing themselves
+            if (kitchenUser.UserId != user.Id)
+            {
+                throw new InvalidOperationException("You can not remove other users with this method.");
+            }
+
+            // validate users still in kitchen after delete (to avoid orphaning kitchens)
+            var usersBeforeDelete = Context.KitchenUser.Where(ku => ku.KitchenId == kitchenUser.KitchenId).ToList();
+            if (usersBeforeDelete.Count == 1)
+            {
+                throw new InvalidOperationException("You can not remove yourself because there are no other users in the kitchen.");
             }
 
 
