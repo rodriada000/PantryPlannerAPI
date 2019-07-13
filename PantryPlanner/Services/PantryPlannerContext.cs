@@ -104,6 +104,9 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.AddedByUserId).HasColumnName("AddedByUserID");
 
+                entity.Property(e => e.CategoryId).HasColumnName("CategoryId");
+
+
                 entity.Property(e => e.Description).HasMaxLength(100);
 
                 entity.Property(e => e.Name)
@@ -119,6 +122,12 @@ namespace PantryPlanner.Services
                     .HasForeignKey(d => d.AddedByUserId)
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("UserToIngredientFK");
+
+                entity.HasOne(d => d.Category)
+                    .WithMany(p => p.Ingredient)
+                    .HasForeignKey(d => d.CategoryId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("CategoryToIngredientFK");
             });
 
             modelBuilder.Entity<IngredientTag>(entity =>

@@ -15,6 +15,7 @@ namespace PantryPlanner.Models
 
         public long IngredientId { get; set; }
         public string AddedByUserId { get; set; }
+        public long? CategoryId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public byte[] PreviewPicture { get; set; }
@@ -22,6 +23,7 @@ namespace PantryPlanner.Models
         public bool IsPublic { get; set; }
 
         public virtual PantryPlannerUser AddedByUser { get; set; }
+        public virtual Category Category { get; set; }
         public virtual ICollection<IngredientTag> IngredientTag { get; set; }
         public virtual ICollection<KitchenIngredient> KitchenIngredient { get; set; }
         public virtual ICollection<KitchenListIngredient> KitchenListIngredient { get; set; }

@@ -11,6 +11,8 @@
     <Compile Remove="Migrations\20190703051530_AddIdentityColumns.Designer.cs" />
     <Compile Remove="Migrations\20190703052212_AddIdentityColumnsV2.cs" />
     <Compile Remove="Migrations\20190703052212_AddIdentityColumnsV2.Designer.cs" />
+    <Compile Remove="Migrations\20190713180447_AddCategoryToIngredient.cs" />
+    <Compile Remove="Migrations\20190713180447_AddCategoryToIngredient.Designer.cs" />
   </ItemGroup>
 
 
