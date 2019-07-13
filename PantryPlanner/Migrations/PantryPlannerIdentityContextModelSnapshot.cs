@@ -163,7 +163,9 @@ namespace PantryPlanner.Migrations
             modelBuilder.Entity("PantryPlanner.Models.CategoryType", b =>
                 {
                     b.Property<int>("CategoryTypeId")
-                        .HasColumnName("CategoryTypeID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("CategoryTypeID")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .IsRequired()

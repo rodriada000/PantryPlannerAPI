@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace PantryPlanner.Migrations
 {
-    public partial class UserPrimaryKeys : Migration
+    public partial class InitializeTablesAndPrimaryKeysToAspNetUsers : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,37 +16,13 @@ namespace PantryPlanner.Migrations
                 schema: "app",
                 columns: table => new
                 {
-                    CategoryTypeID = table.Column<int>(nullable: false),
+                    CategoryTypeID = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     Name = table.Column<string>(unicode: false, maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_CategoryType", x => x.CategoryTypeID);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ingredient",
-                schema: "app",
-                columns: table => new
-                {
-                    IngredientID = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    AddedByUserID = table.Column<string>(nullable: true),
-                    Name = table.Column<string>(maxLength: 100, nullable: false),
-                    Description = table.Column<string>(maxLength: 100, nullable: true),
-                    PreviewPicture = table.Column<byte[]>(type: "image", nullable: true),
-                    DateAdded = table.Column<DateTime>(nullable: false),
-                    IsPublic = table.Column<bool>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ingredient", x => x.IngredientID);
-                    table.ForeignKey(
-                        name: "UserToIngredientFK",
-                        column: x => x.AddedByUserID,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -59,7 +35,7 @@ namespace PantryPlanner.Migrations
                     UniquePublicGuid = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(maxLength: 50, nullable: false),
                     Description = table.Column<string>(maxLength: 255, nullable: true),
-                    DateCreated = table.Column<DateTime>(nullable: false),
+                    DateCreated = table.Column<DateTime>(nullable: false, defaultValueSql: "(getutcdate())"),
                     CreatedByUserId = table.Column<string>(maxLength: 450, nullable: true)
                 },
                 constraints: table =>
@@ -103,8 +79,8 @@ namespace PantryPlanner.Migrations
                     CategoryID = table.Column<long>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CategoryTypeID = table.Column<int>(nullable: true),
-                    Name = table.Column<string>(unicode: false, maxLength: 100, nullable: false),
-                    CreatedByKitchenId = table.Column<long>(nullable: false)
+                    CreatedByKitchenId = table.Column<long>(nullable: true),
+                    Name = table.Column<string>(unicode: false, maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -135,6 +111,7 @@ namespace PantryPlanner.Migrations
                     UserID = table.Column<string>(nullable: false),
                     KitchenID = table.Column<long>(nullable: false),
                     IsOwner = table.Column<bool>(nullable: false),
+                    HasAcceptedInvite = table.Column<bool>(nullable: false, defaultValueSql: "((0))"),
                     DateAdded = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -152,38 +129,6 @@ namespace PantryPlanner.Migrations
                         column: x => x.UserID,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "RecipeIngredient",
-                schema: "app",
-                columns: table => new
-                {
-                    RecipeIngredientID = table.Column<int>(nullable: false),
-                    IngredientID = table.Column<long>(nullable: false),
-                    RecipeID = table.Column<long>(nullable: false),
-                    Quantity = table.Column<decimal>(type: "decimal(12, 4)", nullable: false),
-                    UnitOfMeasure = table.Column<string>(unicode: false, maxLength: 50, nullable: true),
-                    Method = table.Column<string>(unicode: false, maxLength: 50, nullable: true),
-                    SortOrder = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RecipeIngredient", x => new { x.RecipeIngredientID, x.IngredientID, x.RecipeID });
-                    table.ForeignKey(
-                        name: "IngredientToRecipeIngredientFK",
-                        column: x => x.IngredientID,
-                        principalSchema: "app",
-                        principalTable: "Ingredient",
-                        principalColumn: "IngredientID",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "RecipeToRecipeIngredientFK",
-                        column: x => x.RecipeID,
-                        principalSchema: "app",
-                        principalTable: "Recipe",
-                        principalColumn: "RecipeID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -207,6 +152,39 @@ namespace PantryPlanner.Migrations
                         principalTable: "Recipe",
                         principalColumn: "RecipeID",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ingredient",
+                schema: "app",
+                columns: table => new
+                {
+                    IngredientID = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    AddedByUserID = table.Column<string>(nullable: true),
+                    CategoryId = table.Column<long>(nullable: true),
+                    Name = table.Column<string>(maxLength: 100, nullable: false),
+                    Description = table.Column<string>(maxLength: 100, nullable: true),
+                    PreviewPicture = table.Column<byte[]>(type: "image", nullable: true),
+                    DateAdded = table.Column<DateTime>(nullable: false, defaultValueSql: "(getutcdate())"),
+                    IsPublic = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ingredient", x => x.IngredientID);
+                    table.ForeignKey(
+                        name: "UserToIngredientFK",
+                        column: x => x.AddedByUserID,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "CategoryToIngredientFK",
+                        column: x => x.CategoryId,
+                        principalSchema: "app",
+                        principalTable: "Category",
+                        principalColumn: "CategoryID",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -279,6 +257,48 @@ namespace PantryPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "MealPlan",
+                schema: "app",
+                columns: table => new
+                {
+                    MealPlanID = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    KitchenID = table.Column<long>(nullable: false),
+                    CreatedByKitchenUserID = table.Column<long>(nullable: true),
+                    CategoryID = table.Column<long>(nullable: true),
+                    Name = table.Column<string>(unicode: false, maxLength: 50, nullable: false),
+                    Description = table.Column<string>(maxLength: 255, nullable: true),
+                    DateCreated = table.Column<DateTime>(nullable: false, defaultValueSql: "(getutcdate())"),
+                    SortOrder = table.Column<int>(nullable: false),
+                    IsFavorite = table.Column<bool>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MealPlan", x => x.MealPlanID);
+                    table.ForeignKey(
+                        name: "CategoryToMealPlanFK",
+                        column: x => x.CategoryID,
+                        principalSchema: "app",
+                        principalTable: "Category",
+                        principalColumn: "CategoryID",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "KitchenUserToMealPlanFK",
+                        column: x => x.CreatedByKitchenUserID,
+                        principalSchema: "app",
+                        principalTable: "KitchenUser",
+                        principalColumn: "KitchenUserID",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "KitchenToMealPlanFK",
+                        column: x => x.KitchenID,
+                        principalSchema: "app",
+                        principalTable: "Kitchen",
+                        principalColumn: "KitchenID",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "IngredientTag",
                 schema: "app",
                 columns: table => new
@@ -327,7 +347,7 @@ namespace PantryPlanner.Migrations
                     KitchenID = table.Column<long>(nullable: false),
                     AddedByKitchenUserID = table.Column<long>(nullable: true),
                     CategoryID = table.Column<long>(nullable: true),
-                    LastUpdated = table.Column<DateTime>(nullable: false),
+                    LastUpdated = table.Column<DateTime>(nullable: false, defaultValueSql: "(getutcdate())"),
                     Quantity = table.Column<int>(nullable: true),
                     Note = table.Column<string>(maxLength: 255, nullable: false)
                 },
@@ -365,44 +385,34 @@ namespace PantryPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "MealPlan",
+                name: "RecipeIngredient",
                 schema: "app",
                 columns: table => new
                 {
-                    MealPlanID = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    KitchenID = table.Column<long>(nullable: false),
-                    CreatedByKitchenUserID = table.Column<long>(nullable: true),
-                    CategoryID = table.Column<long>(nullable: true),
-                    Name = table.Column<string>(unicode: false, maxLength: 50, nullable: false),
-                    Description = table.Column<string>(maxLength: 255, nullable: true),
-                    DateCreated = table.Column<DateTime>(nullable: false),
-                    SortOrder = table.Column<int>(nullable: false),
-                    IsFavorite = table.Column<bool>(nullable: false)
+                    RecipeIngredientID = table.Column<int>(nullable: false),
+                    IngredientID = table.Column<long>(nullable: false),
+                    RecipeID = table.Column<long>(nullable: false),
+                    Quantity = table.Column<decimal>(type: "decimal(12, 4)", nullable: false),
+                    UnitOfMeasure = table.Column<string>(unicode: false, maxLength: 50, nullable: true),
+                    Method = table.Column<string>(unicode: false, maxLength: 50, nullable: true),
+                    SortOrder = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MealPlan", x => x.MealPlanID);
+                    table.PrimaryKey("PK_RecipeIngredient", x => new { x.RecipeIngredientID, x.IngredientID, x.RecipeID });
                     table.ForeignKey(
-                        name: "CategoryToMealPlanFK",
-                        column: x => x.CategoryID,
+                        name: "IngredientToRecipeIngredientFK",
+                        column: x => x.IngredientID,
                         principalSchema: "app",
-                        principalTable: "Category",
-                        principalColumn: "CategoryID",
-                        onDelete: ReferentialAction.SetNull);
+                        principalTable: "Ingredient",
+                        principalColumn: "IngredientID",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "KitchenUserToMealPlanFK",
-                        column: x => x.CreatedByKitchenUserID,
+                        name: "RecipeToRecipeIngredientFK",
+                        column: x => x.RecipeID,
                         principalSchema: "app",
-                        principalTable: "KitchenUser",
-                        principalColumn: "KitchenUserID",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "KitchenToMealPlanFK",
-                        column: x => x.KitchenID,
-                        principalSchema: "app",
-                        principalTable: "Kitchen",
-                        principalColumn: "KitchenID",
+                        principalTable: "Recipe",
+                        principalColumn: "RecipeID",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -414,6 +424,7 @@ namespace PantryPlanner.Migrations
                     ID = table.Column<int>(nullable: false),
                     KitchenListID = table.Column<long>(nullable: false),
                     IngredientID = table.Column<long>(nullable: false),
+                    AddedFromRecipeId = table.Column<long>(nullable: true),
                     Quantity = table.Column<int>(nullable: true),
                     SortOrder = table.Column<int>(nullable: false),
                     IsChecked = table.Column<bool>(nullable: false)
@@ -421,6 +432,13 @@ namespace PantryPlanner.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_KitchenListRecipe", x => new { x.ID, x.KitchenListID, x.IngredientID });
+                    table.ForeignKey(
+                        name: "RecipeToListIngredientFK",
+                        column: x => x.AddedFromRecipeId,
+                        principalSchema: "app",
+                        principalTable: "Recipe",
+                        principalColumn: "RecipeID",
+                        onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "IngredientToListIngredientFK",
                         column: x => x.IngredientID,
@@ -485,6 +503,12 @@ namespace PantryPlanner.Migrations
                 column: "AddedByUserID");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Ingredient_CategoryId",
+                schema: "app",
+                table: "Ingredient",
+                column: "CategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "fkIdx_204",
                 schema: "app",
                 table: "IngredientTag",
@@ -537,6 +561,12 @@ namespace PantryPlanner.Migrations
                 schema: "app",
                 table: "KitchenList",
                 column: "KitchenID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_KitchenListIngredient_AddedFromRecipeId",
+                schema: "app",
+                table: "KitchenListIngredient",
+                column: "AddedFromRecipeId");
 
             migrationBuilder.CreateIndex(
                 name: "fkIdx_172",
@@ -682,11 +712,11 @@ namespace PantryPlanner.Migrations
                 schema: "app");
 
             migrationBuilder.DropTable(
-                name: "Category",
+                name: "KitchenUser",
                 schema: "app");
 
             migrationBuilder.DropTable(
-                name: "KitchenUser",
+                name: "Category",
                 schema: "app");
 
             migrationBuilder.DropTable(

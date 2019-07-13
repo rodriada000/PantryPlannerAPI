@@ -10,8 +10,8 @@ using PantryPlanner.Services;
 namespace PantryPlanner.Migrations
 {
     [DbContext(typeof(PantryPlannerContext))]
-    [Migration("20190708051123_CreateAddedFromRecipeIdColumn")]
-    partial class CreateAddedFromRecipeIdColumn
+    [Migration("20190713233542_InitializeTablesAndPrimaryKeysToAspNetUsers")]
+    partial class InitializeTablesAndPrimaryKeysToAspNetUsers
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -145,7 +145,7 @@ namespace PantryPlanner.Migrations
                     b.Property<int?>("CategoryTypeId")
                         .HasColumnName("CategoryTypeID");
 
-                    b.Property<long>("CreatedByKitchenId");
+                    b.Property<long?>("CreatedByKitchenId");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -165,7 +165,9 @@ namespace PantryPlanner.Migrations
             modelBuilder.Entity("PantryPlanner.Models.CategoryType", b =>
                 {
                     b.Property<int>("CategoryTypeId")
-                        .HasColumnName("CategoryTypeID");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnName("CategoryTypeID")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -187,6 +189,9 @@ namespace PantryPlanner.Migrations
                     b.Property<string>("AddedByUserId")
                         .HasColumnName("AddedByUserID");
 
+                    b.Property<long?>("CategoryId")
+                        .HasColumnName("CategoryId");
+
                     b.Property<DateTime>("DateAdded")
                         .ValueGeneratedOnAdd()
                         .HasDefaultValueSql("(getutcdate())");
@@ -207,6 +212,8 @@ namespace PantryPlanner.Migrations
 
                     b.HasIndex("AddedByUserId")
                         .HasName("fkIdx_40");
+
+                    b.HasIndex("CategoryId");
 
                     b.ToTable("Ingredient","app");
                 });
@@ -742,6 +749,12 @@ namespace PantryPlanner.Migrations
                         .WithMany("Ingredient")
                         .HasForeignKey("AddedByUserId")
                         .HasConstraintName("UserToIngredientFK")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("PantryPlanner.Models.Category", "Category")
+                        .WithMany("Ingredient")
+                        .HasForeignKey("CategoryId")
+                        .HasConstraintName("CategoryToIngredientFK")
                         .OnDelete(DeleteBehavior.SetNull);
                 });
 

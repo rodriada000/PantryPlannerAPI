@@ -85,7 +85,7 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.CategoryTypeId)
                     .HasColumnName("CategoryTypeID")
-                    .ValueGeneratedNever();
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Name)
                     .IsRequired()
