@@ -217,7 +217,7 @@ namespace PantryPlannerApiUnitTests
         #endregion
 
 
-        #region Get Invites Test Methods
+        #region Get Test Methods
 
         [Fact]
         public void GetUsersThatHaveNotAcceptedInvite_ValidKitchen_ReturnsCorrectResult()
@@ -261,19 +261,14 @@ namespace PantryPlannerApiUnitTests
 
         }
 
-        #endregion
-
-
-        #region Get Kitchen Users Test Methods
-
         [Fact]
         public void GetAcceptedUsersForKitchen_ReturnsCorrectResult()
         {
+            // arrange
             var kitchen = (from k in _context.Kitchen
                            join u in _context.KitchenUser on k.KitchenId equals u.KitchenId
                            where u.UserId == _testUser.Id && u.IsOwner
                            select k).FirstOrDefault();
-
 
             if (kitchen == null)
             {
@@ -282,9 +277,91 @@ namespace PantryPlannerApiUnitTests
 
             var expectedResult = kitchen.KitchenUser.Where(x => x.HasAcceptedInvite.HasValue && x.HasAcceptedInvite.Value == true).ToList();
 
+            // act
             var actualResult = _kitchenUserService.GetAcceptedUsersForKitchen(kitchen, _testUser);
+
+            // assert
             Assert.Equal(expectedResult, actualResult);
         }
+
+        [Fact]
+        public void GetAllUsersForKitchen_ReturnsCorrectResult()
+        {
+            // arrange
+            var kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            List<KitchenUser> expectedResult = kitchen.KitchenUser.ToList();
+
+            // act
+            List<KitchenUser> actualResult = _kitchenUserService.GetAllUsersForKitchen(kitchen, _testUser);
+
+            // assert
+            Assert.Equal(expectedResult, actualResult);
+        }
+
+        [Fact]
+        public void Get_UserNotInKitchen_ThrowsPermissionsException()
+        {
+            // get a Kitchen the test user does not have rights to
+            List<long> myKitchens = _testUser.KitchenUser.Select(ku => ku.KitchenId).ToList();
+            Kitchen kitchen = _context.Kitchen.Where(k => myKitchens.Contains(k.KitchenId) == false).FirstOrDefault();
+
+            if (kitchen == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenUserService.GetAllUsersForKitchen(kitchen, _testUser);
+            });
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenUserService.GetAcceptedUsersForKitchen(kitchen, _testUser);
+            });
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _kitchenUserService.GetUsersThatHaveNotAcceptedInvite(kitchen, _testUser);
+            });
+        }
+
+        [Fact]
+        public void Get_InvalidKitchen_ThrowsKitchenNotFoundException()
+        {
+            Kitchen kitchen = new Kitchen()
+            {
+                KitchenId = -999,
+                Name = "invalid kitchen"
+            };
+
+            if (kitchen == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenUserService.GetAllUsersForKitchen(kitchen, _testUser);
+            });
+
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenUserService.GetAcceptedUsersForKitchen(kitchen, _testUser);
+            });
+
+            Assert.Throws<KitchenNotFoundException>(() =>
+            {
+                _kitchenUserService.GetUsersThatHaveNotAcceptedInvite(kitchen, _testUser);
+            });
+        }
+
 
 
         #endregion
@@ -317,7 +394,7 @@ namespace PantryPlannerApiUnitTests
 
             if (notMyKitchenUser == null)
             {
-                throw new Exception("kKitchenUser is not setup for testing");
+                throw new Exception("KitchenUser is not setup for testing");
             }
 
             Assert.Throws<PermissionsException>(() =>
@@ -325,6 +402,38 @@ namespace PantryPlannerApiUnitTests
                 _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(notMyKitchenUser.Kitchen, _testUser.UserName,_testUser);
             });
         }
+
+        [Fact]
+        public void DeleteKitchenUserFromKitchenByUsername_ValidKitchenUser_ReturnsDeletedUser()
+        {
+            KitchenUser myKitchenUser = _testUser.KitchenUser.Where(u => u.IsOwner).FirstOrDefault();
+
+            if (myKitchenUser == null)
+            {
+                throw new Exception("KitchenUser is not setup for testing");
+            }
+
+            // setup user to be in kitchen to test against
+            var newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
+
+            _kitchenUserService.InviteUserToKitchenByUsername(newUser.UserName, myKitchenUser.Kitchen, _testUser);
+            _kitchenUserService.AcceptInviteToKitchenByKitchenId(myKitchenUser.KitchenId, newUser);
+
+
+            KitchenUser expectedUserToDelete = myKitchenUser.Kitchen.KitchenUser.Where(u => u.UserId == newUser.Id).FirstOrDefault();
+
+            if (expectedUserToDelete == null)
+            {
+                throw new Exception("expectedUserToDelete is not setup for testing");
+            }
+
+            // do deletion
+            KitchenUser actualDeletedUser = _kitchenUserService.DeleteKitchenUserFromKitchenByUsername(expectedUserToDelete.Kitchen, newUser.UserName, _testUser);
+
+            Assert.Equal(expectedUserToDelete, actualDeletedUser);
+        }
+
+
 
         [Fact]
         public void DeleteKitchenUserByKitchenUserId_InvalidID_ThrowsKitchenUserNotFound()
