@@ -47,5 +47,35 @@ namespace PantryPlanner.Services
             return Context.KitchenUser.Any(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id && x.IsOwner);
         }
 
+        internal bool UserAddedIngredient(Ingredient ingredient, PantryPlannerUser user)
+        {
+            if (ingredient == null)
+            {
+                return false;
+            }
+
+            return UserAddedIngredient(ingredient.IngredientId, user);
+        }
+
+        internal bool UserAddedIngredient(long ingredientId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                return false;
+            }
+
+            return UserAddedIngredient(ingredientId, user.Id);
+        }
+
+        internal bool UserAddedIngredient(long ingredientId, string userId)
+        {
+            if (String.IsNullOrWhiteSpace(userId))
+            {
+                return false;
+            }
+
+            return Context.Ingredient.Any(i => i.IngredientId == ingredientId && i.AddedByUserId == userId);
+        }
+
     }
 }

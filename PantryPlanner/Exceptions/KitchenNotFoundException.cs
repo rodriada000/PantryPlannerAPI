@@ -6,7 +6,7 @@ namespace PantryPlanner.Exceptions
     [Serializable]
     public class KitchenNotFoundException : Exception
     {
-        public KitchenNotFoundException(long kitchenId) : base($"kitchen with ID {kitchenId} does not exist")
+        public KitchenNotFoundException(long kitchenId) : base($"kitchen with ID {kitchenId} does not exist.")
         {           
         }
 
