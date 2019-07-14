@@ -11,6 +11,15 @@ namespace PantryPlanner.DTOs
     /// </summary>
     public class KitchenDto
     {
+        public long KitchenId { get; set; }
+        public Guid UniquePublicGuid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public DateTime DateCreated { get; set; }
+        public string CreatedByUserId { get; set; }
+
+        public string CreatedByUsername { get; set; }
+
         public KitchenDto(Kitchen kitchen)
         {
             KitchenId = kitchen.KitchenId;
@@ -19,18 +28,18 @@ namespace PantryPlanner.DTOs
             Description = kitchen.Description;
             DateCreated = kitchen.DateCreated;
             CreatedByUserId = kitchen.CreatedByUserId;
-        }
 
-        public long KitchenId { get; set; }
-        public Guid UniquePublicGuid { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public DateTime DateCreated { get; set; }
-        public string CreatedByUserId { get; set; }
+            CreatedByUsername = kitchen.CreatedByUser?.UserName;
+        }
 
         public static List<KitchenDto> ToList(List<Kitchen> list)
         {
             return list?.Select(k => new KitchenDto(k))?.ToList();
+        }
+
+        public override string ToString()
+        {
+            return $"k: {Name} | created by {CreatedByUsername}";
         }
     }
 }

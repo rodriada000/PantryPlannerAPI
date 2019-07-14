@@ -11,6 +11,20 @@ namespace PantryPlanner.DTOs
     /// </summary>
     public class KitchenUserDto
     {
+        public long KitchenUserId { get; set; }
+        public string UserId { get; set; }
+        public long KitchenId { get; set; }
+        public bool IsOwner { get; set; }
+        public bool HasAcceptedInvite { get; set; }
+        public DateTime DateAdded { get; set; }
+
+        #region Properties Not In Model
+
+        public string Username { get; set; }
+        public string KitchenName { get; set; }
+
+        #endregion
+
         public KitchenUserDto(KitchenUser user)
         {
             if (user == null)
@@ -24,14 +38,11 @@ namespace PantryPlanner.DTOs
             IsOwner = user.IsOwner;
             DateAdded = user.DateAdded;
             HasAcceptedInvite = user.HasAcceptedInvite.Value;
+
+            Username = user.User?.UserName;
+            KitchenName = user.Kitchen?.Name;
         }
 
-        public long KitchenUserId { get; set; }
-        public string UserId { get; set; }
-        public long KitchenId { get; set; }
-        public bool IsOwner { get; set; }
-        public bool HasAcceptedInvite { get; set; }
-        public DateTime DateAdded { get; set; }
 
         public static List<KitchenUserDto> ToList(List<KitchenUser> users)
         {
@@ -41,6 +52,11 @@ namespace PantryPlanner.DTOs
             }
 
             return users.Select(k => new KitchenUserDto(k)).ToList();
+        }
+
+        public override string ToString()
+        {
+            return $"ku: {Username} in {KitchenName}";
         }
     }
 }

@@ -94,6 +94,10 @@ namespace PantryPlanner.Migrations
             FoodGroupCodeToCategoryId = new Dictionary<string, long>();
         }
 
+        /// <summary>
+        /// runs the two main methods to load and parse the .txt data into the Ingredient/Category tables.
+        /// </summary>
+        /// <param name="context"></param>
         public void StartEtlProcess(PantryPlannerContext context)
         {
             ParseFoodGroupFileAndInsertIntoCategoryTable(context);
