@@ -23,6 +23,8 @@
     <Compile Remove="Migrations\20190713231508_AddIdentitySpecToCategoryTypeId.Designer.cs" />
     <Compile Remove="Migrations\20190713232543_AddIdentitySpecToCategoryTypeId.cs" />
     <Compile Remove="Migrations\20190713232543_AddIdentitySpecToCategoryTypeId.Designer.cs" />
+    <Compile Remove="Migrations\20190714214400_AddCreatedByUserIdToKitchen.cs" />
+    <Compile Remove="Migrations\20190714214400_AddCreatedByUserIdToKitchen.Designer.cs" />
   </ItemGroup>
 
 

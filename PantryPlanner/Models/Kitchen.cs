@@ -23,6 +23,7 @@ namespace PantryPlanner.Models
         public DateTime DateCreated { get; set; }
         public string CreatedByUserId { get; set; }
 
+        public virtual PantryPlannerUser CreatedByUser { get; set; }
         public virtual ICollection<Category> Category { get; set; }
         public virtual ICollection<IngredientTag> IngredientTag { get; set; }
         public virtual ICollection<KitchenIngredient> KitchenIngredient { get; set; }

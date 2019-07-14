@@ -9,11 +9,13 @@ namespace PantryPlanner.Models
         public PantryPlannerUser()
         {
             Ingredient = new HashSet<Ingredient>();
+            Kitchen = new HashSet<Kitchen>();
             KitchenUser = new HashSet<KitchenUser>();
             Recipe = new HashSet<Recipe>();
         }
 
         public virtual ICollection<Ingredient> Ingredient { get; set; }
+        public virtual ICollection<Kitchen> Kitchen { get; set; }
         public virtual ICollection<KitchenUser> KitchenUser { get; set; }
         public virtual ICollection<Recipe> Recipe { get; set; }
     }

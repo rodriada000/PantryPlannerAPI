@@ -187,6 +187,12 @@ namespace PantryPlanner.Services
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(50);
+
+                entity.HasOne(k => k.CreatedByUser)
+                        .WithMany(u => u.Kitchen)
+                        .HasForeignKey(k => k.CreatedByUserId)
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("UserToKitchenFK");
             });
 
             modelBuilder.Entity<KitchenIngredient>(entity =>
