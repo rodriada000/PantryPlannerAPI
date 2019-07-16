@@ -111,7 +111,7 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.Name)
                     .IsRequired()
-                    .HasMaxLength(100);
+                    .HasMaxLength(200);
 
                 entity.Property(e => e.DateAdded).HasDefaultValueSql("(getutcdate())");
 
