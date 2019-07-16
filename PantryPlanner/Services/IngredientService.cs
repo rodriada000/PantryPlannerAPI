@@ -25,6 +25,38 @@ namespace PantryPlanner.Services
         #region Get Methods
 
         /// <summary>
+        /// Return Ingredient for <paramref name="ingredientId"/>
+        /// </summary>
+        public Ingredient GetIngredientById(long ingredientId, PantryPlannerUser user)
+        {
+            if (Context.IngredientExists(ingredientId) == false)
+            {
+                throw new IngredientNotFoundException(ingredientId);
+            }
+
+            Ingredient ingredient = GetIngredientById(ingredientId);
+
+
+            if (!ingredient.IsPublic && Permissions.UserAddedIngredient(ingredient, user) == false)
+            {
+                throw new PermissionsException("You do not have rights to this ingredient");
+            }
+
+            return ingredient;
+        }
+
+        /// <summary>
+        /// Return Ingredient for <paramref name="ingredientId"/>
+        /// </summary>
+        public Ingredient GetIngredientById(long ingredientId)
+        {
+            return Context.Ingredient.Where(i => i.IngredientId == ingredientId)
+                                            .Include(i => i.Category)
+                                            .Include(i => i.AddedByUser)
+                                            .FirstOrDefault();
+        }
+
+        /// <summary>
         /// Return list of Ingredients with names that match the given <paramref name="name"/> passed in.
         /// </summary>
         /// <param name="name"> name to search for </param>
@@ -35,7 +67,32 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(name));
             }
 
-            return Context.Ingredient.Where(i => i.Name.Contains(name, StringComparison.OrdinalIgnoreCase) && i.IsPublic).ToList();
+            // first check for exact match
+            if (Context.Ingredient.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && i.IsPublic))
+            {
+                return Context.Ingredient.Where(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && i.IsPublic).ToList();
+            }
+
+
+            // second check for any matches that have all the words entered
+            List<string> wordsToSearchFor = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            List<Ingredient> ingredients = Context.Ingredient.Where(i => wordsToSearchFor.All(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && i.IsPublic)
+                            .Include(i => i.Category)
+                            .Include(i => i.AddedByUser)
+                            .ToList();
+
+
+            if (ingredients.Count == 0)
+            {
+                // if no matches then lastly check if any word entered matches
+                ingredients = Context.Ingredient.Where(i => wordsToSearchFor.Any(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && i.IsPublic)
+                            .Include(i => i.Category)
+                            .Include(i => i.AddedByUser)
+                            .ToList();
+            }
+
+            return ingredients;
         }
 
         /// <summary>
@@ -53,7 +110,7 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(category));
             }
 
-            return Context.Ingredient.Where(i => i.Name.Contains(name, StringComparison.OrdinalIgnoreCase) && i.CategoryId == category.CategoryId && i.IsPublic).ToList();
+            return GetIngredientByName(name).Where(i => i.CategoryId == category.CategoryId).ToList();
         }
 
         /// <summary>
@@ -92,7 +149,10 @@ namespace PantryPlanner.Services
             }
 
 
-            return Context.Ingredient.Where(i => i.Description.Contains(description, StringComparison.OrdinalIgnoreCase) && i.IsPublic).ToList();
+            return Context.Ingredient.Where(i => i.Description.Contains(description, StringComparison.OrdinalIgnoreCase) && i.IsPublic)
+                                    .Include(i => i.Category)
+                                    .Include(i => i.AddedByUser)
+                                    .ToList();
         }
 
         /// <summary>
@@ -118,7 +178,10 @@ namespace PantryPlanner.Services
                 throw new CategoryNotFoundException(categoryId);
             }
 
-            return Context.Ingredient.Where(i => i.CategoryId == categoryId && i.IsPublic).ToList();
+            return Context.Ingredient.Where(i => i.CategoryId == categoryId && i.IsPublic)
+                                .Include(i => i.Category)
+                                .Include(i => i.AddedByUser)
+                                .ToList();
         }
 
         #endregion

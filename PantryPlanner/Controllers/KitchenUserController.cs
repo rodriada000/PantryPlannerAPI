@@ -28,23 +28,47 @@ namespace PantryPlanner.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/KitchenUser
+        // GET: api/KitchenUser/All
         [HttpGet]
-        public ActionResult<IEnumerable<KitchenUser>> GetKitchenUser()
+        [Route("All")]
+        public async Task<ActionResult<List<KitchenUserDto>>> GetAllUsersForKitchen(long kitchenId)
         {
-            return null;
-            //return _service.GetUsersForKitchen()
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            List<KitchenUserDto> kitchenUsers = null;
+
+            try
+            {
+                kitchenUsers = KitchenUserDto.ToList(_service.GetAllUsersForKitchenById(kitchenId, user));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+            if (kitchenUsers == null)
+            {
+                return NotFound("No user found for kitchen");
+            }
+
+            return kitchenUsers;
         }
 
-        // GET: api/KitchenUser/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<KitchenUser>> GetKitchenUser(long id)
-        {
-            return await _service.Context.KitchenUser.FindAsync(id);
-        }
-
-        // GET: api/KitchenUser?kitchenId
-        public async Task<ActionResult<List<KitchenUserDto>>> GetAllKitchenUsersForKitchen(long kitchenId)
+        // GET: api/KitchenUser/Accepted
+        [HttpGet]
+        [Route("Accepted")]
+        public async Task<ActionResult<List<KitchenUserDto>>> GetAcceptedUsersForKitchen(long kitchenId)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
             List<KitchenUserDto> kitchenUsers = null;
@@ -55,80 +79,218 @@ namespace PantryPlanner.Controllers
             }
             catch (ArgumentNullException e)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
             }
             catch (PermissionsException e)
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
-            }
-
-            if (kitchenUsers == null)
-            {
-                return NotFound();
-            }
-
-            return kitchenUsers;
-        }
-
-        // PUT: api/KitchenUser/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutKitchenUser(long id, KitchenUser kitchenUser)
-        {
-            if (id != kitchenUser.KitchenUserId)
-            {
-                return BadRequest();
-            }
-
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-
-            try
-            {
-                //_service.UpdateKitchenUser(kitchenUser, user);
-            }
-            catch(ArgumentNullException e)
-            {
-                return StatusCode(StatusCodes.Status400BadRequest, e.Message);
-            }
-            catch (PermissionsException e)
-            {
-                return StatusCode(StatusCodes.Status401Unauthorized, e.Message);
+                return Unauthorized(e.Message);
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return StatusCode(StatusCodes.Status200OK);
+            if (kitchenUsers == null)
+            {
+                return NotFound("No users found for kitchen");
+            }
+
+            return kitchenUsers;
         }
 
-        // POST: api/KitchenUser
-        //[HttpPost]
-        //public async Task<ActionResult<KitchenUser>> PostKitchenUser(KitchenUser kitchenUser)
-        //{
-        //    PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+        // GET: api/KitchenUser/Accepted
+        [HttpGet]
+        [Route("NotAccepted")]
+        public async Task<ActionResult<List<KitchenUserDto>>> GetNotAcceptedUsersForKitchen(long kitchenId)
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            List<KitchenUserDto> kitchenUsers = null;
 
-        //    try
-        //    {
-        //        _ser
-        //    }
-        //    catch (DbUpdateException)
-        //    {
-        //        if (KitchenUserExists(kitchenUser.KitchenUserId))
-        //        {
-        //            return Conflict();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
+            try
+            {
+                kitchenUsers = KitchenUserDto.ToList(_service.GetUsersThatHaveNotAcceptedInviteByKitchenId(kitchenId, user));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
-        //    return CreatedAtAction("GetKitchenUser", new { id = kitchenUser.KitchenUserId }, kitchenUser);
-        //}
+            if (kitchenUsers == null)
+            {
+                return NotFound("No users found for kitchen");
+            }
+
+            return kitchenUsers;
+        }
+
+        // GET: api/KitchenUser/Invite
+        [HttpGet]
+        [Route("Invite")]
+        public async Task<ActionResult<List<KitchenUserDto>>> GetKitchenInvitesForLoggedInUser()
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            List<KitchenUserDto> myInvites = null;
+
+            try
+            {
+                myInvites = KitchenUserDto.ToList(_service.GetMyInvites(user));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+            if (myInvites == null)
+            {
+                return NotFound("No invites found for user");
+            }
+
+            return myInvites;
+        }
+
+
+
+        // POST: api/KitchenUser/Invite
+        [HttpPost]
+        [Route("Invite")]
+        public async Task<ActionResult<bool>> InviteUserToKitchen(string username, long kitchenId)
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+
+            try
+            {
+                _service.InviteUserToKitchenByUsername(username, kitchenId, user);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status405MethodNotAllowed, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+            return true;
+        }
+
+        // PUT: api/KitchenUser/Invite
+        [HttpPut]
+        [Route("Invite")]
+        public async Task<ActionResult<bool>> AcceptKitchenInvite(long kitchenId)
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+
+            try
+            {
+                _service.AcceptInviteToKitchenByKitchenId(kitchenId, user);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InviteNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+            
+            return true;
+        }
+
+        // DELETE: api/KitchenUser/Invite
+        [HttpDelete]
+        [Route("Invite")]
+        public async Task<ActionResult<bool>> DenyKitchenInvite(long kitchenId)
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+
+            try
+            {
+                _service.DenyInviteToKitchen(kitchenId, user);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InviteNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+            return true;
+        }
+
+
 
         // DELETE: api/KitchenUser/5
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<ActionResult<KitchenUserDto>> DeleteKitchenUserByKitchenUserId(long id)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
@@ -149,6 +311,45 @@ namespace PantryPlanner.Controllers
             catch (InvalidOperationException e)
             {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+            return new KitchenUserDto(kitchenUser);
+        }
+
+        // DELETE: api/KitchenUser
+        [HttpDelete]
+        public async Task<ActionResult<KitchenUserDto>> DeleteLoggedInUserFromKitchen(long kitchenId)
+        {
+            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            KitchenUser kitchenUser = null;
+
+            try
+            {
+                kitchenUser = _service.DeleteMyselfFromKitchen(kitchenId, user);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (KitchenUserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status405MethodNotAllowed, e.Message);
             }
             catch (Exception e)
             {

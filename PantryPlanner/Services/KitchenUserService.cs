@@ -294,7 +294,7 @@ namespace PantryPlanner.Services
 
             if (inviteToDeny == null)
             {
-                throw new KitchenUserNotFoundException("No invite found for kitchen.");
+                throw new InviteNotFoundException("No invite found for kitchen.");
             }
 
             Context.KitchenUser.Remove(inviteToDeny);
@@ -419,6 +419,17 @@ namespace PantryPlanner.Services
             return kitchenUser;
         }
 
+        public KitchenUser DeleteMyselfFromKitchen(long kitchenId, PantryPlannerUser user)
+        {
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            Kitchen kitchen = Context.Kitchen.Find(kitchenId);
+            return DeleteMyselfFromKitchen(kitchen, user);
+        }
+
         public KitchenUser DeleteMyselfFromKitchen(Kitchen kitchen, PantryPlannerUser user)
         {
             if (kitchen == null)
@@ -438,10 +449,10 @@ namespace PantryPlanner.Services
 
             KitchenUser kitchenUser = user.KitchenUser.Where(ku => ku.KitchenId == kitchen.KitchenId).FirstOrDefault();
 
-            return DeleteMyselfFromKitchen(kitchenUser.KitchenUserId, user);
+            return DeleteMyselfFromKitchenByKitchenUserId(kitchenUser.KitchenUserId, user);
         }
 
-        public KitchenUser DeleteMyselfFromKitchen(long kitchenUserId, PantryPlannerUser user)
+        public KitchenUser DeleteMyselfFromKitchenByKitchenUserId(long kitchenUserId, PantryPlannerUser user)
         {
             if (user == null)
             {

@@ -12,6 +12,7 @@ using Moq;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using PantryPlanner.DTOs;
 
 namespace PantryPlannerApiUnitTests
 {
@@ -29,7 +30,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public async Task Post_ValidKitchen_ReturnsCreatedAtActionResultAsync()
+        public async Task Post_ValidKitchen_ReturnsNewKitchenDtoAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -37,25 +38,12 @@ namespace PantryPlannerApiUnitTests
                 Description = "Delicious burgers. again",
             };
 
-            var result = await _controller.PostKitchenAsync(kitchen);
-            Assert.IsType<CreatedAtActionResult>(result.Result);
-        }
+            ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
+            Assert.IsType<KitchenDto>(result.Value);
 
-        [Fact]
-        public async Task Post_ValidKitchen_ReturnsKitcheninResultAsync()
-        {
-            Kitchen kitchen = new Kitchen
-            {
-                Name = "Bobs Burgers II",
-                Description = "Delicious burgers. again",
-            };
+            Assert.Equal(kitchen.Name, result.Value.Name);
+            Assert.Equal(kitchen.Description, result.Value.Description);
 
-            var result = await _controller.PostKitchenAsync(kitchen);
-            var actionResult = result.Result as CreatedAtActionResult;
-
-            Assert.IsType<Kitchen>(actionResult.Value);
-            Assert.Equal(kitchen.Name, (actionResult.Value as Kitchen).Name);
-            Assert.Equal(kitchen.Description, (actionResult.Value as Kitchen).Description);
         }
 
         [Fact]
@@ -70,12 +58,11 @@ namespace PantryPlannerApiUnitTests
             var guidBefore = kitchen.UniquePublicGuid;
             var dateBefore = kitchen.DateCreated;
 
-            ActionResult<Kitchen> result = await _controller.PostKitchenAsync(kitchen);
-            CreatedAtActionResult actionResult = result.Result as CreatedAtActionResult;
+            ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
 
-            Assert.Equal(_userManager.TestUser.Id, (actionResult.Value as Kitchen).CreatedByUserId);
-            Assert.NotEqual(guidBefore, (actionResult.Value as Kitchen).UniquePublicGuid);
-            Assert.NotEqual(dateBefore, (actionResult.Value as Kitchen).DateCreated);
+            Assert.Equal(_userManager.TestUser.Id, result.Value.CreatedByUserId);
+            Assert.NotEqual(guidBefore, result.Value.UniquePublicGuid);
+            Assert.NotEqual(dateBefore, result.Value.DateCreated);
         }
 
         [Fact]
@@ -88,7 +75,7 @@ namespace PantryPlannerApiUnitTests
                 throw new Exception("kitchen is not setup for testing");
             }
 
-            ActionResult<Kitchen> result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
+            ActionResult<KitchenDto> result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
 
             Assert.Equal(kitchenToDelete.KitchenId, result.Value.KitchenId);
         }
@@ -96,7 +83,7 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public async Task Delete_UnknownKitchen_ReturnsNotFoundAsync()
         {
-            ActionResult<Kitchen> result = await _controller.DeleteKitchenAsync(-5);
+            ActionResult<KitchenDto> result = await _controller.DeleteKitchenAsync(-5);
 
             Assert.IsType<NotFoundObjectResult>(result.Result);
             Assert.Equal(StatusCodes.Status404NotFound, (result.Result as NotFoundObjectResult).StatusCode);

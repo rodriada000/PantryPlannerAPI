@@ -198,7 +198,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void DenyInviteToKitchen_NoInviteExists_ThrowsKitchenUserNotFoundException()
+        public void DenyInviteToKitchen_NoInviteExists_ThrowsInviteNotFoundException()
         {
             // add random user to test against
             PantryPlannerUser newUser = InMemoryDataGenerator.AddNewRandomUser(_context);
@@ -206,7 +206,7 @@ namespace PantryPlannerApiUnitTests
             Kitchen kitchenToJoin = _testUser.KitchenUser.FirstOrDefault().Kitchen;
 
 
-            Assert.Throws<KitchenUserNotFoundException>(() =>
+            Assert.Throws<InviteNotFoundException>(() =>
             {
                 _kitchenUserService.DenyInviteToKitchen(kitchenToJoin, newUser);
 
@@ -614,7 +614,7 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void DeleteMyselfFromKitchen_InvalidKitchenUser_ThrowsKitchenUserNotFoundException()
         {
-            Assert.Throws<KitchenUserNotFoundException>(() =>
+            Assert.Throws<KitchenNotFoundException>(() =>
             {
                 _kitchenUserService.DeleteMyselfFromKitchen(-5, _testUser);
             });

@@ -33,6 +33,11 @@ namespace PantryPlanner.Services
 
         public Kitchen GetKitchenById(long id, PantryPlannerUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             if (Context.KitchenExists(id) == false)
             {
                 throw new KitchenNotFoundException(id);
@@ -43,7 +48,7 @@ namespace PantryPlanner.Services
                 throw new UserNotFoundException(user.UserName);
             }
 
-            Kitchen kitchen = user.KitchenUser.Where(k => k.KitchenId == id).FirstOrDefault()?.Kitchen;
+            Kitchen kitchen = Context.Kitchen.Find(id);
 
             if (!Permissions.UserHasRightsToKitchen(user, kitchen))
             {
@@ -55,6 +60,7 @@ namespace PantryPlanner.Services
 
         public List<Kitchen> GetAllKitchensForUser(PantryPlannerUser user)
         {
+
             if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
@@ -65,13 +71,10 @@ namespace PantryPlanner.Services
                 throw new UserNotFoundException(user.UserName);
             }
 
-            if (user.KitchenUser == null)
-            {
-                // get all KitchenUsers for the user from Context if null for user passed in
-                user.KitchenUser = Context.KitchenUser.Where(u => u.UserId == user.Id).ToList();
-            }
-
-            return user.KitchenUser.Select(ku => ku.Kitchen).ToList();
+            return Context.KitchenUser
+                    .Where(u => u.UserId == user.Id)
+                    .Select(k => k.Kitchen)
+                    .ToList();
         }
 
         #endregion
