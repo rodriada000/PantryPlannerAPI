@@ -78,5 +78,35 @@ namespace PantryPlanner.Extensions
             return context.Ingredient.Any(i => i.Name == ingredient.Name && i.CategoryId == ingredient.CategoryId && i.AddedByUserId == user.Id && i.IsPublic == false);
         }
 
+        public static bool KitchenIngredientExists(this PantryPlannerContext context, long kitchenIngredientId)
+        {
+            return context.KitchenIngredient.Any(i => i.KitchenIngredientId == kitchenIngredientId);
+        }
+
+        public static bool IngredientExistsForKitchen(this PantryPlannerContext context, KitchenIngredient ingredient)
+        {
+            if (ingredient == null)
+            {
+                return false;
+            }
+
+            return context.IngredientExistsForKitchen(ingredient.IngredientId, ingredient.KitchenId);
+        }
+
+        public static bool IngredientExistsForKitchen(this PantryPlannerContext context, Ingredient ingredient, Kitchen kitchen)
+        {
+            if (ingredient == null || kitchen == null)
+            {
+                return false;
+            }
+
+            return context.IngredientExistsForKitchen(ingredient.IngredientId, kitchen.KitchenId);
+        }
+
+        public static bool IngredientExistsForKitchen(this PantryPlannerContext context, long ingredientId, long kitchenId)
+        {
+            return context.KitchenIngredient.Any(i => i.KitchenId == kitchenId && i.IngredientId == ingredientId);
+        }
+
     }
 }
