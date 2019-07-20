@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using PantryPlanner.Migrations;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
@@ -115,11 +116,21 @@ namespace PantryPlannerApiUnitTests.Helpers
         /// </summary>
         /// <param name="dbName"> name for In Memory Database </param>
         /// <param name="testUser"> user to use to generate test data (relationships to Kitchen, Kitchenuser, etc.)</param>
+        /// <param name="insertIngredientData"> true - populates Ingredient and KitchenIngredient tables; false - skip populating Ingredient & KitchenIngredinet </param>
         /// <returns> Context to use for testing</returns>
-        public static PantryPlannerContext CreateAndInitializeInMemoryDatabaseContext(string dbName, PantryPlannerUser testUser)
+        public static PantryPlannerContext CreateAndInitializeInMemoryDatabaseContext(string dbName, PantryPlannerUser testUser, bool insertIngredientData)
         {
             PantryPlannerContext context = CreateInMemoryDatabaseContext(dbName);
-            InitializeAll(context, testUser);
+
+            if (insertIngredientData)
+            {
+                InitializeAll(context, testUser);
+            }
+            else
+            {
+                InitializeUsersAndKitchens(context, testUser);
+            }
+
             return context;
         }
 
@@ -137,14 +148,26 @@ namespace PantryPlannerApiUnitTests.Helpers
         /// <summary>
         /// Adds test data to <paramref name="context"/> and initializes <paramref name="testUser"/> with relationships to the test data.
         /// </summary>
-        /// <param name="context"></param>
-        /// <param name="testUser"></param>
+        public static void InitializeUsersAndKitchens(PantryPlannerContext context, PantryPlannerUser testUser)
+        {
+            InitializeUser(context, testUser);
+            InitializeKitchen(context);
+            InitializeKitchenUser(context, testUser);
+            InitializeRandomKitchenUser(context);
+        }
+
+        /// <summary>
+        /// Adds test data to <paramref name="context"/> and initializes <paramref name="testUser"/> with relationships to the test data.
+        /// Inserts ingredient data from USDA food composition database and initialize kitchens with ingredients.
+        /// </summary>
         public static void InitializeAll(PantryPlannerContext context, PantryPlannerUser testUser)
         {
             InitializeUser(context, testUser);
             InitializeKitchen(context);
             InitializeKitchenUser(context, testUser);
             InitializeRandomKitchenUser(context);
+            InitializeIngredientsFromUSDA(context);
+            InitializeKitchenIngredients(context);
         }
 
         private static void InitializeUser(PantryPlannerContext context, PantryPlannerUser testUser)
@@ -264,6 +287,11 @@ namespace PantryPlannerApiUnitTests.Helpers
             return;
         }
 
+        /// <summary>
+        /// Adds a new <see cref="PantryPlannerUser"/> and two <see cref="Kitchen"/>s for the new user...
+        /// i.e. generates <see cref="PantryPlannerUser"/>, <see cref="Kitchen"/>, and <see cref="KitchenUser"/> data
+        /// </summary>
+        /// <param name="context"> DbContext to add new user (and other generated data) to </param>
         internal static void InitializeRandomKitchenUser(PantryPlannerContext context)
         {
             PantryPlannerUser randomUser = AddNewRandomUser(context);
@@ -330,6 +358,59 @@ namespace PantryPlannerApiUnitTests.Helpers
 
             return user;
         }
+
+        internal static void InitializeIngredientsFromUSDA(PantryPlannerContext context)
+        {
+            // load ingredient data into in-memory database
+            USDAFoodCompositionDbETL etl = new USDAFoodCompositionDbETL(FoodCompositionETLUnitTest.FoodCompositionFolderLocation);
+            etl.StartEtlProcess(context, 500);
+        }
+
+
+        /// <summary>
+        /// Loop over every Kitchen available and add a random amount of ingredients to each one
+        /// </summary>
+        internal static void InitializeKitchenIngredients(PantryPlannerContext context)
+        {
+            if (context.Ingredient.Count() == 0)
+            {
+                throw new Exception("Ingredient must be populated to initialize");
+            }
+
+            Random randomGen = new Random();
+
+            foreach (Kitchen kitchen in context.Kitchen)
+            {
+                int numOfIngredientsToAdd = randomGen.Next(1, 10);
+                int randomOffset = randomGen.Next(50);
+                KitchenUser someUserInKitchen = kitchen.KitchenUser.FirstOrDefault();
+
+                for (int i = 0; i < numOfIngredientsToAdd; i++)
+                {
+                    Ingredient ingredient = context.Ingredient.Skip(randomOffset)?.ToList()[i];
+
+                    if (ingredient == null)
+                    {
+                        break;
+                    }
+
+                    KitchenIngredient kitchenIngredient = new KitchenIngredient()
+                    {
+                        KitchenId = kitchen.KitchenId,
+                        IngredientId = ingredient.IngredientId,
+                        LastUpdated = DateTime.Now,
+                        AddedByKitchenUserId = someUserInKitchen?.KitchenUserId
+                    };
+
+                    context.KitchenIngredient.Add(kitchenIngredient);
+                }
+            }
+
+            context.SaveChanges();
+        }
+
+
+
 
     }
 

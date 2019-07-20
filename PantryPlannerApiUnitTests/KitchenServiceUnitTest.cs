@@ -25,7 +25,7 @@ namespace PantryPlannerApiUnitTests
                 UserName = "sharkyShark",
                 Email = "sharks@email.com"
             };
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: false);
             _kitchenService = new KitchenService(_context);
         }
 

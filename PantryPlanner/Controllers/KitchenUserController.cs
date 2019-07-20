@@ -28,9 +28,8 @@ namespace PantryPlanner.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/KitchenUser/All
+        // GET: api/KitchenUser
         [HttpGet]
-        [Route("All")]
         public async Task<ActionResult<List<KitchenUserDto>>> GetAllUsersForKitchen(long kitchenId)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);

@@ -20,7 +20,7 @@ namespace PantryPlannerApiUnitTests
         public KitchenUserServiceUnitTest()
         {
             _testUser = InMemoryDataGenerator.TestUser;
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: false);
 
             _kitchenUserService = new KitchenUserService(_context);
         }

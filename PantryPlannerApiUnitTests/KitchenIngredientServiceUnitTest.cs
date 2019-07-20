@@ -19,11 +19,8 @@ namespace PantryPlannerApiUnitTests
         public KitchenIngredientServiceUnitTest()
         {
             _testUser = InMemoryDataGenerator.TestUser;
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: true);
 
-            // load ingredient data into in-memory database
-            USDAFoodCompositionDbETL etl = new USDAFoodCompositionDbETL(FoodCompositionETLUnitTest.FoodCompositionFolderLocation);
-            etl.StartEtlProcess(_context);
 
             _service = new KitchenIngredientService(_context);
         }
@@ -31,6 +28,105 @@ namespace PantryPlannerApiUnitTests
 
         #region Get Test Methods
 
+        [Fact]
+        public void GetKitchenIngredients_NullArguments_ThrowsArgumentNullException()
+        {
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("kitchen is not setup for testing");
+            }
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _service.GetKitchenIngredients(null, _testUser);
+            });
+
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                _service.GetKitchenIngredients(kitchen, null);
+            });
+        }
+
+        [Fact]
+        public void GetKitchenIngredients_UserWithNoRights_ThrowsPermissionException()
+        {
+            List<long> myKitchenIds = _testUser.KitchenUser.Select(ku => ku.KitchenId).ToList();
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            // find a user by getting KitchenUsers that are not in any Kitchen of _testUser
+            PantryPlannerUser userWithNoRights = _context.KitchenUser
+                                                         .Where(u => u.UserId != _testUser.Id && myKitchenIds.Contains(u.KitchenId) == false) 
+                                                         .FirstOrDefault()?.User;
+
+            if (kitchen == null || userWithNoRights == null)
+            {
+                throw new ArgumentNullException("kitchen or user is not setup for testing");
+            }
+
+            Assert.Throws<PermissionsException>(() =>
+            {
+                _service.GetKitchenIngredients(kitchen, userWithNoRights);
+            });
+
+        }
+
+        [Fact]
+        public void GetKitchenIngredients_ValidKitchenAndUser_ReturnsCorrectResult()
+        {
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("kitchen is not setup for testing");
+            }
+
+            List<KitchenIngredient> expectedIngredients = _context.KitchenIngredient.Where(i => i.KitchenId == kitchen.KitchenId).ToList();
+
+
+            List<KitchenIngredient> ingredients = _service.GetKitchenIngredients(kitchen, _testUser);
+
+            Assert.Equal(expectedIngredients, ingredients);
+        }
+
+        [Fact]
+        public void GetKitchenIngredientsByName_ValidKitchenAndUser_ReturnsCorrectResult()
+        {
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new ArgumentNullException("kitchen is not setup for testing");
+            }
+
+            // add two new ingredients to the database
+            Ingredient testIngredient = new Ingredient()
+            {
+                AddedByUserId = _testUser.Id,
+                Name = "test ingredient 1"
+            };
+
+            Ingredient testIngredient2 = new Ingredient()
+            {
+                AddedByUserId = _testUser.Id,
+                Name = "test ingredient 2"
+            };
+
+            _context.Ingredient.Add(testIngredient);
+            _context.Ingredient.Add(testIngredient2);
+            _context.SaveChanges();
+
+            // make sure the new ingredients are in the kitchen  
+            _service.AddIngredientToKitchen(testIngredient, kitchen, _testUser);
+            _service.AddIngredientToKitchen(testIngredient2, kitchen, _testUser);
+
+ 
+            List<KitchenIngredient> ingredients = _service.GetKitchenIngredientsByName(kitchen, "test ingredient", _testUser);
+
+            
+            Assert.Equal(2, ingredients.Count);
+        }
 
         #endregion
 
@@ -106,10 +202,12 @@ namespace PantryPlannerApiUnitTests
 
             KitchenIngredient addedIngredient = _service.AddIngredientToKitchen(ingredient, kitchen, _testUser);
 
+            int countBeforeDelete = kitchen.KitchenIngredient.Count;
+
             var deletedIngredient = _service.DeleteKitchenIngredient(addedIngredient, _testUser);
 
             Assert.Equal(addedIngredient, deletedIngredient);
-            Assert.Equal(0, kitchen.KitchenIngredient.Count);
+            Assert.Equal(countBeforeDelete - 1, kitchen.KitchenIngredient.Count);
         }
 
 
@@ -136,9 +234,11 @@ namespace PantryPlannerApiUnitTests
                 IngredientId = ingredient.IngredientId,
             };
 
+            int countBeforeAdd = kitchen.KitchenIngredient.Count;
+
             _service.AddKitchenIngredient(ingredientToAdd, _testUser);
 
-            Assert.Equal(1, kitchen.KitchenIngredient.Count);
+            Assert.Equal(countBeforeAdd + 1, kitchen.KitchenIngredient.Count);
             Assert.NotNull(_context.KitchenIngredient.Where(i => i.KitchenIngredientId == ingredientToAdd.KitchenIngredientId).FirstOrDefault());
         }
 
@@ -273,10 +373,11 @@ namespace PantryPlannerApiUnitTests
                 throw new ArgumentNullException("ingredient or kitchen is not setup for testing");
             }
 
+            int countBeforeAdd = kitchen.KitchenIngredient.Count;
 
             KitchenIngredient addedIngredient = _service.AddIngredientToKitchen(ingredient, kitchen, _testUser);
 
-            Assert.Equal(1, kitchen.KitchenIngredient.Count);
+            Assert.Equal(countBeforeAdd + 1, kitchen.KitchenIngredient.Count);
             Assert.NotNull(_context.KitchenIngredient.Where(i => i.KitchenIngredientId == addedIngredient.KitchenIngredientId).FirstOrDefault());
         }
 

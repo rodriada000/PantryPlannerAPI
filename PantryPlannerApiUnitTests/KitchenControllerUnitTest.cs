@@ -25,7 +25,7 @@ namespace PantryPlannerApiUnitTests
         public KitchenControllerUnitTest()
         {
             _userManager = new FakeUserManager();
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _userManager.TestUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _userManager.TestUser, insertIngredientData: false);
             _controller = new PantryPlanner.Controllers.KitchenController(_context, _userManager);
         }
 

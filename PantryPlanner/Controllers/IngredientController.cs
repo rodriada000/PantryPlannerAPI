@@ -52,31 +52,31 @@ namespace PantryPlanner.Controllers
         }
 
         // GET: api/Ingredient
-        [HttpGet]
-        public async Task<ActionResult<List<IngredientDto>>> GetIngredientByNameAndCategory(string name, string categoryName)
-        {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<IngredientDto> ingredients = null;
+        //[HttpGet]
+        //public async Task<ActionResult<List<IngredientDto>>> GetIngredientByNameAndCategory(string name, string categoryName)
+        //{
+        //    PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+        //    List<IngredientDto> ingredients = null;
 
-            try
-            {
-                ingredients = IngredientDto.ToList(_service.GetIngredientByNameAndCategory(name, categoryName));
-            }
-            catch (ArgumentNullException e)
-            {
-                return BadRequest(e.Message);
-            }
-            catch (CategoryNotFoundException e)
-            {
-                return NotFound(e.Message);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
-            }
+        //    try
+        //    {
+        //        ingredients = IngredientDto.ToList(_service.GetIngredientByNameAndCategory(name, categoryName));
+        //    }
+        //    catch (ArgumentNullException e)
+        //    {
+        //        return BadRequest(e.Message);
+        //    }
+        //    catch (CategoryNotFoundException e)
+        //    {
+        //        return NotFound(e.Message);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        //    }
 
-            return ingredients;
-        }
+        //    return ingredients;
+        //}
 
         // GET: api/Ingredient/5
         [HttpGet("{id}")]

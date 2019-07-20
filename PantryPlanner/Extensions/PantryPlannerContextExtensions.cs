@@ -19,6 +19,7 @@ namespace PantryPlanner.Extensions
             return context.Kitchen.Any(e => e.KitchenId == kitchenId);
         }
 
+
         public static bool KitchenUserExists(this PantryPlannerContext context, long kitchenUserId)
         {
             return context.KitchenUser.Any(e => e.KitchenUserId == kitchenUserId);
@@ -39,16 +40,17 @@ namespace PantryPlanner.Extensions
             return context.KitchenUserExists(kitchen.KitchenId, user.Id);
         }
 
+
         public static bool CategoryExists(this PantryPlannerContext context, long categoryId)
         {
             return context.Category.Any(c => c.CategoryId == categoryId);
         }
 
+
         public static bool IngredientExists(this PantryPlannerContext context, long ingredientId)
         {
             return context.Ingredient.Any(i => i.IngredientId == ingredientId);
         }
-
 
         public static bool IngredientExistsPublicly(this PantryPlannerContext context, Ingredient ingredient)
         {
@@ -78,19 +80,20 @@ namespace PantryPlanner.Extensions
             return context.Ingredient.Any(i => i.Name == ingredient.Name && i.CategoryId == ingredient.CategoryId && i.AddedByUserId == user.Id && i.IsPublic == false);
         }
 
-        public static bool KitchenIngredientExists(this PantryPlannerContext context, long kitchenIngredientId)
-        {
-            return context.KitchenIngredient.Any(i => i.KitchenIngredientId == kitchenIngredientId);
-        }
 
-        public static bool IngredientExistsForKitchen(this PantryPlannerContext context, KitchenIngredient ingredient)
+        public static bool KitchenIngredientExists(this PantryPlannerContext context, KitchenIngredient ingredient)
         {
             if (ingredient == null)
             {
                 return false;
             }
 
-            return context.IngredientExistsForKitchen(ingredient.IngredientId, ingredient.KitchenId);
+            return context.KitchenIngredientExists(ingredient.KitchenIngredientId);
+        }
+
+        public static bool KitchenIngredientExists(this PantryPlannerContext context, long kitchenIngredientId)
+        {
+            return context.KitchenIngredient.Any(i => i.KitchenIngredientId == kitchenIngredientId);
         }
 
         public static bool IngredientExistsForKitchen(this PantryPlannerContext context, Ingredient ingredient, Kitchen kitchen)

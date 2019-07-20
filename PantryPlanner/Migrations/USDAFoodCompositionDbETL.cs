@@ -98,13 +98,14 @@ namespace PantryPlanner.Migrations
         /// runs the two main methods to load and parse the .txt data into the Ingredient/Category tables.
         /// </summary>
         /// <param name="context"></param>
-        public void StartEtlProcess(PantryPlannerContext context)
+        /// <param name="maxRowsToProcess"> -1 to process all; otherwise parse/insert ingredients upto the max</param>
+        public void StartEtlProcess(PantryPlannerContext context, int maxRowsToProcess = -1)
         {
             ParseFoodGroupFileAndInsertIntoCategoryTable(context);
-            ParseFoodDescriptionFileAndInsertIntoIngredientTable(context);
+            ParseFoodDescriptionFileAndInsertIntoIngredientTable(context, maxRowsToProcess);
         }
 
-        private void ParseFoodDescriptionFileAndInsertIntoIngredientTable(PantryPlannerContext context)
+        private void ParseFoodDescriptionFileAndInsertIntoIngredientTable(PantryPlannerContext context, int maxRowsToProcess = -1)
         {
             // validate file exists
             string fullPath = TxtRootFolderPath + FoodDescriptionFileName;
@@ -114,9 +115,17 @@ namespace PantryPlanner.Migrations
                 throw new FileNotFoundException($"Could not find {FoodDescriptionFileName} at the specified path", fullPath);
             }
 
+            int lineCount = 0;
 
             foreach (string line in File.ReadAllLines(fullPath))
             {
+                if (maxRowsToProcess != -1 && lineCount >= maxRowsToProcess)
+                {
+                    break; // stop parsing after reaching the max row count passed in
+                }
+
+                lineCount++;
+                
                 // parse line by format rules (each field is seperated by ^)
                 List<string> fieldValues = line.Split("^").ToList();
 
