@@ -20,11 +20,6 @@ namespace PantryPlannerApiUnitTests
         {
             _testUser = InMemoryDataGenerator.TestUser;
             _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: true);
-
-            // load ingredient data into in-memory database
-            USDAFoodCompositionDbETL etl = new USDAFoodCompositionDbETL(FoodCompositionETLUnitTest.FoodCompositionFolderLocation);
-            etl.StartEtlProcess(_context);
-
             _ingredientService = new IngredientService(_context);
         }
 

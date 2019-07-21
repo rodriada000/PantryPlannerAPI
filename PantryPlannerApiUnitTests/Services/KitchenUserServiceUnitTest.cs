@@ -570,15 +570,16 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void DeleteMyselfFromKitchen_OnlyOneUserInKitchen_ThrowsInvalidOperationException()
         {
-            KitchenUser expectedResult = _testUser.KitchenUser.Where(k => k.IsOwner == false).FirstOrDefault();
-            int kitchenCountBefore = _testUser.KitchenUser.Count;
+            InMemoryDataGenerator.InitializeKitchenAndKitchenUserForUser(_context, _testUser);
 
+            KitchenUser expectedResult = _testUser.KitchenUser.Where(k => k.Kitchen.KitchenUser.Count == 1 && k.IsOwner == false).FirstOrDefault();
             Kitchen notOwnedKitchen = expectedResult?.Kitchen;
 
             if (notOwnedKitchen == null)
             {
                 throw new Exception("kitchen not setup for testing");
             }
+
 
             Assert.Throws<InvalidOperationException>(() =>
             {

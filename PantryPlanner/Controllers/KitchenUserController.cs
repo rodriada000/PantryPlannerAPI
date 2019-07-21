@@ -176,7 +176,7 @@ namespace PantryPlanner.Controllers
         // POST: api/KitchenUser/Invite
         [HttpPost]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> InviteUserToKitchen(string username, long kitchenId)
+        public async Task<ActionResult> InviteUserToKitchen(string username, long kitchenId)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
 
@@ -209,13 +209,13 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return true;
+            return Ok();
         }
 
         // PUT: api/KitchenUser/Invite
         [HttpPut]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> AcceptKitchenInvite(long kitchenId)
+        public async Task<ActionResult> AcceptKitchenInvite(long kitchenId)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
 
@@ -244,13 +244,13 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
             
-            return true;
+            return Ok();
         }
 
         // DELETE: api/KitchenUser/Invite
         [HttpDelete]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> DenyKitchenInvite(long kitchenId)
+        public async Task<ActionResult> DenyKitchenInvite(long kitchenId)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
 
@@ -283,7 +283,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return true;
+            return Ok();
         }
 
 
@@ -316,7 +316,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return new KitchenUserDto(kitchenUser);
+            return Ok(new KitchenUserDto(kitchenUser));
         }
 
         // DELETE: api/KitchenUser
