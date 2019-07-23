@@ -316,6 +316,15 @@ namespace PantryPlannerApiUnitTests.Helpers
             // load ingredient data into in-memory database
             USDAFoodCompositionDbETL etl = new USDAFoodCompositionDbETL(FoodCompositionETLUnitTest.FoodCompositionFolderLocation);
             etl.StartEtlProcess(context, 250);
+
+            // mark a few ingredients as created by TestUser for test purposes
+            for (int i = 0; i < 5; i++)
+            {
+                Ingredient ingredient = context.Ingredient.Skip(i).FirstOrDefault();
+                ingredient.AddedByUserId = TestUserID;
+                context.Entry(ingredient).State = EntityState.Modified;
+            }
+            context.SaveChanges();
         }
 
 

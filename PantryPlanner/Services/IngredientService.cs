@@ -212,6 +212,12 @@ namespace PantryPlanner.Services
                 throw new UserNotFoundException(user.UserName);
             }
 
+            // validate name passed in
+            if (String.IsNullOrWhiteSpace(newIngredient.Name))
+            {
+                throw new InvalidOperationException("Ingredient Name is required");
+            }
+
             // validate an ingredient with same name in the same category doesn't already exist
             if (Context.IngredientExistsForUser(newIngredient, user))
             {

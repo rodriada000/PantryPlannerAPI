@@ -111,7 +111,7 @@ namespace PantryPlanner.Controllers
 
         // PUT: api/Ingredient/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateIngredient(long id, Ingredient ingredient)
+        public async Task<ActionResult> UpdateIngredient(long id, Ingredient ingredient)
         {
             PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
 
@@ -132,7 +132,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Ingredient
@@ -162,7 +162,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return CreatedAtAction(nameof(AddIngredient), new { id = ingredient.IngredientId }, new IngredientDto(ingredient));
+            return CreatedAtAction(nameof(AddIngredient), new IngredientDto(ingredient));
         }
 
         // DELETE: api/Ingredient/5
@@ -193,7 +193,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return new IngredientDto(ingredient);
+            return Ok(new IngredientDto(ingredient));
         }
 
     }
