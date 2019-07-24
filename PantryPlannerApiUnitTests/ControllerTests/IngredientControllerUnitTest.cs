@@ -47,9 +47,11 @@ namespace PantryPlannerApiUnitTests
             };
             ActionResult<IngredientDto> addResult = await _controller.AddIngredient(ingredientToAdd);
 
-            Assert.IsType<CreatedAtActionResult>(addResult.Result);
+            Assert.IsType<ObjectResult>(addResult.Result);
+            Assert.Equal(StatusCodes.Status201Created, (addResult.Result as ObjectResult).StatusCode);
 
-            var addedIngredient = (addResult.Result as CreatedAtActionResult).Value;
+
+            var addedIngredient = (addResult.Result as ObjectResult).Value;
 
             Assert.IsType<IngredientDto>(addedIngredient);
             Assert.Equal(new IngredientDto(ingredientToAdd).ToString(), (addedIngredient as IngredientDto).ToString());

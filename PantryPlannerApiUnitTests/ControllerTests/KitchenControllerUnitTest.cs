@@ -39,10 +39,15 @@ namespace PantryPlannerApiUnitTests
             };
 
             ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
-            Assert.IsType<KitchenDto>(result.Value);
+            Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(StatusCodes.Status201Created, (result.Result as ObjectResult).StatusCode);
 
-            Assert.Equal(kitchen.Name, result.Value.Name);
-            Assert.Equal(kitchen.Description, result.Value.Description);
+            var newKitchen = (result.Result as ObjectResult).Value;
+            Assert.IsType<KitchenDto>(newKitchen);
+
+
+            Assert.Equal(kitchen.Name, (newKitchen as KitchenDto).Name);
+            Assert.Equal(kitchen.Description, (newKitchen as KitchenDto).Description);
 
         }
 
@@ -60,9 +65,11 @@ namespace PantryPlannerApiUnitTests
 
             ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
 
-            Assert.Equal(_userManager.TestUser.Id, result.Value.CreatedByUserId);
-            Assert.NotEqual(guidBefore, result.Value.UniquePublicGuid);
-            Assert.NotEqual(dateBefore, result.Value.DateCreated);
+            KitchenDto newKitchen = ((result.Result as ObjectResult).Value as KitchenDto);
+
+            Assert.Equal(_userManager.TestUser.Id, newKitchen.CreatedByUserId);
+            Assert.NotEqual(guidBefore, newKitchen.UniquePublicGuid);
+            Assert.NotEqual(dateBefore, newKitchen.DateCreated);
         }
 
         [Fact]
