@@ -166,21 +166,19 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void DeleteKitchenIngredient_UserNoRights_ThrowsPermissionsException()
         {
-            Ingredient ingredient = _context.Ingredient.Where(i => i.Name.Contains("butter")).FirstOrDefault();
             Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
-            PantryPlannerUser otherUserTryingToDelete = _context.Users.Where(u => u.Id != _testUser.Id).FirstOrDefault();
+            KitchenIngredient ingredientToDelete = kitchen.KitchenIngredient.FirstOrDefault();
+            PantryPlannerUser otherUserTryingToDelete = InMemoryDataGenerator.AddNewRandomUser(_context);
 
 
-            if (ingredient == null || kitchen == null || otherUserTryingToDelete == null)
+            if (ingredientToDelete == null || kitchen == null || otherUserTryingToDelete == null)
             {
                 throw new ArgumentNullException("ingredient, kitchen, or user is not setup for testing");
             }
 
-            KitchenIngredient addedIngredient = _service.AddIngredientToKitchen(ingredient, kitchen, _testUser);
-
             Assert.Throws<PermissionsException>(() =>
             {
-                _service.DeleteKitchenIngredient(addedIngredient, otherUserTryingToDelete);
+                _service.DeleteKitchenIngredient(ingredientToDelete, otherUserTryingToDelete);
             });
         }
 
@@ -549,15 +547,14 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void UpdateKitchenIngredient_NullArguments_ThrowsArgumentNullException()
         {
-            Ingredient ingredient = _context.Ingredient.Where(i => i.Name.Contains("butter")).FirstOrDefault();
-            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+            Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
+            KitchenIngredient ingredient = kitchen.KitchenIngredient.FirstOrDefault();
 
             if (ingredient == null || kitchen == null)
             {
                 throw new ArgumentNullException("ingredient or kitchen is not setup for testing");
             }
 
-            KitchenIngredient addedIngredient = _service.AddIngredientToKitchen(ingredient, kitchen, _testUser);
 
             Assert.Throws<ArgumentNullException>(() =>
             {
@@ -566,7 +563,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                _service.UpdateKitchenIngredient(addedIngredient, null);
+                _service.UpdateKitchenIngredient(ingredient, null);
             });
         }
 

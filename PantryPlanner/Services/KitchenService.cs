@@ -122,7 +122,7 @@ namespace PantryPlanner.Services
 
         #region Add Methods
 
-        public bool AddKitchen(long kitchenId, PantryPlannerUser user)
+        public async Task<bool> AddKitchenAsync(long kitchenId, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -135,10 +135,10 @@ namespace PantryPlanner.Services
                 throw new KitchenNotFoundException(kitchenId);
             }
 
-            return AddKitchen(kitchen, user);
+            return await AddKitchenAsync(kitchen, user);
         }
 
-        public bool AddKitchen(Kitchen kitchen, PantryPlannerUser user)
+        public async Task<bool> AddKitchenAsync(Kitchen kitchen, PantryPlannerUser user)
         {
             if (kitchen == null)
             {
@@ -162,6 +162,22 @@ namespace PantryPlanner.Services
 
             Context.Kitchen.Add(kitchen);
 
+            try
+            {
+                await Context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                if (Context.KitchenExists(kitchen.KitchenId))
+                {
+                    throw new Exception("Kitchen already exists");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             // create relationship between user and new kitchen
             KitchenUser kitchenUser = new KitchenUser()
             {
@@ -178,7 +194,7 @@ namespace PantryPlanner.Services
 
             try
             {
-                Context.SaveChangesAsync();
+                await Context.SaveChangesAsync();
             }
             catch (Exception)
             {
