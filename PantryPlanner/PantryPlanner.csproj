@@ -29,6 +29,8 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.40.2" />
+    <PackageReference Include="Google.Apis.Auth.AspNetCore" Version="1.40.2" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Analyzers" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />

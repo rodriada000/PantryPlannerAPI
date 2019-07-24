@@ -39,7 +39,7 @@ namespace PantryPlanner.Services
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Data Source=DESKTOP-ADAMR;Initial Catalog=dev_PantryPlanner;Integrated Security=True");
+                optionsBuilder.UseSqlServer("Data Source=localhost\\SQLEXPRESS;Initial Catalog=dev-PantryPlanner;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;MultipleActiveResultSets=true");
             }
         }
 
