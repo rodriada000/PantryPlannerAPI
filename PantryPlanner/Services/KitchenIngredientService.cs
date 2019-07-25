@@ -27,7 +27,34 @@ namespace PantryPlanner.Services
         /// <summary>
         /// Return all ingredients in the <paramref name="kitchen"/>. 
         /// </summary>
-        /// 
+        public List<KitchenIngredient> GetKitchenIngredients(long kitchenId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            if (Permissions.UserHasRightsToKitchen(user, kitchenId) == false)
+            {
+                throw new PermissionsException("You do not have rights to this kitchen");
+            }
+
+            return Context.KitchenIngredient.Where(k => k.KitchenId == kitchenId)
+                                            .Include(i => i.Ingredient)
+                                            .Include(i => i.Category)
+                                            .Include(i => i.Kitchen)
+                                            .Include(i => i.AddedByKitchenUser)
+                                            .ToList();
+        }
+
+        /// <summary>
+        /// Return all ingredients in the <paramref name="kitchen"/>. 
+        /// </summary>
         public List<KitchenIngredient> GetKitchenIngredients(Kitchen kitchen, PantryPlannerUser user)
         {
             if (kitchen == null)
@@ -35,21 +62,7 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(kitchen));
             }
 
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            if (Permissions.UserHasRightsToKitchen(user, kitchen) == false)
-            {
-                throw new PermissionsException("You do not have rights to this kitchen");
-            }
-
-            return Context.KitchenIngredient.Where(k => k.KitchenId == kitchen.KitchenId)
-                                            .Include(i => i.Ingredient)
-                                            .Include(i => i.Category)
-                                            .Include(i => i.AddedByKitchenUser)
-                                            .ToList();
+            return GetKitchenIngredients(kitchen.KitchenId, user);
         }
 
         /// <summary>
@@ -216,15 +229,20 @@ namespace PantryPlanner.Services
         /// </summary>
         public KitchenIngredient GetKitchenIngredientById(long kitchenIngredientId, PantryPlannerUser user)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
             if (Context.KitchenIngredientExists(kitchenIngredientId) == false)
             {
-                throw new IngredientNotFoundException(kitchenIngredientId);
+                throw new IngredientNotFoundException($"No KitchenIngredient exists with ID {kitchenIngredientId}");
             }
 
             KitchenIngredient ingredient = GetKitchenIngredientById(kitchenIngredientId);
 
 
-            if (Permissions.UserHasRightsToKitchen(user, ingredient.KitchenId))
+            if (Permissions.UserHasRightsToKitchen(user, ingredient.KitchenId) == false)
             {
                 throw new PermissionsException("You do not have rights to this ingredient");
             }
@@ -241,6 +259,7 @@ namespace PantryPlanner.Services
                                                 .Include(i => i.Ingredient)
                                                 .Include(i => i.Category)
                                                 .Include(i => i.AddedByKitchenUser)
+                                                .Include(i => i.Kitchen)
                                                 .FirstOrDefault();
         }
 

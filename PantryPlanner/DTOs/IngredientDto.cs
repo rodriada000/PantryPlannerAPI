@@ -29,6 +29,11 @@ namespace PantryPlanner.DTOs
 
         public IngredientDto(Ingredient ingredient)
         {
+            if (ingredient == null)
+            {
+                return;
+            }
+
             IngredientId = ingredient.IngredientId;
             AddedByUserId = ingredient.AddedByUserId;
             CategoryId = ingredient.CategoryId;

@@ -54,7 +54,8 @@ namespace PantryPlanner.Controllers
 
             try
             {
-                return KitchenDto.ToList(_service.GetAllKitchensForUser(user));
+                List<Kitchen> kitchens = _service.GetAllKitchensForUser(user);
+                return Ok(KitchenDto.ToList(kitchens));
             }
             catch (ArgumentNullException e)
             {
@@ -94,6 +95,8 @@ namespace PantryPlanner.Controllers
             try
             {
                 kitchen = _service.GetKitchenById(id, user);
+                return Ok(new KitchenDto(kitchen));
+
             }
             catch (ArgumentNullException e)
             {
@@ -115,13 +118,6 @@ namespace PantryPlanner.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
-
-            if (kitchen == null)
-            {
-                return NotFound($"Kitchen with ID {id} not found");
-            }
-
-            return new KitchenDto(kitchen);
         }
 
         // PUT: api/Kitchen/5
@@ -243,7 +239,7 @@ namespace PantryPlanner.Controllers
                     return NotFound();
                 }
 
-                return new KitchenDto(deletedKitchen);
+                return Ok(new KitchenDto(deletedKitchen));
             }
             catch (ArgumentNullException e)
             {

@@ -2,119 +2,125 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PantryPlanner.DTOs;
+using PantryPlanner.Exceptions;
+using PantryPlanner.Extensions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class KitchenIngredientController : ControllerBase
     {
-        private readonly PantryPlannerContext _context;
+        private readonly KitchenIngredientService _service;
+        private readonly UserManager<PantryPlannerUser> _userManager;
 
-        public KitchenIngredientController(PantryPlannerContext context)
+        public KitchenIngredientController(PantryPlannerContext context, UserManager<PantryPlannerUser> userManager)
         {
-            _context = context;
+            _service = new KitchenIngredientService(context);
+            _userManager = userManager;
         }
+
+
+        #region GET Methods
 
         // GET: api/KitchenIngredient
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<KitchenIngredient>>> GetKitchenIngredient()
+        public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchen(long kitchenId)
         {
-            return await _context.KitchenIngredient.ToListAsync();
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                List<KitchenIngredient> ingredientsInKitchen = _service.GetKitchenIngredients(kitchenId, user);
+
+                return Ok(KitchenIngredientDto.ToList(ingredientsInKitchen));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         // GET: api/KitchenIngredient/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<KitchenIngredient>> GetKitchenIngredient(long id)
+        public async Task<ActionResult<KitchenIngredientDto>> GetKitchenIngredient(long id)
         {
-            var kitchenIngredient = await _context.KitchenIngredient.FindAsync(id);
+            PantryPlannerUser user;
 
-            if (kitchenIngredient == null)
+            try
             {
-                return NotFound();
-            }
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
 
-            return kitchenIngredient;
+                KitchenIngredientDto kitchenIngredient = new KitchenIngredientDto(_service.GetKitchenIngredientById(id, user));
+                return Ok(kitchenIngredient);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (IngredientNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
+
+        #endregion
 
         // PUT: api/KitchenIngredient/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutKitchenIngredient(long id, KitchenIngredient kitchenIngredient)
         {
-            if (id != kitchenIngredient.KitchenIngredientId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(kitchenIngredient).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!KitchenIngredientExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return null;
         }
 
         // POST: api/KitchenIngredient
         [HttpPost]
         public async Task<ActionResult<KitchenIngredient>> PostKitchenIngredient(KitchenIngredient kitchenIngredient)
         {
-            _context.KitchenIngredient.Add(kitchenIngredient);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (KitchenIngredientExists(kitchenIngredient.KitchenIngredientId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetKitchenIngredient", new { id = kitchenIngredient.KitchenIngredientId }, kitchenIngredient);
+            return null;
         }
 
         // DELETE: api/KitchenIngredient/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<KitchenIngredient>> DeleteKitchenIngredient(long id)
         {
-            var kitchenIngredient = await _context.KitchenIngredient.FindAsync(id);
-            if (kitchenIngredient == null)
-            {
-                return NotFound();
-            }
-
-            _context.KitchenIngredient.Remove(kitchenIngredient);
-            await _context.SaveChangesAsync();
-
-            return kitchenIngredient;
+            return null;
         }
 
         private bool KitchenIngredientExists(long id)
         {
-            return _context.KitchenIngredient.Any(e => e.KitchenIngredientId == id);
+            return true;
         }
     }
 }

@@ -1,14 +1,10 @@
 using System;
 using Xunit;
 using PantryPlanner.Models;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using PantryPlanner.Services;
 using PantryPlannerApiUnitTests.Helpers;
-using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
-using Moq;
 using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Http;

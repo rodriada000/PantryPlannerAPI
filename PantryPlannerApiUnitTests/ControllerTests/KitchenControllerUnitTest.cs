@@ -73,7 +73,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public async Task Delete_ValidKitchen_ReturnsKitchenDeletedAsync()
+        public async Task Delete_ValidKitchen_ReturnsOkAndKitchenDeletedAsync()
         {
             Kitchen kitchenToDelete = _userManager.TestUser.KitchenUser.Where(k => k.IsOwner == true).FirstOrDefault()?.Kitchen;
 
@@ -83,8 +83,12 @@ namespace PantryPlannerApiUnitTests
             }
 
             ActionResult<KitchenDto> result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
+            Assert.IsType<OkObjectResult>(result.Result);
 
-            //Assert.Equal(kitchenToDelete.KitchenId, result.Value.KitchenId);
+            object actualKitchenDeleted = (result.Result as OkObjectResult).Value;
+            Assert.IsType<KitchenDto>(actualKitchenDeleted);
+
+            Xunit.Asserts.Compare.DeepAssert.Equals(new KitchenDto(kitchenToDelete), actualKitchenDeleted);
         }
 
         [Fact]

@@ -13,7 +13,7 @@ namespace PantryPlanner.Services
     {
         public PantryPlannerContext Context { get; set; }
 
-        public PermissionService Permissions { get; set; }
+        private PermissionService Permissions { get; set; }
 
         public IngredientService(PantryPlannerContext context)
         {
