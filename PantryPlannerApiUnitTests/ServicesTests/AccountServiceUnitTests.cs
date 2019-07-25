@@ -21,6 +21,7 @@ namespace PantryPlannerApiUnitTests
     {
         PantryPlannerContext _context;
         PantryPlannerUser _testUser;
+        AccountService _service;
         UserManager<PantryPlannerUser> _userManager;
         SignInManager<PantryPlannerUser> _signInManager;
 
@@ -37,6 +38,8 @@ namespace PantryPlannerApiUnitTests
                                                                 , new Mock<IOptions<IdentityOptions>>().Object
                                                                 , new Mock<ILogger<SignInManager<PantryPlannerUser>>>().Object
                                                                 , new Mock<IAuthenticationSchemeProvider>().Object);
+
+            _service = new AccountService(_userManager, _signInManager, null);
         }
 
         #region password generator test methods
@@ -111,7 +114,7 @@ namespace PantryPlannerApiUnitTests
                 Email = "newGoogleUser@gmail.com"
             };
 
-            PantryPlannerUser newUser = await AccountService.AutoCreateAccountFromGoogleAsync(payload, _userManager, _signInManager);
+            PantryPlannerUser newUser = await _service.AutoCreateAccountFromGoogleAsync(payload);
 
             Assert.NotNull(newUser);
             Assert.Equal(payload.Email, newUser.Email);

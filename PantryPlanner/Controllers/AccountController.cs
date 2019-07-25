@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PantryPlanner.DTOs;
+using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
@@ -26,61 +27,50 @@ namespace PantryPlanner.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private readonly SignInManager<PantryPlannerUser> _signInManager;
-        private readonly UserManager<PantryPlannerUser> _userManager;
-        private readonly IConfiguration _configuration;
+        private readonly AccountService _accountService;
 
         public AccountController(UserManager<PantryPlannerUser> userManager, SignInManager<PantryPlannerUser> signInManager, IConfiguration configuration)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
+            _accountService = new AccountService(userManager, signInManager, configuration);
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<object> LoginAsync([FromBody] LoginDto model)
         {
-            Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-
-            if (result.Succeeded)
+            try
             {
-                PantryPlannerUser appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                object token = AccountService.GenerateJwtToken(model.Email, appUser, _configuration);
+                object token = await _accountService.LoginWithEmailAndPasswordAsync(model);
                 return token;
             }
-            else if (result.IsLockedOut)
+            catch (AccountException e)
             {
-                return Unauthorized("The user is locked out");
+                return Unauthorized(e.Message);
             }
-            else if (result.IsNotAllowed)
+            catch (Exception e)
             {
-                return Unauthorized("The user is not allowed to login");
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return StatusCode(StatusCodes.Status500InternalServerError, "INVALID LOGIN ATTEMPT");
         }
 
         [HttpPost]
         [Route("Register")]
         public async Task<object> RegisterAsync([FromBody] RegisterDto model)
         {
-            PantryPlannerUser user = new PantryPlannerUser()
+            try
             {
-                UserName = model.Email,
-                Email = model.Email
-            };
-
-            IdentityResult result = await _userManager.CreateAsync(user, model.Password);
-
-            if (result.Succeeded)
-            {
-                await _signInManager.SignInAsync(user, false);
-                object token = AccountService.GenerateJwtToken(model.Email, user, _configuration);
+                object token = await _accountService.RegisterWithEmailAndPasswordAsync(model);
                 return token;
             }
-
-            return StatusCode(StatusCodes.Status500InternalServerError, String.Join(',', result.Errors.Select(e => e.Description)));
+            catch (AccountException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
     }

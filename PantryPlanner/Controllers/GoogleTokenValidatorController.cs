@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
@@ -16,16 +17,12 @@ namespace PantryPlanner.Controllers
     [ApiController]
     public class GoogleTokenValidatorController : ControllerBase
     {
-        private readonly SignInManager<PantryPlannerUser> _signInManager;
-        private readonly UserManager<PantryPlannerUser> _userManager;
-        private readonly IConfiguration _configuration;
+        private readonly AccountService _accountService;
 
 
         public GoogleTokenValidatorController(UserManager<PantryPlannerUser> userManager, SignInManager<PantryPlannerUser> signInManager, IConfiguration configuration)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _configuration = configuration;
+            _accountService = new AccountService(userManager, signInManager, configuration);
         }
 
 
@@ -33,35 +30,19 @@ namespace PantryPlanner.Controllers
         [Route("Login")]
         public async Task<ActionResult<object>> ValidateTokenAndLoginAsync(string idToken)
         {
-            bool isValid = await AccountService.IsGoogleTokenValidAsync(idToken);
-
-            if (!isValid)
+            try
             {
-                return Unauthorized();
-            }
-
-            GoogleJsonWebSignature.Payload validPayload = await GoogleJsonWebSignature.ValidateAsync(idToken);
-
-            PantryPlannerUser appUser = _userManager.Users.SingleOrDefault(u => u.Email == validPayload.Email);
-
-            if (appUser == null)
-            {
-                // user doesn't exist so we'll auto create them
-                appUser = await AccountService.AutoCreateAccountFromGoogleAsync(validPayload, _userManager, _signInManager);
-            }
-
-            
-            if (appUser != null)
-            {
-                // sign the user in and return a Jwt Token
-                await _signInManager.SignInAsync(appUser, false);
-                object token = AccountService.GenerateJwtToken(appUser.Email, appUser, _configuration);
+                object token = await _accountService.LoginUsingGoogleIdToken(idToken);
                 return token;
             }
-
-
-            // reached here then the user could not be created/found
-            return Unauthorized($"Could not login with google user for email {validPayload.Email}");
+            catch (AccountException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
     }
 }
