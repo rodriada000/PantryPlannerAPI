@@ -38,7 +38,7 @@ namespace PantryPlannerApiUnitTests
         }
 
 
-        [Fact (Skip = "takes for ever to test (~2 minutes)")]
+        [Fact]
         public void StartEtlProcess_SkipsDuplicates()
         {
             // arrange: run the ETL process once

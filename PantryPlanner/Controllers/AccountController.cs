@@ -12,6 +12,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using PantryPlanner.DTOs;
 using PantryPlanner.Models;
+using PantryPlanner.Services;
 
 namespace PantryPlanner.Controllers
 {
@@ -45,7 +46,7 @@ namespace PantryPlanner.Controllers
             if (result.Succeeded)
             {
                 PantryPlannerUser appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                object token = GenerateJwtToken(model.Email, appUser);
+                object token = AccountService.GenerateJwtToken(model.Email, appUser, _configuration);
                 return token;
             }
             else if (result.IsLockedOut)
@@ -75,35 +76,11 @@ namespace PantryPlanner.Controllers
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, false);
-                object token = GenerateJwtToken(model.Email, user);
+                object token = AccountService.GenerateJwtToken(model.Email, user, _configuration);
                 return token;
             }
 
             return StatusCode(StatusCodes.Status500InternalServerError, String.Join(',', result.Errors.Select(e => e.Description)));
-        }
-
-        private object GenerateJwtToken(string email, IdentityUser user)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtKey"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var expires = DateTime.Now.AddDays(Convert.ToDouble(_configuration["JwtExpireDays"]));
-
-            var token = new JwtSecurityToken(
-                _configuration["JwtIssuer"],
-                _configuration["JwtIssuer"],
-                claims,
-                expires: expires,
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
     }
