@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
-namespace PantryPlanner.Migrations
+namespace PantryPlanner.Classes
 {
     /// <summary>
     /// This class is used to run a ETL process on the USDA Food Composition Database .txt files

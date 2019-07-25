@@ -1,4 +1,4 @@
-﻿using PantryPlanner.Migrations;
+﻿using PantryPlanner.Classes;
 using PantryPlanner.Services;
 using PantryPlannerApiUnitTests.Helpers;
 using System.Linq;
