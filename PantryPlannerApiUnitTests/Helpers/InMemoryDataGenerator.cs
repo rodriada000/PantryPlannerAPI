@@ -305,6 +305,30 @@ namespace PantryPlannerApiUnitTests.Helpers
             }
         }
 
+        internal static Ingredient AddNewRandomIngredient(PantryPlannerContext context, PantryPlannerUser userAdding = null)
+        {
+            string guid = Guid.NewGuid().ToString();
+
+            if (userAdding == null)
+            {
+                userAdding = InMemoryDataGenerator.TestUser;
+            }
+
+            Ingredient newIngredient = new Ingredient()
+            {
+                Name = $"random ingredient {guid.Substring(0, 8)}",
+                Description = $"random guid: {guid}",
+                AddedByUserId = userAdding.Id,
+                DateAdded = DateTime.Now,
+                IsPublic = true
+            };
+
+            context.Ingredient.Add(newIngredient);
+            context.SaveChanges();
+
+            return newIngredient;
+        }
+
         /// <summary>
         /// Inserts a subset (250 records) of Ingredient test data into <paramref name="context"/> using the USDA Food Composition ETL process.
         /// </summary>
