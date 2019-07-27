@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,12 +37,12 @@ namespace PantryPlanner.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public async Task<object> LoginAsync([FromBody] LoginDto model)
+        public async Task<ActionResult<string>> LoginAsync([FromBody] LoginDto model)
         {
             try
             {
-                object token = await _accountService.LoginWithEmailAndPasswordAsync(model);
-                return token;
+                string token = await _accountService.LoginWithEmailAndPasswordAsync(model);
+                return Ok(token);
             }
             catch (AccountException e)
             {
@@ -56,12 +57,36 @@ namespace PantryPlanner.Controllers
 
         [HttpPost]
         [Route("Register")]
-        public async Task<object> RegisterAsync([FromBody] RegisterDto model)
+        public async Task<ActionResult<string>> RegisterAsync([FromBody] LoginDto model)
         {
             try
             {
-                object token = await _accountService.RegisterWithEmailAndPasswordAsync(model);
+                string token = await _accountService.RegisterWithEmailAndPasswordAsync(model);
                 return token;
+            }
+            catch (AccountException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("NewToken")]
+        [Authorize]
+        public async Task<ActionResult<string>> GetNewTokenForLoggedInUserAsync(string token)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _accountService.GetUserForJwtTokenAsync(token);
+                string newToken = await _accountService.ValidateAndGenerateNewJwtTokenAsync(token, user);
+
+                return Ok(newToken);
             }
             catch (AccountException e)
             {

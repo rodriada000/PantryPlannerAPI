@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using PantryPlanner.Classes;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
+using PantryPlanner.Extensions;
 using PantryPlanner.Models;
 using System;
 using System.Collections.Generic;
@@ -35,12 +36,12 @@ namespace PantryPlanner.Services
         /// <summary>
         /// Generate a Jwt Token for the App to authorize later incoming requests
         /// </summary>
-        /// <returns>Jwt Token object (can be treated as a string) </returns>
-        public static object GenerateJwtToken(string email, PantryPlannerUser user, IConfiguration configuration)
+        /// <returns>Jwt Token serialized string </returns>
+        public static string GenerateJwtToken(PantryPlannerUser user, IConfiguration configuration)
         {
             List<Claim> claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, email),
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.NameIdentifier, user.Id)
             };
@@ -58,6 +59,80 @@ namespace PantryPlanner.Services
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        /// <summary>
+        /// Returns true if the <paramref name="token"/> is signed by the API and the token is NOT expired.
+        /// The ClaimsPrincipal for the validated token is returned in an out parameter.
+        /// </summary>
+        /// <param name="token"> token to validate </param>
+        /// <param name="configuration"> IConfiguration section that contains 'JwtKey' and 'JwtIssuer' </param>
+        /// <param name="tokenClaims"> Claims for the token, if valid </param>
+        public static bool IsJwtTokenValid(string token, IConfiguration configuration, out ClaimsPrincipal tokenClaims)
+        {
+            SecurityToken returnedSecurityToken;
+            JwtSecurityTokenHandler securityHandler = new JwtSecurityTokenHandler();
+            TokenValidationParameters validationParams = new TokenValidationParameters()
+            {
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtKey"])),
+                ValidAudiences = new[] { configuration["JwtIssuer"] },
+                ValidIssuer = configuration["JwtIssuer"],
+            };
+
+
+            tokenClaims = securityHandler.ValidateToken(token, validationParams, out returnedSecurityToken);
+
+            return (tokenClaims != null && returnedSecurityToken.ValidTo >= DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Get user from a valid Jwt Token based on the claims in the token
+        /// </summary>
+        public async Task<PantryPlannerUser> GetUserForJwtTokenAsync(string token)
+        {
+            PantryPlannerUser user;
+            ClaimsPrincipal tokenClaims;
+
+            if (IsJwtTokenValid(token, _configuration, out tokenClaims) == false)
+            {
+                return null;
+            }
+
+            user = await _userManager.GetUserFromCookieOrJwtAsync(tokenClaims);
+
+            return user;
+        }
+
+        /// <summary>
+        /// Generate a new Jwt Token for a user with an existing token. 
+        /// This method will validate that the <paramref name="token"/> is owned by <paramref name="user"/>
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="user"></param>
+        /// <remarks>
+        /// This is used to generate a new Jwt token for a user that is already logged in. It is useful in third-party
+        /// apps e.g. mobile apps to silently login the user and get a new Jwt Token so that the expiration date is renewed.
+        /// </remarks>
+        public async Task<string> ValidateAndGenerateNewJwtTokenAsync(string token, PantryPlannerUser user)
+        {
+            ClaimsPrincipal tokenClaims;
+
+
+            if (IsJwtTokenValid(token, _configuration, out tokenClaims) == false)
+            {
+                throw new AccountException("token is not valid");
+            }
+
+            // validate user passed in matches the token claims
+            PantryPlannerUser userFromClaims = await _userManager.GetUserFromCookieOrJwtAsync(tokenClaims);
+
+            if (userFromClaims.Id != user.Id)
+            {
+                throw new AccountException("token is not assigned to user.");
+            }
+
+            string newToken = GenerateJwtToken(user, _configuration);
+            return newToken;
         }
 
 
@@ -89,7 +164,7 @@ namespace PantryPlanner.Services
         /// <param name="model"> DTO with email and password for new user to create </param>
         /// <returns> Jwt Token for authorizing later requests to API </returns>
         /// <exception cref="AccountException"> Thrown when failed to create user. </exception>
-        internal async Task<object> RegisterWithEmailAndPasswordAsync(RegisterDto model)
+        internal async Task<string> RegisterWithEmailAndPasswordAsync(LoginDto model)
         {
             PantryPlannerUser user = new PantryPlannerUser()
             {
@@ -102,7 +177,7 @@ namespace PantryPlanner.Services
             if (result.Succeeded)
             {
                 await _signInManager.SignInAsync(user, false);
-                object token = GenerateJwtToken(model.Email, user, _configuration);
+                string token = GenerateJwtToken(user, _configuration);
                 return token;
             }
 
@@ -115,7 +190,7 @@ namespace PantryPlanner.Services
         /// <param name="model"> DTO with email and password to login with </param>
         /// <returns> Jwt Token for logged in user </returns>
         /// <exception cref="AccountException"> Thrown when failed to login (cant find user, user is locked out, or invalid username/password) </exception>
-        internal async Task<object> LoginWithEmailAndPasswordAsync(LoginDto model)
+        internal async Task<string> LoginWithEmailAndPasswordAsync(LoginDto model)
         {
             SignInResult result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
@@ -128,7 +203,7 @@ namespace PantryPlanner.Services
                     throw new AccountException("Could not look up user.");
                 }
 
-                object token = GenerateJwtToken(model.Email, appUser, _configuration);
+                string token = GenerateJwtToken(appUser, _configuration);
                 return token;
             }
             else if (result.IsLockedOut)
@@ -152,7 +227,7 @@ namespace PantryPlanner.Services
         /// <param name="idToken"> Google Id Token provided by google when signing in with OAuth (e.g. from mobile app) </param>
         /// <returns> Jwt Token for authorizing later requests to API. </returns>
         /// <exception cref="AccountException"> Thrown when <paramref name="idToken"/> is not valid or user can not be created or login </exception>
-        public async Task<object> LoginUsingGoogleIdToken(string idToken)
+        public async Task<string> LoginUsingGoogleIdToken(string idToken)
         {
             bool isValid = await IsGoogleTokenValidAsync(idToken).ConfigureAwait(false);
 
@@ -176,7 +251,7 @@ namespace PantryPlanner.Services
             {
                 // sign the user in and return a Jwt Token
                 await _signInManager.SignInAsync(appUser, false).ConfigureAwait(false);
-                object token = GenerateJwtToken(appUser.Email, appUser, _configuration);
+                string token = GenerateJwtToken(appUser, _configuration);
                 return token;
             }
 
