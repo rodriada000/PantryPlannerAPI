@@ -77,14 +77,30 @@ namespace PantryPlanner.Controllers
         [HttpGet]
         [Route("NewToken")]
         [Authorize]
-        public async Task<ActionResult<string>> GetNewTokenForLoggedInUserAsync(string token)
+        public async Task<ActionResult<string>> GetNewTokenForLoggedInUserAsync()
         {
             PantryPlannerUser user;
+            string jwtTokenFromHeader;
+
 
             try
             {
-                user = await _accountService.GetUserForJwtTokenAsync(token);
-                string newToken = await _accountService.ValidateAndGenerateNewJwtTokenAsync(token, user);
+                // get the current Jwt Token from Request Headers
+                if (this.Request.Headers.ContainsKey("Authorization"))
+                {
+                    Microsoft.Extensions.Primitives.StringValues headerValue;
+                    Request.Headers.TryGetValue("Authorization", out headerValue);
+
+                    string bearerPrefix = "Bearer ";
+                    jwtTokenFromHeader = headerValue.FirstOrDefault().Substring(bearerPrefix.Length);
+                }
+                else
+                {
+                    return BadRequest("Authorization header is missing");
+                }
+
+                user = await _accountService.GetUserForJwtTokenAsync(jwtTokenFromHeader);
+                string newToken = await _accountService.ValidateAndGenerateNewJwtTokenAsync(jwtTokenFromHeader, user);
 
                 return Ok(newToken);
             }
