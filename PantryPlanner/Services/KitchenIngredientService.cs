@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
 using PantryPlanner.Extensions;
 using PantryPlanner.Models;
@@ -127,6 +128,21 @@ namespace PantryPlanner.Services
             return ingredients;
         }
 
+        /// <summary>
+        /// Return all ingredients in the <paramref name="kitchen"/> that match the <paramref name="name"/> passed in. 
+        /// </summary>
+        public List<KitchenIngredient> GetKitchenIngredientsByName(long kitchenId, string name, PantryPlannerUser user)
+        {
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            Kitchen kitchen = Context.Kitchen.Where(k => k.KitchenId == kitchenId).FirstOrDefault();
+
+            return GetKitchenIngredientsByName(kitchen, name, user);
+        }
+
 
         /// <summary>
         /// Gets the first Category that matches <paramref name="categoryName"/> and returns all ingredients in the <paramref name="kitchen"/> in the found category.
@@ -146,6 +162,23 @@ namespace PantryPlanner.Services
 
             return GetKitchenIngredientsByCategory(kitchen, category, user);
         }
+
+        /// <summary>
+        /// Gets the first Category that matches <paramref name="categoryName"/> and returns all ingredients in the <paramref name="kitchen"/> in the found category.
+        /// </summary>
+        /// 
+        public List<KitchenIngredient> GetKitchenIngredientsByCategoryName(long kitchenId, string categoryName, PantryPlannerUser user)
+        {
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            Kitchen kitchen = Context.Kitchen.Where(k => k.KitchenId == kitchenId).FirstOrDefault();
+
+            return GetKitchenIngredientsByCategoryName(kitchen, categoryName, user);
+        }
+
 
         /// <summary>
         /// Return all ingredients in the <paramref name="kitchen"/> 
@@ -184,6 +217,29 @@ namespace PantryPlanner.Services
                                             .Include(i => i.AddedByKitchenUser)
                                             .ToList();
         }
+
+        /// <summary>
+        /// Return all ingredients in the <paramref name="kitchen"/> that are in a given Category
+        /// </summary>
+        public List<KitchenIngredient> GetKitchenIngredientsByCategory(long kitchenId, long categoryId, PantryPlannerUser user)
+        {
+            if (Context.KitchenExists(kitchenId) == false)
+            {
+                throw new KitchenNotFoundException(kitchenId);
+            }
+
+            if (Context.CategoryExists(categoryId) == false)
+            {
+                throw new CategoryNotFoundException(categoryId);
+            }
+
+
+            Kitchen kitchen = Context.Kitchen.Where(k => k.KitchenId == kitchenId).FirstOrDefault();
+            Category category = Context.Category.Where(c => c.CategoryId == categoryId).FirstOrDefault();
+
+            return GetKitchenIngredientsByCategory(kitchen, category, user);
+        }
+
 
         /// <summary>
         /// Return all ingredients in the <paramref name="kitchen"/> that match the <paramref name="name"/> passed in and are in the <paramref name="category"/> passed in. 
@@ -274,7 +330,7 @@ namespace PantryPlanner.Services
         /// </summary>
         /// <param name="newIngredient"> ingredient to add </param>
         /// <param name="user"> user who is adding ingredient </param>
-        public void AddKitchenIngredient(KitchenIngredient newIngredient, PantryPlannerUser user)
+        public KitchenIngredient AddKitchenIngredient(KitchenIngredient newIngredient, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -305,6 +361,8 @@ namespace PantryPlanner.Services
 
             Context.KitchenIngredient.Add(newIngredient);
             Context.SaveChanges();
+
+            return newIngredient;
         }
 
         /// <summary>
@@ -395,7 +453,57 @@ namespace PantryPlanner.Services
         /// <summary>
         /// Updates ingredient if user has rights to it (i.e. added the ingredient)
         /// </summary>
-        public void UpdateKitchenIngredient(KitchenIngredient ingredient, PantryPlannerUser userUpdating)
+        public async Task<bool> UpdateKitchenIngredientAsync(KitchenIngredientDto ingredientDto, PantryPlannerUser userUpdating)
+        {
+            if (ingredientDto == null)
+            {
+                throw new ArgumentNullException(nameof(ingredientDto));
+            }
+
+            if (userUpdating == null)
+            {
+                throw new ArgumentNullException(nameof(userUpdating));
+            }
+
+            if (Context.KitchenIngredientExists(ingredientDto.KitchenIngredientId) == false)
+            {
+                throw new IngredientNotFoundException($"KitchenIngredient with ID {ingredientDto.KitchenIngredientId} does not exist.");
+            }
+
+            if (Permissions.UserHasRightsToKitchen(userUpdating, ingredientDto.KitchenId) == false)
+            {
+                throw new PermissionsException("You do not have rights to update this ingredient");
+            }
+
+
+
+            KitchenIngredient kitchenIngredientToUpdate = Context.KitchenIngredient
+                                                                 .Where(ki => ki.KitchenIngredientId == ingredientDto.KitchenIngredientId)
+                                                                 .FirstOrDefault();
+
+            // only update fields that are not null in the DTO
+            if (ingredientDto.Note != null)
+            {
+                kitchenIngredientToUpdate.Note = ingredientDto.Note;
+            }
+
+            if (ingredientDto.Quantity != null)
+            {
+                kitchenIngredientToUpdate.Quantity = ingredientDto.Quantity;
+            }
+
+            kitchenIngredientToUpdate.LastUpdated = DateTime.UtcNow;
+
+            Context.Entry(kitchenIngredientToUpdate).State = EntityState.Modified;
+            await Context.SaveChangesAsync().ConfigureAwait(false);
+
+            return true;
+        }
+
+        /// <summary>
+        /// Updates ingredient if user has rights to it (i.e. added the ingredient)
+        /// </summary>
+        public async Task<bool> UpdateKitchenIngredientAsync(KitchenIngredient ingredient, PantryPlannerUser userUpdating)
         {
             if (ingredient == null)
             {
@@ -407,13 +515,22 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(userUpdating));
             }
 
+            if (Context.KitchenIngredientExists(ingredient) == false)
+            {
+                throw new IngredientNotFoundException($"KitchenIngredient with ID {ingredient.KitchenIngredientId} does not exist.");
+            }
+
             if (Permissions.UserHasRightsToKitchen(userUpdating, ingredient.KitchenId) == false)
             {
                 throw new PermissionsException("You do not have rights to update this ingredient");
             }
 
+            Context.KitchenIngredient.Attach(ingredient);
+
             Context.Entry(ingredient).State = EntityState.Modified;
-            Context.SaveChanges();
+            await Context.SaveChangesAsync().ConfigureAwait(false);
+
+            return true;
         }
 
         #endregion
@@ -446,7 +563,7 @@ namespace PantryPlanner.Services
 
             if (Context.KitchenIngredientExists(kitchenIngredientId) == false)
             {
-                throw new IngredientNotFoundException(kitchenIngredientId);
+                throw new IngredientNotFoundException($"KitchenIngredient with ID {kitchenIngredientId} does not exist.");
             }
 
             KitchenIngredient ingredientToDelete = Context.KitchenIngredient.Where(k => k.KitchenIngredientId == kitchenIngredientId).FirstOrDefault();

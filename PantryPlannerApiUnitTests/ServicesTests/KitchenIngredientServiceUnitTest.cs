@@ -498,7 +498,7 @@ namespace PantryPlannerApiUnitTests
         #region Update Test Methods
 
         [Fact]
-        public void UpdateKitchenIngredient_Valid_ContextIsUpdated()
+        public async System.Threading.Tasks.Task UpdateKitchenIngredient_Valid_ContextIsUpdatedAsync()
         {
             Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
             KitchenIngredient ingredientToUpdate = kitchen?.KitchenIngredient.FirstOrDefault();
@@ -515,7 +515,7 @@ namespace PantryPlannerApiUnitTests
             ingredientToUpdate.Note = expectedNote;
             ingredientToUpdate.Quantity = expectedQty;
 
-            _service.UpdateKitchenIngredient(ingredientToUpdate, _testUser);
+            await _service.UpdateKitchenIngredientAsync(ingredientToUpdate, _testUser);
 
             KitchenIngredient updatedIngredient = _context.KitchenIngredient.Where(k => k.KitchenIngredientId == ingredientToUpdate.KitchenIngredientId).FirstOrDefault();
 
@@ -525,7 +525,7 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
-        public void UpdateKitchenIngredient_UserNoRights_ThrowsPermissionsException()
+        public async void UpdateKitchenIngredient_UserNoRights_ThrowsPermissionsException()
         {
             Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
             KitchenIngredient ingredient = kitchen.KitchenIngredient.FirstOrDefault();
@@ -537,33 +537,36 @@ namespace PantryPlannerApiUnitTests
                 throw new ArgumentNullException("ingredient, kitchen, or user is not setup for testing");
             }
 
-            Assert.Throws<PermissionsException>(() =>
+            await Assert.ThrowsAsync<PermissionsException>(async () =>
             {
-                _service.UpdateKitchenIngredient(ingredient, otherUserTryingToUpdate);
+                await _service.UpdateKitchenIngredientAsync(ingredient, otherUserTryingToUpdate);
             });
         }
 
 
         [Fact]
-        public void UpdateKitchenIngredient_NullArguments_ThrowsArgumentNullException()
+        public async void UpdateKitchenIngredient_NullArguments_ThrowsArgumentNullException()
         {
             Kitchen kitchen = _testUser.KitchenUser.FirstOrDefault()?.Kitchen;
-            KitchenIngredient ingredient = kitchen.KitchenIngredient.FirstOrDefault();
 
-            if (ingredient == null || kitchen == null)
+            if (kitchen == null)
             {
                 throw new ArgumentNullException("ingredient or kitchen is not setup for testing");
             }
 
 
-            Assert.Throws<ArgumentNullException>(() =>
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                _service.UpdateKitchenIngredient(null, _testUser);
+                KitchenIngredient ingredient = null;
+
+                await _service.UpdateKitchenIngredientAsync(ingredient, _testUser);
             });
 
-            Assert.Throws<ArgumentNullException>(() =>
+            await Assert.ThrowsAsync<ArgumentNullException>(async () =>
             {
-                _service.UpdateKitchenIngredient(ingredient, null);
+                KitchenIngredient ingredient = kitchen.KitchenIngredient.FirstOrDefault();
+
+                await _service.UpdateKitchenIngredientAsync(ingredient, null);
             });
         }
 

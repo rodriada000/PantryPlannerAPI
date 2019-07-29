@@ -14,7 +14,7 @@ namespace PantryPlannerApiUnitTests
         /// <summary>
         /// Folder location of the .txt files with test data
         /// </summary>
-        public static string FoodCompositionFolderLocation = "C:\\Users\\Adam\\Downloads\\SR-Leg_ASC";
+        public static string FoodCompositionFolderLocation = ".\\TestData";
 
         public FoodCompositionETLUnitTest()
         {

@@ -27,6 +27,10 @@ namespace PantryPlanner.DTOs
 
         #endregion
 
+        public KitchenIngredientDto()
+        {
+
+        }
 
         public KitchenIngredientDto(KitchenIngredient kitchenIngredient)
         {
@@ -54,15 +58,34 @@ namespace PantryPlanner.DTOs
             }
         }
 
+        public override string ToString()
+        {
+            return $"ki: {Ingredient.Name} x {Quantity}... in {Kitchen.Name}";
+        }
 
         public static List<KitchenIngredientDto> ToList(List<KitchenIngredient> list)
         {
             return list?.Select(k => new KitchenIngredientDto(k))?.ToList();
         }
 
-        public override string ToString()
+        internal static KitchenIngredient Create(KitchenIngredientDto kitchenIngredient)
         {
-            return $"ki: {Ingredient.Name} x {Quantity}... in {Kitchen.Name}";
+            if (kitchenIngredient == null)
+            {
+                return null;
+            }
+
+            return new KitchenIngredient()
+            {
+                KitchenIngredientId = kitchenIngredient.KitchenIngredientId,
+                KitchenId = kitchenIngredient.KitchenId,
+                IngredientId = kitchenIngredient.IngredientId,
+                AddedByKitchenUserId = kitchenIngredient.AddedByKitchenUserId,
+                CategoryId = kitchenIngredient.CategoryId,
+                Note = kitchenIngredient.Note,
+                Quantity = kitchenIngredient.Quantity,
+                LastUpdated = kitchenIngredient.LastUpdated,
+            };
         }
     }
 }

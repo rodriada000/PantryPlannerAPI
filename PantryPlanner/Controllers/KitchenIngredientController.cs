@@ -64,6 +64,111 @@ namespace PantryPlanner.Controllers
             }
         }
 
+        // GET: api/KitchenIngredient
+        [HttpGet]
+        public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByName(long kitchenId, string ingredientName)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                List<KitchenIngredient> ingredientsInKitchen = _service.GetKitchenIngredientsByName(kitchenId, ingredientName, user);
+
+                return Ok(KitchenIngredientDto.ToList(ingredientsInKitchen));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        // GET: api/KitchenIngredient
+        [HttpGet]
+        public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByCategory(long kitchenId, long categoryId)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                List<KitchenIngredient> ingredientsInKitchen = _service.GetKitchenIngredientsByCategory(kitchenId, categoryId, user);
+
+                return Ok(KitchenIngredientDto.ToList(ingredientsInKitchen));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (CategoryNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        // GET: api/KitchenIngredient
+        [HttpGet]
+        public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByCategoryName(long kitchenId, string categoryName)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                List<KitchenIngredient> ingredientsInKitchen = _service.GetKitchenIngredientsByCategoryName(kitchenId, categoryName, user);
+
+                return Ok(KitchenIngredientDto.ToList(ingredientsInKitchen));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (CategoryNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+
         // GET: api/KitchenIngredient/5
         [HttpGet("{id}")]
         public async Task<ActionResult<KitchenIngredientDto>> GetKitchenIngredient(long id)
@@ -97,30 +202,168 @@ namespace PantryPlanner.Controllers
 
         #endregion
 
-        // PUT: api/KitchenIngredient/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutKitchenIngredient(long id, KitchenIngredient kitchenIngredient)
+
+        #region POST & PUT Methods (Add Ingredients to Kitchen; Update Ingredients in Kitchen)
+
+        // POST: api/KitchenIngredient
+        [HttpPost]
+        public async Task<ActionResult<KitchenIngredientDto>> AddKitchenIngredientAsync([FromBody] KitchenIngredientDto kitchenIngredient)
         {
-            return null;
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                KitchenIngredient kitchenIngredientToAdd = KitchenIngredientDto.Create(kitchenIngredient);
+
+                KitchenIngredient newIngredient = _service.AddKitchenIngredient(kitchenIngredientToAdd, user);
+                return Ok(new KitchenIngredientDto(newIngredient));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status405MethodNotAllowed, e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
         // POST: api/KitchenIngredient
         [HttpPost]
-        public async Task<ActionResult<KitchenIngredient>> PostKitchenIngredient(KitchenIngredient kitchenIngredient)
+        public async Task<ActionResult<KitchenIngredientDto>> AddIngredientToKitchenAsync(long kitchenId, long ingredientId)
         {
-            return null;
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                KitchenIngredient newIngredient = _service.AddIngredientToKitchen(ingredientId, kitchenId, user);
+                return Ok(new KitchenIngredientDto(newIngredient));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (KitchenNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (IngredientNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (InvalidOperationException e)
+            {
+                return StatusCode(StatusCodes.Status405MethodNotAllowed, e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
         }
+
+        // PUT: api/KitchenIngredient/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateKitchenIngredientAsync(long id, [FromBody] KitchenIngredientDto kitchenIngredient)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                if (id != kitchenIngredient?.KitchenIngredientId)
+                {
+                    return BadRequest("The ID specified does not match");
+                }
+
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+
+                await _service.UpdateKitchenIngredientAsync(kitchenIngredient, user);
+                return Ok();
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (IngredientNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
+        #endregion
+
+
+        #region DELETE Methods
 
         // DELETE: api/KitchenIngredient/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<KitchenIngredient>> DeleteKitchenIngredient(long id)
+        public async Task<ActionResult<KitchenIngredient>> DeleteKitchenIngredientAsync(long id)
         {
-            return null;
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+
+                KitchenIngredient deletedIngredient = _service.DeleteKitchenIngredient(id, user);
+                return Ok(new KitchenIngredientDto(deletedIngredient));
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (IngredientNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (PermissionsException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
         }
 
-        private bool KitchenIngredientExists(long id)
-        {
-            return true;
-        }
+        #endregion
+
+
+
+
+
     }
 }
