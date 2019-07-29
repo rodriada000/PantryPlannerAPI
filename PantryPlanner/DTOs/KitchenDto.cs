@@ -22,6 +22,11 @@ namespace PantryPlanner.DTOs
 
         public KitchenDto(Kitchen kitchen)
         {
+            if (kitchen == null)
+            {
+                return;
+            }
+
             KitchenId = kitchen.KitchenId;
             UniquePublicGuid = kitchen.UniquePublicGuid;
             Name = kitchen.Name;

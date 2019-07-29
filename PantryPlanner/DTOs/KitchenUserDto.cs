@@ -46,12 +46,7 @@ namespace PantryPlanner.DTOs
 
         public static List<KitchenUserDto> ToList(List<KitchenUser> users)
         {
-            if (users == null)
-            {
-                return null;
-            }
-
-            return users.Select(k => new KitchenUserDto(k)).ToList();
+            return users?.Select(k => new KitchenUserDto(k)).ToList();
         }
 
         public override string ToString()

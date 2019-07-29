@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace PantryPlannerApiUnitTests
@@ -25,14 +26,14 @@ namespace PantryPlannerApiUnitTests
                 UserName = "sharkyShark",
                 Email = "sharks@email.com"
             };
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: false);
             _kitchenService = new KitchenService(_context);
         }
 
         #region Add Test Methods
 
         [Fact]
-        public void AddKitchen_ReturnsTrueOnSuccess()
+        public async Task AddKitchen_ReturnsTrueOnSuccessAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -40,12 +41,12 @@ namespace PantryPlannerApiUnitTests
                 Description = "Delicious burgers. again",
             };
 
-            bool result = _kitchenService.AddKitchen(kitchen, _testUser);
+            bool result = await _kitchenService.AddKitchenAsync(kitchen, _testUser);
             Assert.True(result);
         }
 
         [Fact]
-        public void AddKitchen_CreatedByUserIdIsSetAndOtherFields()
+        public async Task AddKitchen_CreatedByUserIdIsSetAndOtherFieldsAsync()
         {
             Kitchen kitchen = new Kitchen
             {
@@ -56,7 +57,7 @@ namespace PantryPlannerApiUnitTests
             var guidBefore = kitchen.UniquePublicGuid;
             var dateBefore = kitchen.DateCreated;
 
-            bool result = _kitchenService.AddKitchen(kitchen, _testUser);
+            bool result = await _kitchenService.AddKitchenAsync(kitchen, _testUser);
             Assert.Equal(_testUser.Id, kitchen.CreatedByUserId);
             Assert.NotEqual(guidBefore, kitchen.UniquePublicGuid);
             Assert.NotEqual(dateBefore, kitchen.DateCreated);
@@ -71,7 +72,7 @@ namespace PantryPlannerApiUnitTests
                 Description = "Delicious burgers. again",
             };
 
-            bool result = _kitchenService.AddKitchen(kitchen, _testUser);
+            bool result = await _kitchenService.AddKitchenAsync(kitchen, _testUser);
 
             bool relationshipResult = await _context.KitchenUser.AnyAsync(x => x.KitchenId == kitchen.KitchenId && x.UserId == _testUser.Id);
             Assert.True(relationshipResult);

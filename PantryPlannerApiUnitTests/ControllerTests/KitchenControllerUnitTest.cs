@@ -25,7 +25,7 @@ namespace PantryPlannerApiUnitTests
         public KitchenControllerUnitTest()
         {
             _userManager = new FakeUserManager();
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _userManager.TestUser);
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _userManager.TestUser, insertIngredientData: false);
             _controller = new PantryPlanner.Controllers.KitchenController(_context, _userManager);
         }
 
@@ -39,10 +39,15 @@ namespace PantryPlannerApiUnitTests
             };
 
             ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
-            Assert.IsType<KitchenDto>(result.Value);
+            Assert.IsType<ObjectResult>(result.Result);
+            Assert.Equal(StatusCodes.Status201Created, (result.Result as ObjectResult).StatusCode);
 
-            Assert.Equal(kitchen.Name, result.Value.Name);
-            Assert.Equal(kitchen.Description, result.Value.Description);
+            var newKitchen = (result.Result as ObjectResult).Value;
+            Assert.IsType<KitchenDto>(newKitchen);
+
+
+            Assert.Equal(kitchen.Name, (newKitchen as KitchenDto).Name);
+            Assert.Equal(kitchen.Description, (newKitchen as KitchenDto).Description);
 
         }
 
@@ -60,13 +65,15 @@ namespace PantryPlannerApiUnitTests
 
             ActionResult<KitchenDto> result = await _controller.AddNewKitchen(kitchen);
 
-            Assert.Equal(_userManager.TestUser.Id, result.Value.CreatedByUserId);
-            Assert.NotEqual(guidBefore, result.Value.UniquePublicGuid);
-            Assert.NotEqual(dateBefore, result.Value.DateCreated);
+            KitchenDto newKitchen = ((result.Result as ObjectResult).Value as KitchenDto);
+
+            Assert.Equal(_userManager.TestUser.Id, newKitchen.CreatedByUserId);
+            Assert.NotEqual(guidBefore, newKitchen.UniquePublicGuid);
+            Assert.NotEqual(dateBefore, newKitchen.DateCreated);
         }
 
         [Fact]
-        public async Task Delete_ValidKitchen_ReturnsKitchenDeletedAsync()
+        public async Task Delete_ValidKitchen_ReturnsOkAndKitchenDeletedAsync()
         {
             Kitchen kitchenToDelete = _userManager.TestUser.KitchenUser.Where(k => k.IsOwner == true).FirstOrDefault()?.Kitchen;
 
@@ -76,8 +83,12 @@ namespace PantryPlannerApiUnitTests
             }
 
             ActionResult<KitchenDto> result = await _controller.DeleteKitchenAsync(kitchenToDelete.KitchenId);
+            Assert.IsType<OkObjectResult>(result.Result);
 
-            Assert.Equal(kitchenToDelete.KitchenId, result.Value.KitchenId);
+            object actualKitchenDeleted = (result.Result as OkObjectResult).Value;
+            Assert.IsType<KitchenDto>(actualKitchenDeleted);
+
+            Xunit.Asserts.Compare.DeepAssert.Equals(new KitchenDto(kitchenToDelete), actualKitchenDeleted);
         }
 
         [Fact]

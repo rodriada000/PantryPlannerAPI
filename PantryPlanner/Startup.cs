@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-//using PantryPlanner.Services;
-using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace PantryPlanner
 {
@@ -34,16 +31,40 @@ namespace PantryPlanner
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            string connection = "Data Source=DESKTOP-ADAMR;Initial Catalog=dev_PantryPlanner;Integrated Security=True;MultipleActiveResultSets=true";
+            IConfigurationSection connStrings = Configuration.GetSection("ConnectionStrings");
+
+            string connection = connStrings["PantryPlannerIdentityContextConnection"];
             services.AddDbContext<Services.PantryPlannerContext>(options => options.UseSqlServer(connection));
 
-            services.AddAuthentication()
-            .AddGoogle(options =>
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false; // TODO: make conditional if in dev environment
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = Configuration["JwtIssuer"],
+                    ValidAudience = Configuration["JwtIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"])),
+                    ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                };
+            })
+            .AddOpenIdConnect("Google", "Google", options =>
             {
                 IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
 
+                options.Authority = "https://accounts.google.com/";
                 options.ClientId = googleAuthNSection["ClientId"];
-                options.ClientSecret = googleAuthNSection["ClientSecret"];
+                options.CallbackPath = "/signin-google";
+                options.SignedOutCallbackPath = "/signout-callback-google";
+                options.RemoteSignOutPath = "/signout-google";
+                options.SaveTokens = true;
             });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);

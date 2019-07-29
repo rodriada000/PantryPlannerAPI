@@ -11,10 +11,13 @@ using PantryPlanner.Exceptions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 using PantryPlanner.Migrations;
+using PantryPlanner.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class IngredientController : ControllerBase
     {
@@ -32,12 +35,14 @@ namespace PantryPlanner.Controllers
         [HttpGet]
         public async Task<ActionResult<List<IngredientDto>>> GetIngredientByName(string name)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
             List<IngredientDto> ingredients = null;
 
             try
             {
-                ingredients = IngredientDto.ToList(_service.GetIngredientByName(name));
+                await Task.Run(() =>
+                {
+                    ingredients = IngredientDto.ToList(_service.GetIngredientByName(name));
+                }).ConfigureAwait(false);
             }
             catch (ArgumentNullException e)
             {
@@ -52,38 +57,53 @@ namespace PantryPlanner.Controllers
         }
 
         // GET: api/Ingredient
-        [HttpGet]
-        public async Task<ActionResult<List<IngredientDto>>> GetIngredientByNameAndCategory(string name, string categoryName)
+        //[HttpGet]
+        //public async Task<ActionResult<List<IngredientDto>>> GetIngredientByNameAndCategory(string name, string categoryName)
+        //{
+        //    PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+        //    List<IngredientDto> ingredients = null;
+
+        //    try
+        //    {
+        //        ingredients = IngredientDto.ToList(_service.GetIngredientByNameAndCategory(name, categoryName));
+        //    }
+        //    catch (ArgumentNullException e)
+        //    {
+        //        return BadRequest(e.Message);
+        //    }
+        //    catch (CategoryNotFoundException e)
+        //    {
+        //        return NotFound(e.Message);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+        //    }
+
+        //    return ingredients;
+        //}
+
+        // GET: api/Ingredient/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IngredientDto>> GetIngredient(long id)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<IngredientDto> ingredients = null;
+            PantryPlannerUser user;
+            Ingredient ingredient;
 
             try
             {
-                ingredients = IngredientDto.ToList(_service.GetIngredientByNameAndCategory(name, categoryName));
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
             }
-            catch (ArgumentNullException e)
+            catch (PermissionsException e)
             {
-                return BadRequest(e.Message);
-            }
-            catch (CategoryNotFoundException e)
-            {
-                return NotFound(e.Message);
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
             }
             catch (Exception e)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return ingredients;
-        }
-
-        // GET: api/Ingredient/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<IngredientDto>> GetIngredient(long id)
-        {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            Ingredient ingredient = null;
 
             try
             {
@@ -111,9 +131,30 @@ namespace PantryPlanner.Controllers
 
         // PUT: api/Ingredient/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateIngredient(long id, Ingredient ingredient)
+        public async Task<ActionResult> UpdateIngredient(long id, Ingredient ingredient)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            if (id != ingredient.IngredientId)
+            {
+                return BadRequest($"id {id} does not match the ingredient to update");
+            }
+
+
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -132,14 +173,29 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Ingredient
         [HttpPost]
         public async Task<ActionResult<IngredientDto>> AddIngredient(Ingredient ingredient)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -162,15 +218,29 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return CreatedAtAction(nameof(AddIngredient), new { id = ingredient.IngredientId }, new IngredientDto(ingredient));
+            return StatusCode(StatusCodes.Status201Created, new IngredientDto(ingredient));
         }
 
         // DELETE: api/Ingredient/5
         [HttpDelete("{id}")]
         public async Task<ActionResult<IngredientDto>> DeleteIngredient(long id)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            Ingredient ingredient = null;
+            PantryPlannerUser user;
+            Ingredient ingredient;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
             try
             {
@@ -193,7 +263,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return new IngredientDto(ingredient);
+            return Ok(new IngredientDto(ingredient));
         }
 
     }

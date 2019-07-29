@@ -19,12 +19,7 @@ namespace PantryPlannerApiUnitTests
         public IngredientServiceUnitTest()
         {
             _testUser = InMemoryDataGenerator.TestUser;
-            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser);
-
-            // load ingredient data into in-memory database
-            USDAFoodCompositionDbETL etl = new USDAFoodCompositionDbETL(FoodCompositionETLUnitTest.FoodCompositionFolderLocation);
-            etl.StartEtlProcess(_context);
-
+            _context = InMemoryDataGenerator.CreateAndInitializeInMemoryDatabaseContext(Guid.NewGuid().ToString(), _testUser, insertIngredientData: true);
             _ingredientService = new IngredientService(_context);
         }
 
@@ -61,22 +56,14 @@ namespace PantryPlannerApiUnitTests
         [Fact]
         public void DeleteIngredient_ValidIngredientAndUser_ReturnsIngredientDeleted()
         {
-            Category dairyCat = _context.Category.Where(c => c.Name == "Dairy and Egg Products").FirstOrDefault();
+            Ingredient ingredientToDelete = _testUser.Ingredient.FirstOrDefault();
 
-            Ingredient ingredient = new Ingredient()
-            {
-                Name = "Buttery butter",
-                Description = "better than butter",
-                CategoryId = dairyCat.CategoryId,
-                IsPublic = false
-            };
+            int countBeforeDelete = _testUser.Ingredient.Count;
 
-            _ingredientService.AddIngredient(ingredient, _testUser);
+            Ingredient deletedIngredient = _ingredientService.DeleteIngredient(ingredientToDelete, _testUser);
 
-            Ingredient deletedIngredient = _ingredientService.DeleteIngredient(ingredient, _testUser);
-
-            Assert.Equal(ingredient, deletedIngredient);
-            Assert.Equal(0, _testUser.Ingredient.Count); //assert no ingredients added by user
+            Assert.Equal(ingredientToDelete, deletedIngredient);
+            Assert.Equal(countBeforeDelete - 1, _testUser.Ingredient.Count);
         }
 
         [Fact]

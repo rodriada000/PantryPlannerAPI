@@ -290,7 +290,7 @@ namespace PantryPlanner.Services
                 throw new UserNotFoundException(user.UserName);
             }
 
-            KitchenUser inviteToDeny = user.KitchenUser.Where(k => k.KitchenId == kitchenId && k.UserId == user.Id).FirstOrDefault();
+            KitchenUser inviteToDeny = user.KitchenUser.Where(k => k.KitchenId == kitchenId && k.UserId == user.Id && k.HasAcceptedInvite.Value == false).FirstOrDefault();
 
             if (inviteToDeny == null)
             {

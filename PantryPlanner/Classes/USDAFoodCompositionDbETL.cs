@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
-namespace PantryPlanner.Migrations
+namespace PantryPlanner.Classes
 {
     /// <summary>
     /// This class is used to run a ETL process on the USDA Food Composition Database .txt files
@@ -22,11 +21,6 @@ namespace PantryPlanner.Migrations
         /// Root folder that contains the .txt files
         /// </summary>
         public string TxtRootFolderPath { get; set; }
-
-        /// <summary>
-        /// Mapping of Nutrient Database number (NDBID) used by USDA to the IngredientID used in PantryPlanner system
-        /// </summary>
-        private Dictionary<string, long> NDBIDToIngredientId { get; set; }
 
         /// <summary>
         /// Mapping of Food Group Code used by USDA to the CategoryID used in PantryPlanner system
@@ -90,7 +84,6 @@ namespace PantryPlanner.Migrations
                 TxtRootFolderPath = TxtRootFolderPath + "\\";
             }
 
-            NDBIDToIngredientId = new Dictionary<string, long>();
             FoodGroupCodeToCategoryId = new Dictionary<string, long>();
         }
 
@@ -98,14 +91,18 @@ namespace PantryPlanner.Migrations
         /// runs the two main methods to load and parse the .txt data into the Ingredient/Category tables.
         /// </summary>
         /// <param name="context"></param>
-        public void StartEtlProcess(PantryPlannerContext context)
+        /// <param name="maxRowsToProcess"> -1 to process all; otherwise parse/insert ingredients upto the max</param>
+        public void StartEtlProcess(PantryPlannerContext context, int maxRowsToProcess = -1)
         {
             ParseFoodGroupFileAndInsertIntoCategoryTable(context);
-            ParseFoodDescriptionFileAndInsertIntoIngredientTable(context);
+            ParseFoodDescriptionFileAndInsertIntoIngredientTable(context, maxRowsToProcess);
         }
 
-        private void ParseFoodDescriptionFileAndInsertIntoIngredientTable(PantryPlannerContext context)
+        private void ParseFoodDescriptionFileAndInsertIntoIngredientTable(PantryPlannerContext context, int maxRowsToProcess = -1)
         {
+            int lineCount = 0;
+            List<Ingredient> ingredientsToAdd = new List<Ingredient>();
+
             // validate file exists
             string fullPath = TxtRootFolderPath + FoodDescriptionFileName;
 
@@ -117,6 +114,13 @@ namespace PantryPlanner.Migrations
 
             foreach (string line in File.ReadAllLines(fullPath))
             {
+                if (maxRowsToProcess != -1 && lineCount >= maxRowsToProcess)
+                {
+                    break; // stop parsing after reaching the max row count passed in
+                }
+
+                lineCount++;
+
                 // parse line by format rules (each field is seperated by ^)
                 List<string> fieldValues = line.Split("^").ToList();
 
@@ -133,14 +137,10 @@ namespace PantryPlanner.Migrations
                 }
 
 
-                Ingredient existingIngredient = context.Ingredient
-                                                    .Where(i => i.CategoryId == foodGroupCategoryId && i.Name == longDescription)
-                                                    .FirstOrDefault();
+                bool categoryExists = context.Ingredient.Any(i => i.CategoryId == foodGroupCategoryId && i.Name == longDescription);
 
-                if (existingIngredient != null)
+                if (categoryExists)
                 {
-                    // remember id and skip
-                    NDBIDToIngredientId.TryAdd(nutrientDBID, existingIngredient.IngredientId);
                     continue;
                 }
 
@@ -153,11 +153,14 @@ namespace PantryPlanner.Migrations
                     Description = ""
                 };
 
-                context.Ingredient.Add(newIngredient);
-                NDBIDToIngredientId.TryAdd(nutrientDBID, newIngredient.IngredientId);
+                ingredientsToAdd.Add(newIngredient);
             }
 
-            context.SaveChanges();
+            if (ingredientsToAdd.Count > 0)
+            {
+                context.Ingredient.AddRange(ingredientsToAdd);
+                context.SaveChanges();
+            }
 
         }
 
@@ -190,6 +193,7 @@ namespace PantryPlanner.Migrations
                 ingredientCategoryType = context.CategoryType.Where(c => c.Name == "Ingredient").FirstOrDefault();
             }
 
+            List<Category> categoriesToAdd = new List<Category>();
 
             foreach (string line in File.ReadAllLines(fullPath))
             {
@@ -201,12 +205,10 @@ namespace PantryPlanner.Migrations
                 string foodGroupDesc = fieldValues[1].Trim('~');
 
                 // check if food group name already exists in context
-                Category existingCategory = context.Category.Where(c => c.Name == foodGroupDesc && c.CategoryTypeId == ingredientCategoryType.CategoryTypeId).FirstOrDefault();
+                bool categoryExists = context.Category.Any(c => c.Name == foodGroupDesc && c.CategoryTypeId == ingredientCategoryType.CategoryTypeId);
 
-                if (existingCategory != null)
+                if (categoryExists)
                 {
-                    // already exists so map IDs and skip adding to context
-                    FoodGroupCodeToCategoryId.TryAdd(code, existingCategory.CategoryId);
                     continue;
                 }
 
@@ -217,11 +219,34 @@ namespace PantryPlanner.Migrations
                     Name = foodGroupDesc
                 };
 
-                context.Category.Add(newFoodGroup);
-                FoodGroupCodeToCategoryId.TryAdd(code, newFoodGroup.CategoryId);
+                categoriesToAdd.Add(newFoodGroup);
             }
 
-            context.SaveChanges();
+            if (categoriesToAdd.Count > 0)
+            {
+                context.Category.AddRange(categoriesToAdd);
+                context.SaveChanges();
+            }
+
+
+            // Map out IDs to codes for later inserting ingredients
+            foreach (string line in File.ReadAllLines(fullPath))
+            {
+                // parse line by format rules (each field is seperated by ^)
+                List<string> fieldValues = line.Split("^").ToList();
+
+                // get code and food group name (trim ~ based on format rules)
+                string code = fieldValues[0].Trim('~');
+                string foodGroupDesc = fieldValues[1].Trim('~');
+
+                Category existingCategory = context.Category.Where(c => c.Name == foodGroupDesc && c.CategoryTypeId == ingredientCategoryType.CategoryTypeId).FirstOrDefault();
+
+                if (existingCategory != null)
+                {
+                    FoodGroupCodeToCategoryId.TryAdd(code, existingCategory.CategoryId);
+                }
+            }
+
         }
 
     }

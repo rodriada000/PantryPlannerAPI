@@ -13,7 +13,7 @@ namespace PantryPlanner.Services
     {
         public PantryPlannerContext Context { get; set; }
 
-        public PermissionService Permissions { get; set; }
+        private PermissionService Permissions { get; set; }
 
         public IngredientService(PantryPlannerContext context)
         {
@@ -210,6 +210,12 @@ namespace PantryPlanner.Services
             if (Context.UserExists(user.Id) == false)
             {
                 throw new UserNotFoundException(user.UserName);
+            }
+
+            // validate name passed in
+            if (String.IsNullOrWhiteSpace(newIngredient.Name))
+            {
+                throw new InvalidOperationException("Ingredient Name is required");
             }
 
             // validate an ingredient with same name in the same category doesn't already exist

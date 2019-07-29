@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
+using PantryPlanner.Extensions;
 using PantryPlanner.Models;
 using PantryPlanner.Services;
 
@@ -28,13 +29,27 @@ namespace PantryPlanner.Controllers
             _userManager = userManager;
         }
 
-        // GET: api/KitchenUser/All
+        // GET: api/KitchenUser
         [HttpGet]
-        [Route("All")]
         public async Task<ActionResult<List<KitchenUserDto>>> GetAllUsersForKitchen(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<KitchenUserDto> kitchenUsers = null;
+            PantryPlannerUser user;
+            List<KitchenUserDto> kitchenUsers;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -70,8 +85,23 @@ namespace PantryPlanner.Controllers
         [Route("Accepted")]
         public async Task<ActionResult<List<KitchenUserDto>>> GetAcceptedUsersForKitchen(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<KitchenUserDto> kitchenUsers = null;
+            PantryPlannerUser user;
+            List<KitchenUserDto> kitchenUsers;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -107,8 +137,22 @@ namespace PantryPlanner.Controllers
         [Route("NotAccepted")]
         public async Task<ActionResult<List<KitchenUserDto>>> GetNotAcceptedUsersForKitchen(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<KitchenUserDto> kitchenUsers = null;
+            PantryPlannerUser user;
+            List<KitchenUserDto> kitchenUsers;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
             try
             {
@@ -144,8 +188,23 @@ namespace PantryPlanner.Controllers
         [Route("Invite")]
         public async Task<ActionResult<List<KitchenUserDto>>> GetKitchenInvitesForLoggedInUser()
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            List<KitchenUserDto> myInvites = null;
+            PantryPlannerUser user;
+            List<KitchenUserDto> myInvites;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -177,9 +236,23 @@ namespace PantryPlanner.Controllers
         // POST: api/KitchenUser/Invite
         [HttpPost]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> InviteUserToKitchen(string username, long kitchenId)
+        public async Task<ActionResult> InviteUserToKitchen(string username, long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            PantryPlannerUser user = null;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
 
             try
             {
@@ -210,15 +283,30 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return true;
+            return Ok();
         }
 
         // PUT: api/KitchenUser/Invite
         [HttpPut]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> AcceptKitchenInvite(long kitchenId)
+        public async Task<ActionResult> AcceptKitchenInvite(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            PantryPlannerUser user = null;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -245,15 +333,30 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
             
-            return true;
+            return Ok();
         }
 
         // DELETE: api/KitchenUser/Invite
         [HttpDelete]
         [Route("Invite")]
-        public async Task<ActionResult<bool>> DenyKitchenInvite(long kitchenId)
+        public async Task<ActionResult> DenyKitchenInvite(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
+            PantryPlannerUser user = null;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -284,7 +387,7 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return true;
+            return Ok();
         }
 
 
@@ -293,8 +396,23 @@ namespace PantryPlanner.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult<KitchenUserDto>> DeleteKitchenUserByKitchenUserId(long id)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            KitchenUser kitchenUser = null;
+            PantryPlannerUser user;
+            KitchenUser kitchenUser;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
@@ -317,15 +435,30 @@ namespace PantryPlanner.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
             }
 
-            return new KitchenUserDto(kitchenUser);
+            return Ok(new KitchenUserDto(kitchenUser));
         }
 
         // DELETE: api/KitchenUser
         [HttpDelete]
         public async Task<ActionResult<KitchenUserDto>> DeleteLoggedInUserFromKitchen(long kitchenId)
         {
-            PantryPlannerUser user = await _userManager.GetUserAsync(this.User);
-            KitchenUser kitchenUser = null;
+            PantryPlannerUser user;
+            KitchenUser kitchenUser;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
 
             try
             {
