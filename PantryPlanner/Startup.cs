@@ -55,7 +55,7 @@ namespace PantryPlanner
                     ClockSkew = TimeSpan.Zero // remove delay of token when expire
                 };
             })
-            .AddOpenIdConnect(authenticationScheme: "Google", displayName: "Google", options =>
+            .AddOpenIdConnect("Google", "Google", options =>
             {
                 IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
 
@@ -66,15 +66,6 @@ namespace PantryPlanner
                 options.RemoteSignOutPath = "/signout-google";
                 options.SaveTokens = true;
             });
-            //.AddGoogle(options =>
-            //{
-            //    IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
-
-            //    options.ClientId = googleAuthNSection["ClientId"];
-            //    options.ClientSecret = googleAuthNSection["ClientSecret"];
-            //    options.SaveTokens = true;
-            //    options.TokenEndpoint = "google-signin-token";
-            //});
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
