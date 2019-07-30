@@ -525,8 +525,6 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("You do not have rights to update this ingredient");
             }
 
-            Context.KitchenIngredient.Attach(ingredient);
-
             Context.Entry(ingredient).State = EntityState.Modified;
             await Context.SaveChangesAsync().ConfigureAwait(false);
 

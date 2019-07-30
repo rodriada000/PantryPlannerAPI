@@ -138,6 +138,8 @@ namespace PantryPlannerApiUnitTests.Helpers
             InitializeUsersAndKitchens(context, testUser);
             InitializeIngredientsFromUSDA(context);
             InitializeKitchenIngredients(context);
+            AddRandomRecipes(context, 5, testUser);
+            AddRandomRecipes(context, 5, AddNewRandomUser(context));
         }
 
         /// <summary>
@@ -328,6 +330,47 @@ namespace PantryPlannerApiUnitTests.Helpers
 
             return newIngredient;
         }
+
+        internal static void AddRandomRecipes(PantryPlannerContext context, int numberOfRecipesToAdd, PantryPlannerUser userAdding = null)
+        {
+            if (numberOfRecipesToAdd <= 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < numberOfRecipesToAdd; i++)
+            {
+                AddNewRandomRecipeWithNoIngredientsOrSteps(context, userAdding);
+            }
+        }
+
+        internal static Recipe AddNewRandomRecipeWithNoIngredientsOrSteps(PantryPlannerContext context, PantryPlannerUser userAdding = null, bool isPublic = true)
+        {
+            string guid = Guid.NewGuid().ToString();
+            Random rand = new Random();
+
+            if (userAdding == null)
+            {
+                userAdding = InMemoryDataGenerator.TestUser;
+            }
+
+            Recipe newRecipe = new Recipe()
+            {
+                Name = $"Recipe {guid.Substring(8)}",
+                Description = $"Random recipe with guid {guid}",
+                IsPublic = isPublic,
+                CookTime = rand.Next(90),
+                PrepTime = rand.Next(30),
+                ServingSize = $"{rand.Next(8)} foods",
+                CreatedByUserId = userAdding.Id
+            };
+
+            context.Recipe.Add(newRecipe);
+            context.SaveChanges();
+
+            return newRecipe;
+        }
+
 
         /// <summary>
         /// Inserts a subset (250 records) of Ingredient test data into <paramref name="context"/> using the USDA Food Composition ETL process.

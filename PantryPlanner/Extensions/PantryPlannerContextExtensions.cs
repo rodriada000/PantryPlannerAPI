@@ -111,5 +111,19 @@ namespace PantryPlanner.Extensions
             return context.KitchenIngredient.Any(i => i.KitchenId == kitchenId && i.IngredientId == ingredientId);
         }
 
+
+        public static bool RecipeExists(this PantryPlannerContext context, Recipe recipe)
+        {
+            if (recipe == null)
+            {
+                return false;
+            }
+
+            return context.RecipeExists(recipe.RecipeId);
+        }
+        public static bool RecipeExists(this PantryPlannerContext context, long recipeId)
+        {
+            return context.Recipe.Any(r => r.RecipeId == recipeId);
+        }
     }
 }

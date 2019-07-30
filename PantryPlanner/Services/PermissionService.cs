@@ -77,5 +77,25 @@ namespace PantryPlanner.Services
             return Context.Ingredient.Any(i => i.IngredientId == ingredientId && i.AddedByUserId == userId);
         }
 
+        internal bool UserAddedRecipe(Recipe recipe, PantryPlannerUser user)
+        {
+            if (recipe == null)
+            {
+                return false;
+            }
+
+            return UserAddedRecipe(recipe.RecipeId, user);
+        }
+
+        internal bool UserAddedRecipe(long recipeId, PantryPlannerUser user)
+        {
+            if (user == null)
+            {
+                return false;
+            }
+
+            return Context.Recipe.Any(r => r.RecipeId == recipeId && r.CreatedByUserId == user.Id);
+        }
+
     }
 }
