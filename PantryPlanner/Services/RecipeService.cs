@@ -109,7 +109,7 @@ namespace PantryPlanner.Services
         /// </summary>
         /// <param name="newRecipe"> recipe to add </param>
         /// <param name="user"> user who is adding recipe </param>
-        public RecipeDto AddRecipe(RecipeDto newRecipe, PantryPlannerUser user)
+        public Recipe AddRecipe(RecipeDto newRecipe, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -136,7 +136,7 @@ namespace PantryPlanner.Services
         /// </summary>
         /// <param name="newRecipe"> recipe to add </param>
         /// <param name="user"> user who is adding recipe </param>
-        public RecipeDto AddRecipe(Recipe newRecipe, PantryPlannerUser user)
+        public Recipe AddRecipe(Recipe newRecipe, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -165,7 +165,7 @@ namespace PantryPlanner.Services
             Context.Recipe.Add(newRecipe);
             Context.SaveChanges();
 
-            return new RecipeDto(newRecipe);
+            return newRecipe;
         }
 
         #endregion

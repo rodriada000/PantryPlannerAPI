@@ -96,6 +96,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Equal(recipeToDelete, deletedRecipe);
             Assert.Equal(countBeforeDelete - 1, _testUser.Recipe.Count);
+            Assert.False(_context.Recipe.Any(r => r.RecipeId == recipeToDelete.RecipeId));
         }
 
         [Fact]
@@ -150,7 +151,7 @@ namespace PantryPlannerApiUnitTests
                 CookTime = expectedCookTime
             };
 
-            RecipeDto actualAddedRecipe = _recipeService.AddRecipe(recipeToAdd, _testUser);
+            Recipe actualAddedRecipe = _recipeService.AddRecipe(recipeToAdd, _testUser);
 
             Assert.True(actualAddedRecipe.RecipeId != 0);
             Assert.Equal(expectedName, actualAddedRecipe.Name);
@@ -168,7 +169,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<InvalidOperationException>(() =>
             {
-                RecipeDto actualAddedRecipe = _recipeService.AddRecipe(recipeToAdd, _testUser);
+                _recipeService.AddRecipe(recipeToAdd, _testUser);
             });
         }
 
@@ -184,7 +185,7 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<UserNotFoundException>(() =>
             {
-                RecipeDto actualAddedRecipe = _recipeService.AddRecipe(recipeToAdd, new PantryPlannerUser() { Id = "Idontexist" });
+                _recipeService.AddRecipe(recipeToAdd, new PantryPlannerUser() { Id = "Idontexist" });
             });
         }
 
