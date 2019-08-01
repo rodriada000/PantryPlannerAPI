@@ -243,7 +243,7 @@ namespace PantryPlanner.Controllers
         }
 
         // POST: api/KitchenIngredient
-        [HttpPost]
+        [HttpPost("Id")]
         public async Task<ActionResult<KitchenIngredientDto>> AddIngredientToKitchenAsync(long kitchenId, long ingredientId)
         {
             PantryPlannerUser user;
