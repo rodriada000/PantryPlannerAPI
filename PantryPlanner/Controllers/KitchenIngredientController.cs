@@ -64,8 +64,8 @@ namespace PantryPlanner.Controllers
             }
         }
 
-        // GET: api/KitchenIngredient
-        [HttpGet]
+        // GET: api/KitchenIngredient/ByName
+        [HttpGet("ByName")]
         public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByName(long kitchenId, string ingredientName)
         {
             PantryPlannerUser user;
@@ -96,8 +96,8 @@ namespace PantryPlanner.Controllers
             }
         }
 
-        // GET: api/KitchenIngredient
-        [HttpGet]
+        // GET: api/KitchenIngredient/ByCategory
+        [HttpGet("ByCategory")]
         public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByCategory(long kitchenId, long categoryId)
         {
             PantryPlannerUser user;
@@ -132,8 +132,8 @@ namespace PantryPlanner.Controllers
             }
         }
 
-        // GET: api/KitchenIngredient
-        [HttpGet]
+        // GET: api/KitchenIngredient/ByCategoryName
+        [HttpGet("ByCategoryName")]
         public async Task<ActionResult<List<KitchenIngredientDto>>> GetIngredientsForKitchenByCategoryName(long kitchenId, string categoryName)
         {
             PantryPlannerUser user;
