@@ -46,7 +46,7 @@ namespace PantryPlanner.Services
             }
 
             return Context.KitchenIngredient.Where(k => k.KitchenId == kitchenId)
-                                            .Include(i => i.Ingredient)
+                                            .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                             .Include(i => i.Category)
                                             .Include(i => i.Kitchen)
                                             .Include(i => i.AddedByKitchenUser)
@@ -96,7 +96,7 @@ namespace PantryPlanner.Services
             if (Context.KitchenIngredient.Any(i => i.Ingredient.Name.Equals(name, StringComparison.OrdinalIgnoreCase)))
             {
                 return Context.KitchenIngredient.Where(i => i.Ingredient.Name.Equals(name, StringComparison.OrdinalIgnoreCase)).Include(i => i.Kitchen)
-                                                .Include(i => i.Ingredient)
+                                                .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                                 .Include(i => i.Category)
                                                 .Include(i => i.AddedByKitchenUser)
                                                 .ToList();
@@ -108,7 +108,7 @@ namespace PantryPlanner.Services
 
             List<KitchenIngredient> ingredients = Context.KitchenIngredient.Where(i => wordsToSearchFor.All(w => i.Ingredient.Name.Contains(w, StringComparison.OrdinalIgnoreCase)))
                                                                            .Include(i => i.Kitchen)
-                                                                           .Include(i => i.Ingredient)
+                                                                           .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                                                            .Include(i => i.Category)
                                                                            .Include(i => i.AddedByKitchenUser)
                                                                            .ToList();
@@ -119,7 +119,7 @@ namespace PantryPlanner.Services
                 // if no matches then lastly check if ANY word entered matches
                 ingredients = Context.KitchenIngredient.Where(i => wordsToSearchFor.Any(w => i.Ingredient.Name.Contains(w, StringComparison.OrdinalIgnoreCase)))
                                                        .Include(i => i.Kitchen)
-                                                       .Include(i => i.Ingredient)
+                                                       .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                                        .Include(i => i.Category)
                                                        .Include(i => i.AddedByKitchenUser)
                                                        .ToList();
@@ -212,7 +212,7 @@ namespace PantryPlanner.Services
             }
 
             return Context.KitchenIngredient.Where(k => k.KitchenId == kitchen.KitchenId && k.CategoryId == category.CategoryId)
-                                            .Include(i => i.Ingredient)
+                                            .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                             .Include(i => i.Category)
                                             .Include(i => i.AddedByKitchenUser)
                                             .ToList();
@@ -312,7 +312,7 @@ namespace PantryPlanner.Services
         public KitchenIngredient GetKitchenIngredientById(long kitchenIngredientId)
         {
             return Context.KitchenIngredient.Where(i => i.KitchenIngredientId == kitchenIngredientId)
-                                                .Include(i => i.Ingredient)
+                                                .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                                 .Include(i => i.Category)
                                                 .Include(i => i.AddedByKitchenUser)
                                                 .Include(i => i.Kitchen)
@@ -416,11 +416,27 @@ namespace PantryPlanner.Services
                 KitchenId = kitchenId,
                 IngredientId = ingredientId,
                 AddedByKitchenUserId = kitchenUser.KitchenUserId,
+                AddedByKitchenUser = kitchenUser,
                 LastUpdated = DateTime.Now,
             };
 
             Context.KitchenIngredient.Add(ingredientToAdd);
             Context.SaveChanges();
+
+            if (ingredientToAdd.Ingredient == null)
+            {
+                ingredientToAdd.Ingredient = Context.Ingredient.Where(i => i.IngredientId == ingredientId)
+                                                               .Include(i => i.Category)
+                                                               .Include(i => i.AddedByUser)
+                                                               .FirstOrDefault();
+            }
+
+            if (ingredientToAdd.Kitchen == null)
+            {
+                ingredientToAdd.Kitchen = Context.Kitchen.Where(k => k.KitchenId == kitchenId)
+                                                         .Include(k => k.CreatedByUser)
+                                                         .FirstOrDefault();
+            }
 
             return ingredientToAdd;
         }
