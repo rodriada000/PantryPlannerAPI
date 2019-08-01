@@ -232,10 +232,10 @@ namespace PantryPlannerApiUnitTests
 
             int countBeforeAdd = kitchen.KitchenIngredient.Count;
 
-            _service.AddKitchenIngredient(ingredientToAdd, _testUser);
+            KitchenIngredient addedIngredient = _service.AddKitchenIngredient(ingredientToAdd, _testUser);
 
             Assert.Equal(countBeforeAdd + 1, kitchen.KitchenIngredient.Count);
-            Assert.NotNull(_context.KitchenIngredient.Where(i => i.KitchenIngredientId == ingredientToAdd.KitchenIngredientId).FirstOrDefault());
+            Assert.NotNull(_context.KitchenIngredient.Where(i => i.KitchenIngredientId == addedIngredient.KitchenIngredientId).FirstOrDefault());
         }
 
         [Fact]

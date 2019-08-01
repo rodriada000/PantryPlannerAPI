@@ -342,27 +342,7 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(newIngredient));
             }
 
-            if (Context.UserExists(user.Id) == false)
-            {
-                throw new UserNotFoundException(user.UserName);
-            }
-
-            if (Permissions.UserHasRightsToKitchen(user, newIngredient.KitchenId) == false)
-            {
-                throw new PermissionsException("You do not have rights to add ingredients to this kitchen");
-            }
-
-            if (Context.IngredientExistsForKitchen(newIngredient.IngredientId, newIngredient.KitchenId))
-            {
-                throw new InvalidOperationException($"An ingredient with the name {newIngredient.Ingredient?.Name} already exists");
-            }
-
-            newIngredient.LastUpdated = DateTime.Now;
-
-            Context.KitchenIngredient.Add(newIngredient);
-            Context.SaveChanges();
-
-            return newIngredient;
+            return AddIngredientToKitchen(newIngredient.IngredientId, newIngredient.KitchenId, user);
         }
 
         /// <summary>

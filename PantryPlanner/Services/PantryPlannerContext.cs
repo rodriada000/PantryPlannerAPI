@@ -231,6 +231,8 @@ namespace PantryPlanner.Services
 
                 entity.Property(e => e.LastUpdated).HasDefaultValueSql("(getutcdate())");
 
+                entity.Property(e => e.Note).HasDefaultValue("");
+
                 entity.HasOne(d => d.AddedByKitchenUser)
                     .WithMany(p => p.KitchenIngredient)
                     .HasForeignKey(d => d.AddedByKitchenUserId)
