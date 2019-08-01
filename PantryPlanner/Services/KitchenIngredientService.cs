@@ -417,6 +417,7 @@ namespace PantryPlanner.Services
                 IngredientId = ingredientId,
                 AddedByKitchenUserId = kitchenUser.KitchenUserId,
                 AddedByKitchenUser = kitchenUser,
+                Quantity = 1,
                 LastUpdated = DateTime.Now,
             };
 

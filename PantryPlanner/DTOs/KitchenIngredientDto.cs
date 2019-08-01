@@ -21,8 +21,6 @@ namespace PantryPlanner.DTOs
 
         public IngredientDto Ingredient { get; set; }
 
-        public KitchenDto Kitchen { get; set; }
-
         public CategoryDto Category { get; set; }
 
         #endregion
@@ -50,7 +48,6 @@ namespace PantryPlanner.DTOs
 
 
             Ingredient = new IngredientDto(kitchenIngredient.Ingredient);
-            Kitchen = new KitchenDto(kitchenIngredient.Kitchen);
 
             if (kitchenIngredient.Category != null)
             {
@@ -60,7 +57,7 @@ namespace PantryPlanner.DTOs
 
         public override string ToString()
         {
-            return $"ki: {Ingredient.Name} x {Quantity}... in {Kitchen.Name}";
+            return $"ki: {Ingredient.Name} x {Quantity} ...";
         }
 
         public static List<KitchenIngredientDto> ToList(List<KitchenIngredient> list)
