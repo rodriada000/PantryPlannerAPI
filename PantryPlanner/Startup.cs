@@ -67,7 +67,12 @@ namespace PantryPlanner
                 options.SaveTokens = true;
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc()
+                    .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                    .AddJsonOptions(options =>
+                    {
+                        options.SerializerSettings.DateFormatString = "yyyy-MM-dd HH:mm:ss";
+                    });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -95,6 +100,10 @@ namespace PantryPlanner
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+            
+            
+
+            
         }
     }
 }
