@@ -224,18 +224,26 @@ namespace PantryPlannerApiUnitTests
                 throw new ArgumentNullException("ingredient or kitchen is not setup for testing");
             }
 
+            int expectedQty = 2;
+            string expectedNote = "hello world";
+
             KitchenIngredient ingredientToAdd = new KitchenIngredient()
             {
                 KitchenId = kitchen.KitchenId,
                 IngredientId = ingredient.IngredientId,
+                Quantity = expectedQty,
+                Note = expectedNote
             };
 
             int countBeforeAdd = kitchen.KitchenIngredient.Count;
 
             KitchenIngredient addedIngredient = _service.AddKitchenIngredient(ingredientToAdd, _testUser);
 
-            Assert.Equal(countBeforeAdd + 1, kitchen.KitchenIngredient.Count);
             Assert.NotNull(_context.KitchenIngredient.Where(i => i.KitchenIngredientId == addedIngredient.KitchenIngredientId).FirstOrDefault());
+            Assert.Equal(countBeforeAdd + 1, kitchen.KitchenIngredient.Count);
+            Assert.Equal(expectedQty, addedIngredient.Quantity);
+            Assert.Equal(expectedNote, addedIngredient.Note);
+
         }
 
         [Fact]
@@ -284,7 +292,8 @@ namespace PantryPlannerApiUnitTests
 
             Assert.Throws<ArgumentNullException>(() =>
             {
-                _service.AddKitchenIngredient(null, _testUser);
+                KitchenIngredient i = null;
+                _service.AddKitchenIngredient(i, _testUser);
             });
 
 

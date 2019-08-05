@@ -324,6 +324,22 @@ namespace PantryPlanner.Services
 
         #region Add Methods
 
+        /// <summary>
+        /// Adds an ingredient to the kitchen that was added by the <paramref name="user"/>.
+        /// </summary>
+        /// <param name="newIngredient"> ingredient to add </param>
+        /// <param name="user"> user who is adding ingredient </param>
+        public KitchenIngredient AddKitchenIngredient(KitchenIngredientDto newIngredient, PantryPlannerUser user)
+        {
+            if (newIngredient == null)
+            {
+                throw new ArgumentNullException(nameof(newIngredient));
+            }
+
+            KitchenIngredient kitchenIngredientToAdd = KitchenIngredientDto.Create(newIngredient);
+            
+            return AddKitchenIngredient(kitchenIngredientToAdd, user);
+        }
 
         /// <summary>
         /// Adds an ingredient to the kitchen that was added by the <paramref name="user"/>.
@@ -342,7 +358,51 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(newIngredient));
             }
 
-            return AddIngredientToKitchen(newIngredient.IngredientId, newIngredient.KitchenId, user);
+            if (Context.KitchenExists(newIngredient.KitchenId) == false)
+            {
+                throw new KitchenNotFoundException(newIngredient.KitchenId);
+            }
+
+            if (Context.IngredientExists(newIngredient.IngredientId) == false)
+            {
+                throw new IngredientNotFoundException(newIngredient.IngredientId);
+            }
+
+            if (Context.UserExists(user.Id) == false)
+            {
+                throw new UserNotFoundException(user.UserName);
+            }
+
+            if (Permissions.UserHasRightsToKitchen(user, newIngredient.KitchenId) == false)
+            {
+                throw new PermissionsException("You do not have rights to add ingredients to this kitchen");
+            }
+
+
+            if (Context.IngredientExistsForKitchen(newIngredient.IngredientId, newIngredient.KitchenId))
+            {
+                throw new InvalidOperationException($"This ingredient has already been added.");
+            }
+
+            Context.KitchenIngredient.Add(newIngredient);
+            Context.SaveChanges();
+
+            if (newIngredient.Ingredient == null)
+            {
+                newIngredient.Ingredient = Context.Ingredient.Where(i => i.IngredientId == newIngredient.IngredientId)
+                                                               .Include(i => i.Category)
+                                                               .Include(i => i.AddedByUser)
+                                                               .FirstOrDefault();
+            }
+
+            if (newIngredient.Kitchen == null)
+            {
+                newIngredient.Kitchen = Context.Kitchen.Where(k => k.KitchenId == newIngredient.KitchenId)
+                                                         .Include(k => k.CreatedByUser)
+                                                         .FirstOrDefault();
+            }
+
+            return newIngredient;
         }
 
         /// <summary>
@@ -387,29 +447,22 @@ namespace PantryPlanner.Services
                 throw new KitchenNotFoundException(kitchenId);
             }
 
-            if (Context.IngredientExists(ingredientId) == false)
-            {
-                throw new IngredientNotFoundException(ingredientId);
-            }
-
             if (Context.UserExists(user.Id) == false)
             {
                 throw new UserNotFoundException(user.UserName);
             }
-
 
             if (Permissions.UserHasRightsToKitchen(user, kitchenId) == false)
             {
                 throw new PermissionsException("You do not have rights to add ingredients to this kitchen");
             }
 
-
-            if (Context.IngredientExistsForKitchen(ingredientId, kitchenId))
-            {
-                throw new InvalidOperationException($"This ingredient has already been added.");
-            }
-
             KitchenUser kitchenUser = Context.KitchenUser.Where(u => u.KitchenId == kitchenId && u.UserId == user.Id).FirstOrDefault();
+
+            if (kitchenUser == null)
+            {
+                throw new KitchenUserNotFoundException("Failed to find a user associated with this kitchen");
+            }
 
             KitchenIngredient ingredientToAdd = new KitchenIngredient()
             {
@@ -421,25 +474,7 @@ namespace PantryPlanner.Services
                 LastUpdated = DateTime.Now,
             };
 
-            Context.KitchenIngredient.Add(ingredientToAdd);
-            Context.SaveChanges();
-
-            if (ingredientToAdd.Ingredient == null)
-            {
-                ingredientToAdd.Ingredient = Context.Ingredient.Where(i => i.IngredientId == ingredientId)
-                                                               .Include(i => i.Category)
-                                                               .Include(i => i.AddedByUser)
-                                                               .FirstOrDefault();
-            }
-
-            if (ingredientToAdd.Kitchen == null)
-            {
-                ingredientToAdd.Kitchen = Context.Kitchen.Where(k => k.KitchenId == kitchenId)
-                                                         .Include(k => k.CreatedByUser)
-                                                         .FirstOrDefault();
-            }
-
-            return ingredientToAdd;
+            return AddKitchenIngredient(ingredientToAdd, user);
         }
 
         #endregion

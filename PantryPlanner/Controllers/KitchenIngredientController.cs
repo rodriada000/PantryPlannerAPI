@@ -215,9 +215,7 @@ namespace PantryPlanner.Controllers
             {
                 user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
 
-                KitchenIngredient kitchenIngredientToAdd = KitchenIngredientDto.Create(kitchenIngredient);
-
-                KitchenIngredient newIngredient = _service.AddKitchenIngredient(kitchenIngredientToAdd, user);
+                KitchenIngredient newIngredient = _service.AddKitchenIngredient(kitchenIngredient, user);
                 return Ok(new KitchenIngredientDto(newIngredient));
             }
             catch (ArgumentNullException e)
