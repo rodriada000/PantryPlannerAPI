@@ -37,7 +37,7 @@ namespace PantryPlanner.Services
             Ingredient ingredient = GetIngredientById(ingredientId);
 
 
-            if (!ingredient.IsPublic && Permissions.UserAddedIngredient(ingredient, user) == false)
+            if (Permissions.UserHasViewRightsToIngredient(ingredient, user) == false)
             {
                 throw new PermissionsException("You do not have rights to this ingredient");
             }

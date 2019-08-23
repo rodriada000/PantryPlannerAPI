@@ -11,15 +11,20 @@ namespace PantryPlanner.DTOs
         public int RecipeIngredientId { get; set; }
         public long IngredientId { get; set; }
         public long RecipeId { get; set; }
-        public decimal Quantity { get; set; }
+        public decimal? Quantity { get; set; }
         public string UnitOfMeasure { get; set; }
         public string Method { get; set; }
-        public int SortOrder { get; set; }
+        public int? SortOrder { get; set; }
 
         #region Additional Properties Not In Model
 
 
         #endregion
+
+        public RecipeIngredientDto()
+        {
+
+        }
 
         public RecipeIngredientDto(RecipeIngredient ingredient)
         {
@@ -45,6 +50,20 @@ namespace PantryPlanner.DTOs
         public override string ToString()
         {
             return $"ri: i = {IngredientId} qty = {Quantity} uom = {UnitOfMeasure} m = {Method}";
+        }
+
+        internal RecipeIngredient Create()
+        {
+            return new RecipeIngredient()
+            {
+                RecipeIngredientId = this.RecipeIngredientId,
+                IngredientId = this.IngredientId,
+                RecipeId = this.RecipeId,
+                Quantity = this.Quantity.GetValueOrDefault(0),
+                UnitOfMeasure = this.UnitOfMeasure,
+                Method = this.Method,
+                SortOrder = this.SortOrder.GetValueOrDefault(-1)
+            };
         }
     }
 }

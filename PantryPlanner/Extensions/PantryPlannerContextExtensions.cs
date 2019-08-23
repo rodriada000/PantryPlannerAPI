@@ -125,5 +125,41 @@ namespace PantryPlanner.Extensions
         {
             return context.Recipe.Any(r => r.RecipeId == recipeId);
         }
+
+        public static bool RecipeIngredientExists(this PantryPlannerContext context, RecipeIngredient recipeIngredient)
+        {
+            if (recipeIngredient == null)
+            {
+                return false;
+            }
+
+            return context.RecipeIngredientExists(recipeIngredient.RecipeId, recipeIngredient.IngredientId);
+        }
+
+        public static bool RecipeIngredientExists(this PantryPlannerContext context, long recipeIngredientId)
+        {
+            return context.RecipeIngredient.Any(r => r.RecipeIngredientId == recipeIngredientId);
+        }
+
+        public static bool RecipeIngredientExists(this PantryPlannerContext context, long recipeId, long ingredientId)
+        {
+            return context.RecipeIngredient.Any(r => r.RecipeId == recipeId && r.IngredientId == ingredientId);
+        }
+
+
+        public static bool RecipeStepExists(this PantryPlannerContext context, long recipeStepId)
+        {
+            return context.RecipeStep.Any(r => r.RecipeStepId == recipeStepId);
+        }
+
+        public static bool RecipeStepExists(this PantryPlannerContext context, RecipeStep step)
+        {
+            if (step == null)
+            {
+                return false;
+            }
+
+            return context.RecipeStepExists(step.RecipeStepId);
+        }
     }
 }

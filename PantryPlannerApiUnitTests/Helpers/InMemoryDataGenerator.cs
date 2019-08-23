@@ -370,7 +370,21 @@ namespace PantryPlannerApiUnitTests.Helpers
 
             return newRecipe;
         }
+        
+        internal static RecipeIngredient AddIngredientToRecipe(PantryPlannerContext context, Recipe recipe, Ingredient ingredientToAdd)
+        {
+            RecipeIngredient newIngredient = new RecipeIngredient()
+            {
+                RecipeId = recipe.RecipeId,
+                IngredientId = ingredientToAdd.IngredientId,
+                Quantity = 1
+            };
 
+            context.RecipeIngredient.Add(newIngredient);
+            context.SaveChanges();
+
+            return newIngredient;
+        }
 
         /// <summary>
         /// Inserts a subset (250 records) of Ingredient test data into <paramref name="context"/> using the USDA Food Composition ETL process.
