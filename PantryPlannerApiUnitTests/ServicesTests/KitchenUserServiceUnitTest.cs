@@ -399,6 +399,29 @@ namespace PantryPlannerApiUnitTests
         }
 
         [Fact]
+        public void GetAllUsersForKitchen_UserAndKitchenPropertiesAreNotNull()
+        {
+            // arrange
+            var kitchen = _testUser.KitchenUser.FirstOrDefault().Kitchen;
+
+            if (kitchen == null)
+            {
+                throw new Exception("kitchen is not setup for testing");
+            }
+
+            // act
+            List<KitchenUser> actualResult = _kitchenUserService.GetAllUsersForKitchen(kitchen, _testUser);
+
+            // assert
+            foreach (KitchenUser user in actualResult)
+            {
+                Assert.NotNull(user.User);
+                Assert.NotNull(user.Kitchen);
+
+            }
+        }
+
+        [Fact]
         public void Get_UserNotInKitchen_ThrowsPermissionsException()
         {
             // get a Kitchen the test user does not have rights to

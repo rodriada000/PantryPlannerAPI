@@ -56,6 +56,8 @@ namespace PantryPlanner.Services
 
             return Context.KitchenUser
                     .Where(x => x.KitchenId == id)
+                    .Include(x => x.User)
+                    .Include(x => x.Kitchen)
                     .Select(k => k).ToList();
         }
 
@@ -91,6 +93,8 @@ namespace PantryPlanner.Services
 
             return Context.KitchenUser
                     .Where(x => x.KitchenId == id && x.HasAcceptedInvite.Value)
+                    .Include(x => x.User)
+                    .Include(x => x.Kitchen)
                     .Select(k => k).ToList();
         }
 
@@ -125,6 +129,8 @@ namespace PantryPlanner.Services
 
             return Context.KitchenUser
                     .Where(x => x.KitchenId == kitchen.KitchenId && (!x.HasAcceptedInvite.HasValue || !x.HasAcceptedInvite.Value))
+                    .Include(x => x.User)
+                    .Include(x => x.Kitchen)
                     .Select(k => k).ToList();
         }
 
@@ -145,7 +151,10 @@ namespace PantryPlanner.Services
                 throw new UserNotFoundException();
             }
 
-            return Context.KitchenUser.Where(u => u.UserId == userId && u.HasAcceptedInvite.Value == false).ToList();
+            return Context.KitchenUser.Where(u => u.UserId == userId && u.HasAcceptedInvite.Value == false)
+                                      .Include(x => x.User)
+                                      .Include(x => x.Kitchen)
+                                      .ToList();
         }
 
         #endregion
