@@ -37,13 +37,14 @@ namespace PantryPlanner.Services
         /// Generate a Jwt Token for the App to authorize later incoming requests
         /// </summary>
         /// <returns>Jwt Token serialized string </returns>
-        public static string GenerateJwtToken(PantryPlannerUser user, IConfiguration configuration)
+        private static string GenerateJwtToken(PantryPlannerUser user, IConfiguration configuration)
         {
             List<Claim> claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Email),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id)
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(ClaimTypes.Name, user.Email)
             };
 
             SymmetricSecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtKey"]));
@@ -101,6 +102,22 @@ namespace PantryPlanner.Services
             user = await _userManager.GetUserFromCookieOrJwtAsync(tokenClaims);
 
             return user;
+        }
+
+        /// <summary>
+        /// Get ClaimsPrincipal from a valid Jwt Token.
+        /// </summary>
+        public ClaimsPrincipal GetClaimsPrincipalForJwtToken(string token)
+        {
+            PantryPlannerUser user;
+            ClaimsPrincipal tokenClaims;
+
+            if (IsJwtTokenValid(token, _configuration, out tokenClaims) == false)
+            {
+                return null;
+            }
+
+            return tokenClaims;
         }
 
         /// <summary>

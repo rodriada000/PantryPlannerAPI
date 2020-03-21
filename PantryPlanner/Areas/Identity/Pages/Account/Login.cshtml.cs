@@ -9,6 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using PantryPlanner.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System;
+using PantryPlanner.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace PantryPlanner.Areas.Identity.Pages.Account
 {
@@ -17,11 +22,17 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<PantryPlannerUser> _signInManager;
         private readonly ILogger<LoginModel> _logger;
+        private readonly AccountService _accountService;
 
-        public LoginModel(SignInManager<PantryPlannerUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(
+            SignInManager<PantryPlannerUser> signInManager,
+            UserManager<PantryPlannerUser> userManager,
+            ILogger<LoginModel> logger,
+            IConfiguration configuration)
         {
             _signInManager = signInManager;
             _logger = logger;
+            _accountService = new AccountService(userManager, signInManager, configuration);
         }
 
         [BindProperty]
@@ -71,22 +82,24 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
-                if (result.Succeeded)
+                string jwtToken = await _accountService.LoginWithEmailAndPasswordAsync(new DTOs.LoginDto() { Email = Input.Email, Password = Input.Password });
+                
+                if (!string.IsNullOrEmpty(jwtToken))
                 {
                     _logger.LogInformation("User logged in.");
+
+                    var claims = new List<Claim>
+                            {
+                              new Claim(ClaimTypes.Name, Input.Email),
+                              new Claim("jwt_token", jwtToken)
+                            };
+
+                    var authProperties = new AuthenticationProperties();
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
                     return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
                 }
                 else
                 {

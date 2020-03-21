@@ -1,29 +1,36 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using PantryPlanner.Models;
+using PantryPlanner.Services;
 
 namespace PantryPlanner.Areas.Identity.Pages.Account
 {
     [AllowAnonymous]
     public class ExternalLoginModel : PageModel
     {
+        private readonly AccountService _accountService;
         private readonly SignInManager<PantryPlannerUser> _signInManager;
-        private readonly UserManager<PantryPlannerUser> _userManager;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
             SignInManager<PantryPlannerUser> signInManager,
             UserManager<PantryPlannerUser> userManager,
-            ILogger<ExternalLoginModel> logger)
+            ILogger<ExternalLoginModel> logger, 
+            IConfiguration configuration)
         {
             _signInManager = signInManager;
-            _userManager = userManager;
+            _accountService = new AccountService(userManager, signInManager, configuration);
             _logger = logger;
         }
 
@@ -65,6 +72,9 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
                 ErrorMessage = $"Error from external provider: {remoteError}";
                 return RedirectToPage("./Login", new {ReturnUrl = returnUrl });
             }
+
+
+
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
@@ -73,30 +83,31 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor : true);
-            if (result.Succeeded)
+            if (info.LoginProvider == "Google")
             {
-                _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
-                return LocalRedirect(returnUrl);
-            }
-            if (result.IsLockedOut)
-            {
-                return RedirectToPage("./Lockout");
-            }
-            else
-            {
-                // If the user does not have an account, then ask the user to create an account.
-                ReturnUrl = returnUrl;
-                LoginProvider = info.LoginProvider;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                List<Microsoft.AspNetCore.Authentication.AuthenticationToken> tokens = info.AuthenticationTokens.ToList();
+                string jwtToken = await _accountService.LoginUsingGoogleIdToken(tokens[0].Value);
+
+                if (!string.IsNullOrEmpty(jwtToken))
                 {
-                    Input = new InputModel
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                    var jwtPrinciple = _accountService.GetClaimsPrincipalForJwtToken(jwtToken);
+
+                    var claims = new List<Claim>
+                            {
+                              new Claim(ClaimTypes.Name, jwtPrinciple.FindFirstValue(ClaimTypes.Name)),
+                              new Claim("jwt_token", jwtToken)
+                            };
+
+                    var authProperties = new AuthenticationProperties();
+                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+
+                    return LocalRedirect(returnUrl);
                 }
-                return Page();
             }
+
+            return Page(); // if got here, then something wrong happened
         }
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
@@ -112,22 +123,22 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var user = new PantryPlannerUser { UserName = Input.Email, Email = Input.Email };
-                var result = await _userManager.CreateAsync(user);
-                if (result.Succeeded)
-                {
-                    result = await _userManager.AddLoginAsync(user, info);
-                    if (result.Succeeded)
-                    {
-                        await _signInManager.SignInAsync(user, isPersistent: false);
-                        _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
-                        return LocalRedirect(returnUrl);
-                    }
-                }
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError(string.Empty, error.Description);
-                }
+                //var user = new PantryPlannerUser { UserName = Input.Email, Email = Input.Email };
+                //var result = await _userManager.CreateAsync(user);
+                //if (result.Succeeded)
+                //{
+                //    result = await _userManager.AddLoginAsync(user, info);
+                //    if (result.Succeeded)
+                //    {
+                //        await _signInManager.SignInAsync(user, isPersistent: false);
+                //        _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+                //        return LocalRedirect(returnUrl);
+                //    }
+                //}
+                //foreach (var error in result.Errors)
+                //{
+                //    ModelState.AddModelError(string.Empty, error.Description);
+                //}
             }
 
             LoginProvider = info.LoginProvider;

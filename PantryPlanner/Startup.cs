@@ -9,6 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.CookiePolicy;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 namespace PantryPlanner
 {
@@ -26,48 +30,60 @@ namespace PantryPlanner
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+                options.HttpOnly = HttpOnlyPolicy.None;
+                options.Secure = true ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
             });
+
+            services.AddCors();
+
+            services.AddAuthentication(options =>
+                    {
+                        //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+                        //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                        //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                    })
+                    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+                    {
+                        options.Cookie.HttpOnly = true;
+                        options.Cookie.SecurePolicy = true ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
+                        options.Cookie.SameSite = SameSiteMode.Lax;
+                        options.Cookie.Name = "Pantry.AuthCookieAspNetCore";
+                        options.LoginPath = "/Identity/Account/Login";
+                        options.LogoutPath = "/Identity/Account/Logout";
+                    })
+                    .AddJwtBearer(options =>
+                    {
+                        options.RequireHttpsMetadata = false; // TODO: make conditional if in dev environment
+                        options.SaveToken = true;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidIssuer = Configuration["JwtIssuer"],
+                            ValidAudience = Configuration["JwtIssuer"],
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"])),
+                            ClockSkew = TimeSpan.Zero // remove delay of token when expire
+                        };
+                    })
+                    .AddOpenIdConnect("Google", "Google", options =>
+                    {
+                        IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
+
+                        options.Authority = "https://accounts.google.com/";
+                        options.ClientId = googleAuthNSection["ClientId"];
+                        options.CallbackPath = "/signin-google";
+                        options.SignedOutCallbackPath = "/signout-callback-google";
+                        options.RemoteSignOutPath = "/signout-google";
+                        options.SaveTokens = true;
+                        options.Scope.Add("email");
+                    });
+
 
             IConfigurationSection connStrings = Configuration.GetSection("ConnectionStrings");
 
             string connection = connStrings["PantryPlannerIdentityContextConnection"];
             services.AddDbContext<Services.PantryPlannerContext>(options => options.UseSqlServer(connection));
 
-
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false; // TODO: make conditional if in dev environment
-                options.SaveToken = true;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidIssuer = Configuration["JwtIssuer"],
-                    ValidAudience = Configuration["JwtIssuer"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JwtKey"])),
-                    ClockSkew = TimeSpan.Zero // remove delay of token when expire
-                };
-            })
-            .AddOpenIdConnect("Google", "Google", options =>
-            {
-                IConfigurationSection googleAuthNSection = Configuration.GetSection("Authentication:Google");
-
-                options.Authority = "https://accounts.google.com/";
-                options.ClientId = googleAuthNSection["ClientId"];
-                options.CallbackPath = "/signin-google";
-                options.SignedOutCallbackPath = "/signout-callback-google";
-                options.RemoteSignOutPath = "/signout-google";
-                options.SaveTokens = true;
-            });
-
-            services.AddMvc()
+            services.AddMvc(options => options.Filters.Add(new Microsoft.AspNetCore.Mvc.Authorization.AuthorizeFilter()))
                     .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                     .AddJsonOptions(options =>
                     {
@@ -81,6 +97,11 @@ namespace PantryPlanner
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                app.UseForwardedHeaders(new ForwardedHeadersOptions
+                {
+                    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+                });
             }
             else
             {
@@ -91,8 +112,8 @@ namespace PantryPlanner
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseAuthentication();
             app.UseCookiePolicy();
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {
@@ -100,10 +121,6 @@ namespace PantryPlanner
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
-            
-            
-
-            
         }
     }
 }

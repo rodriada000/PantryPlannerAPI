@@ -1,5 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -27,6 +30,8 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
         public async Task<IActionResult> OnPost(string returnUrl = null)
         {
             await _signInManager.SignOutAsync();
+            await this.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
             _logger.LogInformation("User logged out.");
             if (returnUrl != null)
             {
