@@ -16,7 +16,7 @@ using PantryPlanner.Services;
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Cookies,JwtBearer")]
     [ApiController]
     public class KitchenUserController : ControllerBase
     {

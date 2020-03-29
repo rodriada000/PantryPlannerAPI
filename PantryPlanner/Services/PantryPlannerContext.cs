@@ -532,7 +532,9 @@ namespace PantryPlanner.Services
                 entity.HasIndex(e => e.RecipeId)
                     .HasName("fkIdx_73");
 
-                entity.Property(e => e.RecipeIngredientId).HasColumnName("RecipeIngredientID");
+                entity.Property(e => e.RecipeIngredientId)
+                    .HasColumnName("RecipeIngredientID")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.IngredientId).HasColumnName("IngredientID");
 
@@ -568,7 +570,9 @@ namespace PantryPlanner.Services
                 entity.HasIndex(e => e.RecipeId)
                     .HasName("fkIdx_87");
 
-                entity.Property(e => e.RecipeStepId).HasColumnName("RecipeStepID");
+                entity.Property(e => e.RecipeStepId)
+                    .HasColumnName("RecipeStepID")
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.RecipeId).HasColumnName("RecipeID");
 

@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Cookies,JwtBearer")]
     [ApiController]
     public class RecipeController : ControllerBase
     {

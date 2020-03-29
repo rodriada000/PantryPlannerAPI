@@ -153,6 +153,9 @@ namespace PantryPlannerApiUnitTests
 
             Recipe actualAddedRecipe = _recipeService.AddRecipe(recipeToAdd, _testUser);
 
+            Recipe secondResult = _recipeService.AddRecipe(recipeToAdd, _testUser);
+
+
             Assert.True(actualAddedRecipe.RecipeId != 0);
             Assert.Equal(expectedName, actualAddedRecipe.Name);
             Assert.Equal(expectedDescription, actualAddedRecipe.Description);

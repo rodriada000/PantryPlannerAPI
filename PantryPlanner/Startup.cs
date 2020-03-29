@@ -37,12 +37,11 @@ namespace PantryPlanner
 
             services.AddCors();
 
-            services.AddAuthentication(options =>
-                    {
-                        //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-                        //options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                        //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                    })
+            services.ConfigureApplicationCookie(options => {
+                options.Cookie.Name = "Pantry.AuthCookieAspNetCore";
+            });
+
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                     {
                         options.Cookie.HttpOnly = true;

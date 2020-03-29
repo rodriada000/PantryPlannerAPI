@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
 using PantryPlanner.Extensions;
@@ -17,7 +14,7 @@ using PantryPlanner.Services;
 namespace PantryPlanner.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize]
+    [Authorize(AuthenticationSchemes = "Cookies,JwtBearer")]
     [ApiController]
     public class KitchenController : ControllerBase
     {

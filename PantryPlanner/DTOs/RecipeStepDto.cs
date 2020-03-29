@@ -11,7 +11,7 @@ namespace PantryPlanner.DTOs
         public int RecipeStepId { get; set; }
         public long RecipeId { get; set; }
         public string Text { get; set; }
-        public int SortOrder { get; set; }
+        public int? SortOrder { get; set; }
 
         #region Additional Properties Not In Model
 
@@ -39,6 +39,17 @@ namespace PantryPlanner.DTOs
         public override string ToString()
         {
             return $"rs: {Text}|{SortOrder}";
+        }
+
+        internal RecipeStep Create()
+        {
+            return new RecipeStep()
+            {
+                RecipeStepId = this.RecipeStepId,
+                RecipeId = this.RecipeId,
+                SortOrder = this.SortOrder.GetValueOrDefault(0),
+                Text = this.Text
+            };
         }
     }
 }

@@ -300,7 +300,7 @@ namespace PantryPlanner.Services
 
             if (Context.RecipeIngredientExists(recipeIngredient) == false)
             {
-                throw new RecipeIngredientNotFoundException(recipeIngredient.RecipeId);
+                throw new RecipeIngredientNotFoundException(recipeIngredient.RecipeIngredientId);
             }
 
             if (Permissions.UserAddedRecipe(recipeIngredient.RecipeId, userUpdating) == false)

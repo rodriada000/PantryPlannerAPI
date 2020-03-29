@@ -95,6 +95,7 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
                     var claims = new List<Claim>
                             {
                               new Claim(ClaimTypes.Name, jwtPrinciple.FindFirstValue(ClaimTypes.Name)),
+                              new Claim(ClaimTypes.NameIdentifier, jwtPrinciple.FindFirstValue(ClaimTypes.NameIdentifier)),
                               new Claim("jwt_token", jwtToken)
                             };
 
@@ -102,7 +103,6 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
                     await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
                     return LocalRedirect(returnUrl);
                 }
             }

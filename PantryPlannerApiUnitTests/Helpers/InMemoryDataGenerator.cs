@@ -386,6 +386,29 @@ namespace PantryPlannerApiUnitTests.Helpers
             return newIngredient;
         }
 
+        internal static RecipeStep AddStepToRecipe(PantryPlannerContext context, Recipe recipe, string stepText)
+        {
+            RecipeStep newStep = new RecipeStep()
+            {
+                RecipeId = recipe.RecipeId,
+                Text = stepText
+            };
+
+            if (context.RecipeStep.Any(r => r.RecipeId == recipe.RecipeId) == false)
+            {
+                newStep.SortOrder = 1;
+            }
+            else
+            {
+                newStep.SortOrder = context.RecipeStep.Where(r => r.RecipeId == recipe.RecipeId).Max(r => r.SortOrder) + 1;
+            }
+
+            context.RecipeStep.Add(newStep);
+            context.SaveChanges();
+
+            return newStep;
+        }
+
         /// <summary>
         /// Inserts a subset (250 records) of Ingredient test data into <paramref name="context"/> using the USDA Food Composition ETL process.
         /// </summary>

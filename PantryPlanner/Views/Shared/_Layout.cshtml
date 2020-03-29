@@ -21,12 +21,14 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PantryPlanner</a>
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Pantry Planner</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
+                    <partial name="_LoginPartial" />
+
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
@@ -35,7 +37,6 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
                     </ul>
-                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
@@ -72,6 +73,19 @@
         </script>
     </environment>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script type="module" src="~/dist/AngularClient/runtime-es2015.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/runtime-es5.js" asp-append-version="true" nomodule defer></script>
+    <script type="module" src="~/dist/AngularClient/polyfills-es2015.js" nomodule asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/polyfills-es5.js" asp-append-version="true" nomodule defer></script>
+    <script type="module" src="~/dist/AngularClient/styles-es2015.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/styles-es5.js" asp-append-version="true" nomodule defer></script>
+    <script type="module" src="~/dist/AngularClient/styles-es2015.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/styles-es5.js" asp-append-version="true" nomodule defer></script>
+    <script type="module" src="~/dist/AngularClient/vendor-es2015.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/vendor-es5.js" asp-append-version="true" nomodule defer></script>
+    <script type="module" src="~/dist/AngularClient/main-es2015.js" asp-append-version="true"></script>
+    <script type="text/javascript" src="~/dist/AngularClient/main-es5.js" asp-append-version="true" nomodule defer></script>
 
     @RenderSection("Scripts", required: false)
 </body>
