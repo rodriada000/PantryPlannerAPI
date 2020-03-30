@@ -17,8 +17,8 @@ export class KitchenNavComponent implements OnInit {
 
   ngOnInit() {
     this.newKitchenName = "";
+    this.activeKitchenName = "Loading Kitchens";
     this.myKitchens = [];
-    this.setActiveKitchenName();
 
     this.apiService.getAllKitchens().subscribe(data => {
       this.myKitchens = data;
