@@ -28,6 +28,12 @@
     <Compile Remove="Migrations\20190714214400_AddCreatedByUserIdToKitchen.Designer.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="AngularClient\src\app\shared\api.service.ts" />
+    <None Remove="AngularClient\src\app\shared\components\kitchenNav.component.ts" />
+    <None Remove="AngularClient\src\app\shared\Kitchen.ts" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Google.Apis.Auth" Version="1.40.2" />
@@ -49,7 +55,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.3" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
   </ItemGroup>
 
 </Project>

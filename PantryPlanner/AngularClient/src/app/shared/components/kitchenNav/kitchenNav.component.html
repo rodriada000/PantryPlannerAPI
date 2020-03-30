@@ -1,0 +1,15 @@
+<li class="nav-item" ngbDropdown display="dynamic" placement="bottom-right">
+  <a class="nav-link" style="cursor: pointer" ngbDropdownToggle id="navbarDropdown3" role="button">
+    {{activeKitchenName}}
+  </a>
+  <div ngbDropdownMenu aria-labelledby="navbarDropdown3" class="dropdown-menu">
+    <a ngbDropdownItem href="#" *ngFor="let k of myKitchens" (click)="setActiveKitchen(k)">
+      {{k.name}}
+      <br />
+    </a>
+    <span>
+      <input class="form-text" type="text" maxlength="30" [(ngModel)]="newKitchenName"/>
+      <button class="btn-primary" (click)="addNewKitchen()">Add Kitchen</button>
+    </span>
+  </div>
+</li>

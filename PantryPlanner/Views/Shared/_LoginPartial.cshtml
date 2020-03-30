@@ -1,38 +1,12 @@
 ﻿@using Microsoft.AspNetCore.Identity
-@using PantryPlanner.Services
-@using PantryPlanner.Extensions
 @inject SignInManager<PantryPlannerUser> SignInManager
 @inject UserManager<PantryPlannerUser> UserManager
-@inject PantryPlannerContext DbContext
-@{
-    KitchenService kitchenService = null;
-    PantryPlannerUser user = null;
 
-    @if (User.Identity.IsAuthenticated)
-    {
-        kitchenService = new KitchenService(DbContext);
-        user = await UserManager.GetUserFromCookieOrJwtAsync(User);
-    }
-}
 
 <ul class="navbar-nav">
     @if (User.Identity.IsAuthenticated)
     {
-        List<Kitchen> myKitchens = kitchenService.GetAllKitchensForUser(user);
-
-        if (myKitchens?.Count > 0)
-        {
-            for (int i = 0; i < myKitchens.Count; i++)
-            {
-
-            }
-        }
-        else
-        {
-            <li class="nav-item">
-                <a class="nav-link text-dark">Create Kitchen</a>
-            </li>
-        }
+        <kitchen-nav></kitchen-nav>
 
         <li class="nav-item">
             <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">Hello @UserManager.GetUserName(User)!</a>
