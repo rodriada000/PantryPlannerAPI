@@ -7,9 +7,12 @@
       {{k.name}}
       <br />
     </a>
-    <span>
-      <input class="form-text" type="text" maxlength="30" [(ngModel)]="newKitchenName"/>
-      <button class="btn-primary" (click)="addNewKitchen()">Add Kitchen</button>
-    </span>
+    <div class="dropdown-divider"></div>
+    <div class="input-group col-auto">
+      <input class="form-control" placeholder="New Kitchen Name" type="text" maxlength="30" [(ngModel)]="newKitchenName" />
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" (click)="addNewKitchen()">Add</button>
+      </div>
+    </div>
   </div>
 </li>

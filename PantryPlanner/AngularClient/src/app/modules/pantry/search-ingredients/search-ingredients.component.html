@@ -1,0 +1,6 @@
+<div class="input-group">
+  <input class="form-control" placeholder="Search Ingredients" type="text" maxlength="100" [(ngModel)]="searchText" (keyup)="doSearch()" />
+</div>
+<div class="list-group">
+  <a href="#" class="list-group-item list-group-item-action" *ngFor="let k of searchResults">{{k.name}} ({{k.categoryName}})</a>
+</div>

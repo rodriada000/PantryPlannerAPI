@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import ApiService from '../../services/api.service';
-import Kitchen from '../../models/Kitchen';
+import KitchenApi from '../../../data/services/kitchenApi.service';
+import Kitchen from '../../../data/models/Kitchen';
+import { ActiveKitchenService } from '../../services/active-kitchen.service';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'kitchen-nav',
@@ -13,7 +15,7 @@ export class KitchenNavComponent implements OnInit {
   activeKitchenName: string;
   public newKitchenName: string;
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: KitchenApi, private activeKitchen: ActiveKitchenService) {}
 
   ngOnInit() {
     this.newKitchenName = "";
@@ -22,17 +24,16 @@ export class KitchenNavComponent implements OnInit {
 
     this.apiService.getAllKitchens().subscribe(data => {
       this.myKitchens = data;
-
-      console.log(this.myKitchens);
-      this.setActiveKitchenName();
+      this.updateActiveKitchenName();
     });
   }
 
-  setActiveKitchenName() {
+  updateActiveKitchenName() {
 
-    const activeId: string = localStorage.getItem("ActiveKitchenID");
+    const activeId: number = this.activeKitchen.getActiveKitchenId();
 
-    if (activeId === null) {
+    if (activeId === 0) {
+      // user has not set the active kitchen so show text based on amount of kitchens the user has
       if (this.myKitchens.length > 0) {
         this.activeKitchenName = "Select Kitchen";
       } else {
@@ -40,11 +41,10 @@ export class KitchenNavComponent implements OnInit {
       }
     }
     else {
+      // user has 
       if (this.myKitchens.length > 0) {
-        console.log(activeId);
-        console.log(parseInt(activeId));
-        const kitchenIndex: number = this.myKitchens.findIndex(kit => { return kit.kitchenId === parseInt(activeId); });
 
+        const kitchenIndex: number = this.myKitchens.findIndex(kit => { return kit.kitchenId === activeId; });
         if (kitchenIndex === -1) {
           this.activeKitchenName = "Select Kitchen";
         } else {
@@ -52,7 +52,8 @@ export class KitchenNavComponent implements OnInit {
         }
 
       } else {
-        this.activeKitchenName = "Loading Kitchens";
+        // user has active kitchen id set but no kitchens so default 'Create' text
+        this.activeKitchenName = "Create Kitchen";
       }
     }
 
@@ -72,7 +73,6 @@ export class KitchenNavComponent implements OnInit {
     kitchen.description = "";
 
     this.apiService.addKitchen(kitchen).subscribe(data => {
-      console.log(data);
       this.myKitchens.push(data);
     });
   }
@@ -97,12 +97,12 @@ export class KitchenNavComponent implements OnInit {
   setActiveKitchen(selected: Kitchen) {
     console.log(selected);
 
-    if (selected === null || selected === undefined) {
+    if (isNullOrUndefined(selected)) {
       return;
     }
 
-    localStorage.setItem("ActiveKitchenID", selected.kitchenId.toString());
-    this.setActiveKitchenName(); // call this to update navbar UI of selected
+    this.activeKitchen.setActiveKitchen(selected);
+    this.updateActiveKitchenName(); // call this to update navbar UI of selected
   }
 
 }

@@ -1,14 +1,15 @@
 import { NgModule, Injector } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { createCustomElement } from '@angular/elements';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AppComponent } from './app.component';
-import ApiService from './shared/services/api.service';
 import { KitchenNavComponent } from './shared/components/kitchenNav/kitchenNav.component';
+
+import { PantryModule } from './modules/pantry/pantry.module';
+import { SearchIngredientsComponent } from './modules/pantry/search-ingredients/search-ingredients.component';
 
 @NgModule({
   declarations: [
@@ -19,18 +20,20 @@ import { KitchenNavComponent } from './shared/components/kitchenNav/kitchenNav.c
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    NgbModule
+    NgbModule,
+    PantryModule
   ],
-  providers: [ApiService],
-  entryComponents: [KitchenNavComponent]
+  entryComponents: []
 })
 export class AppModule {
   constructor(private injector: Injector) { }
 
   ngDoBootstrap() {
-    const AppElement = createCustomElement(KitchenNavComponent, { injector: this.injector });
-    customElements.define('kitchen-nav', AppElement);
+    const navElement = createCustomElement(KitchenNavComponent, { injector: this.injector });
+    customElements.define('kitchen-nav', navElement);
+
+    const searchElement = createCustomElement(SearchIngredientsComponent, { injector: this.injector });
+    customElements.define('pantry-search-ingredients', searchElement);
   }
 }
 
-//platformBrowserDynamic().bootstrapModule(AppModule);
