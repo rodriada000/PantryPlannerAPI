@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import IngredientApi from '../../../data/services/ingredientApi.service';
 import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
 import Ingredient from '../../../data/models/Ingredient';
+import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredient-modal.component';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -14,7 +16,7 @@ export class SearchIngredientsComponent implements OnInit {
   public searchResults: Array<Ingredient>
 
 
-  constructor(private apiService: IngredientApi, private activeKitchen: ActiveKitchenService) { }
+  constructor(private apiService: IngredientApi, private activeKitchen: ActiveKitchenService, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.searchText = "";
@@ -41,8 +43,9 @@ export class SearchIngredientsComponent implements OnInit {
     }, 1000);
   }
 
-  showAddModal(): void {
-    return;
+  openAddModal(selected: Ingredient): void {
+    const modalRef = this.modalService.open(AddIngredientModalComponent);
+    modalRef.componentInstance.ingredient = selected;
   }
 
 
