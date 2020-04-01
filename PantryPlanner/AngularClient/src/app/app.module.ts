@@ -38,7 +38,6 @@ export class AppModule {
 
     const myIngredElement = createCustomElement(MyIngredientsComponent, { injector: this.injector });
     customElements.define('pantry-my-ingredients', myIngredElement);
-
   }
 }
 

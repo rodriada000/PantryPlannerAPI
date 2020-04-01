@@ -22,7 +22,8 @@ import { MyIngredientsComponent } from './my-ingredients/my-ingredients.componen
     NgbActiveModal
   ],
   exports: [
-    SearchIngredientsComponent
+    SearchIngredientsComponent,
+    MyIngredientsComponent
   ]
 })
 export class PantryModule {
