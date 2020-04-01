@@ -43,14 +43,23 @@ export class AddIngredientModalComponent {
       return;
     }
 
+    console.log("adding ingredient ...");
+
     this.apiService.addIngredientToKitchen(toAdd).subscribe(data => {
+      this.apiService.setAddedIngredient(data);
       this.activeModal.close(data);
-    });
+    },
+      error => {
+        console.error(error);
+        this.apiService.setAddedIngredient(null);
+        this.activeModal.close(null);
+      },
+    );
 
   }
 
   close(): void {
-    this.activeModal.close(this.ingredient);
+    this.activeModal.close(null);
   }
 
 }

@@ -5,6 +5,7 @@ import Ingredient from '../../../data/models/Ingredient';
 import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredient-modal.component';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
+import { isNullOrUndefined } from 'util';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -45,7 +46,8 @@ export class SearchIngredientsComponent implements OnInit {
       tap(() => this.isSearching = false)
     )
 
-  formatter = (x: { name: string }) => x.name;
+  // don't keep the selected input just clear it out once done
+  formatter = (x: { name: string }) => "";
 
 
   openAddModal(selected: Ingredient): void {
@@ -53,7 +55,7 @@ export class SearchIngredientsComponent implements OnInit {
     modalRef.componentInstance.ingredient = selected;
 
     modalRef.result.then((result) => {
-      if (result) {
+      if (!isNullOrUndefined(result)) {
         console.log(result);
       }
     });
