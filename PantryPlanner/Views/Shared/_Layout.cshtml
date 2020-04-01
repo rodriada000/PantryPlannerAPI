@@ -14,6 +14,7 @@
               asp-fallback-test-class="sr-only" asp-fallback-test-property="position" asp-fallback-test-value="absolute"
               crossorigin="anonymous"
               integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" />
+        <link rel="stylesheet" href="~/dist/AngularClient/styles.css" />
     </environment>
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
@@ -94,12 +95,14 @@
     <script type="text/javascript" src="~/dist/AngularClient/runtime-es5.js" asp-append-version="true" nomodule defer></script>
     <script type="module" src="~/dist/AngularClient/polyfills-es2015.js" nomodule asp-append-version="true"></script>
     <script type="text/javascript" src="~/dist/AngularClient/polyfills-es5.js" asp-append-version="true" nomodule defer></script>
-    <script type="module" src="~/dist/AngularClient/styles-es2015.js" asp-append-version="true"></script>
-    <script type="text/javascript" src="~/dist/AngularClient/styles-es5.js" asp-append-version="true" nomodule defer></script>
-    <script type="module" src="~/dist/AngularClient/styles-es2015.js" asp-append-version="true"></script>
-    <script type="text/javascript" src="~/dist/AngularClient/styles-es5.js" asp-append-version="true" nomodule defer></script>
-    <script type="module" src="~/dist/AngularClient/vendor-es2015.js" asp-append-version="true"></script>
-    <script type="text/javascript" src="~/dist/AngularClient/vendor-es5.js" asp-append-version="true" nomodule defer></script>
+
+    <environment include="Development">
+        <script type="module" src="~/dist/AngularClient/styles-es2015.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/dist/AngularClient/styles-es5.js" asp-append-version="true" nomodule defer></script>
+        <script type="module" src="~/dist/AngularClient/vendor-es2015.js" asp-append-version="true"></script>
+        <script type="text/javascript" src="~/dist/AngularClient/vendor-es5.js" asp-append-version="true" nomodule defer></script>
+    </environment>
+
     <script type="module" src="~/dist/AngularClient/main-es2015.js" asp-append-version="true"></script>
     <script type="text/javascript" src="~/dist/AngularClient/main-es5.js" asp-append-version="true" nomodule defer></script>
 
