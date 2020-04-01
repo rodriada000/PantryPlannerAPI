@@ -31,25 +31,25 @@
 
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
 
                         @if (User.Identity.IsAuthenticated)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Pantry" asp-action="Index">Pantry</a>
+                                <a class="nav-link" asp-area="" asp-controller="Pantry" asp-action="Index">Pantry</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MyRecipes" asp-action="Index">Recipes</a>
+                                <a class="nav-link" asp-area="" asp-controller="MyRecipes" asp-action="Index">Recipes</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="MyMealPlans" asp-action="Index">Mealplans</a>
+                                <a class="nav-link" asp-area="" asp-controller="MyMealPlans" asp-action="Index">Mealplans</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="GroceryLists" asp-action="Index">Grocery Lists</a>
+                                <a class="nav-link" asp-area="" asp-controller="GroceryLists" asp-action="Index">Grocery Lists</a>
                             </li>
                         }
                     </ul>
@@ -104,5 +104,14 @@
     <script type="text/javascript" src="~/dist/AngularClient/main-es5.js" asp-append-version="true" nomodule defer></script>
 
     @RenderSection("Scripts", required: false)
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // set active nav-item in nav bar
+            console.log(this.location.pathname);
+            $('a[href="' + this.location.pathname + '"]').parents('li,ul').addClass('active');
+        });
+
+    </script>
 </body>
 </html>

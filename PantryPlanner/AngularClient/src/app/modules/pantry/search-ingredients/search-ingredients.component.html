@@ -1,6 +1,10 @@
+<ng-template #rt let-r="result" let-t="term">
+  <div (click)="openAddModal(r)">
+    <ngb-highlight result="{{r.name}} ({{r.categoryName}})" [term]="t"></ngb-highlight>
+  </div>
+</ng-template>
+
 <div class="input-group">
-  <input class="form-control" placeholder="Search Ingredients" type="text" maxlength="100" [(ngModel)]="searchText" (keyup)="doSearch()" />
+  <input class="form-control" placeholder="Search Ingredients" type="text" maxlength="100" [(ngModel)]="searchText" [ngbTypeahead]="doSearch" [resultTemplate]="rt" [inputFormatter]="formatter" />
 </div>
-<div class="list-group">
-  <a href="#" class="list-group-item list-group-item-action" *ngFor="let k of searchResults" (click)="openAddModal(k)" >{{k.name}} ({{k.categoryName}})</a>
-</div>
+<small *ngIf="isSearching" class="form-text text-muted">searching...</small>

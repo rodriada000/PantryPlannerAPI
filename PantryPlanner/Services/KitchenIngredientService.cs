@@ -384,8 +384,17 @@ namespace PantryPlanner.Services
                 throw new InvalidOperationException($"This ingredient has already been added.");
             }
 
+            // get KitchenUserID for the current user
+            KitchenUser kitchenUser = user.KitchenUser.Where(u => u.KitchenId == newIngredient.KitchenId).FirstOrDefault();
+            newIngredient.AddedByKitchenUserId = kitchenUser?.KitchenUserId;
+
             Context.KitchenIngredient.Add(newIngredient);
             Context.SaveChanges();
+
+            if (newIngredient.AddedByKitchenUser == null)
+            {
+                newIngredient.AddedByKitchenUser = kitchenUser;
+            }
 
             if (newIngredient.Ingredient == null)
             {

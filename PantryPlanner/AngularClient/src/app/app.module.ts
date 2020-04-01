@@ -10,6 +10,7 @@ import { KitchenNavComponent } from './shared/components/kitchenNav/kitchenNav.c
 
 import { PantryModule } from './modules/pantry/pantry.module';
 import { SearchIngredientsComponent } from './modules/pantry/search-ingredients/search-ingredients.component';
+import { MyIngredientsComponent } from './modules/pantry/my-ingredients/my-ingredients.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,10 @@ export class AppModule {
 
     const searchElement = createCustomElement(SearchIngredientsComponent, { injector: this.injector });
     customElements.define('pantry-search-ingredients', searchElement);
+
+    const myIngredElement = createCustomElement(MyIngredientsComponent, { injector: this.injector });
+    customElements.define('pantry-my-ingredients', myIngredElement);
+
   }
 }
 

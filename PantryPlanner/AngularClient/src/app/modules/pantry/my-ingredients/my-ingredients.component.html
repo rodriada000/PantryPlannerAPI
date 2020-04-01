@@ -1,0 +1,26 @@
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Category</th>
+      <th scope="col">Quantity</th>
+      <th scope="col">Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of myIngredients">
+      <td>
+        {{row.ingredient.name}}
+      </td>
+      <td>
+        {{row.category.name}}
+      </td>
+      <td>
+        {{row.quantity}}
+      </td>
+      <td>
+        {{row.note}}
+      </td>
+    </tr>
+  </tbody>
+</table>

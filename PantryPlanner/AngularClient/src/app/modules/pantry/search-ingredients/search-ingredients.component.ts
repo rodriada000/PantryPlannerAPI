@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import IngredientApi from '../../../data/services/ingredientApi.service';
-import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
 import Ingredient from '../../../data/models/Ingredient';
 import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredient-modal.component';
+import { Observable, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -12,41 +13,50 @@ import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredi
 })
 export class SearchIngredientsComponent implements OnInit {
 
+  public isSearching: boolean;
+  public searchFailed: boolean;
   public searchText: string;
   public searchResults: Array<Ingredient>
 
 
-  constructor(private apiService: IngredientApi, private activeKitchen: ActiveKitchenService, private modalService: NgbModal) { }
+  constructor(private apiService: IngredientApi, private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.searchText = "";
     this.searchResults = [];
+    this.isSearching = false;
+    this.searchFailed = false;
   }
 
-  doSearch(): void {
+  doSearch = (text$: Observable<string>) =>
+    text$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      tap(() => this.isSearching = true),
+      switchMap(term => term === "" || term.length < 2 ? of([]) :
+        this.apiService.getIngredientsByName(term).pipe(
+          tap(() => this.searchFailed = false),
+          map(r => r.slice(0,20)),
+          catchError(() => {
+            this.searchFailed = true;
+            return of([]);
+          }))
+      ),
+      tap(() => this.isSearching = false)
+    )
 
-    if (this.searchText === "") {
-      this.searchResults = [];
-      return;
-    }
+  formatter = (x: { name: string }) => x.name;
 
-    const currentText: string = this.searchText;
-
-    setTimeout(() => {
-      if (currentText !== this.searchText) {
-        return; // user started typing more after a second so don't search yet
-      }
-
-      this.apiService.getIngredientsByName(this.searchText).subscribe(data => {
-        this.searchResults = data;
-      });
-    }, 1000);
-  }
 
   openAddModal(selected: Ingredient): void {
     const modalRef = this.modalService.open(AddIngredientModalComponent);
     modalRef.componentInstance.ingredient = selected;
-  }
 
+    modalRef.result.then((result) => {
+      if (result) {
+        console.log(result);
+      }
+    });
+  }
 
 }

@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   baseUrl: 'https://test-pantryplanner.azurewebsites.net/api',
   debugUrl: 'https://localhost:44317/api',
-  isDebug: false // Set to true to use localhost api url instead of regular test baseUrl
+  isDebug: true // Set to true to use localhost api instead of regular hosted test api (good for debugging api changes locally)
 };
 
 if (environment.isDebug) {
