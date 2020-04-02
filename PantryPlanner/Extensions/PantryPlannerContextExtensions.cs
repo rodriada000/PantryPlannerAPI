@@ -1,4 +1,5 @@
-﻿using PantryPlanner.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PantryPlanner.Models;
 using PantryPlanner.Services;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,14 @@ namespace PantryPlanner.Extensions
         public static bool KitchenUserExists(this PantryPlannerContext context, long kitchenId, string userId)
         {
             return context.KitchenUser.Any(e => e.KitchenId == kitchenId && e.UserId == userId);
+        }
+
+        public static KitchenUser GetKitchenUser(this PantryPlannerContext context, long kitchenId, string userId)
+        {
+            return context.KitchenUser.Where(e => e.KitchenId == kitchenId && e.UserId == userId)
+                                      .Include(e => e.Kitchen)
+                                      .Include(e => e.User)
+                                      .FirstOrDefault();
         }
 
         public static bool KitchenUserExists(this PantryPlannerContext context, Kitchen kitchen, PantryPlannerUser user)

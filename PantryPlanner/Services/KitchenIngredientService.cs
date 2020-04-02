@@ -385,7 +385,13 @@ namespace PantryPlanner.Services
             }
 
             // get KitchenUserID for the current user
-            KitchenUser kitchenUser = user.KitchenUser.Where(u => u.KitchenId == newIngredient.KitchenId).FirstOrDefault();
+            KitchenUser kitchenUser = Context.GetKitchenUser(newIngredient.KitchenId, user.Id);
+
+            if (kitchenUser == null)
+            {
+                throw new KitchenUserNotFoundException("Failed to find a user associated with this kitchen");
+            }
+
             newIngredient.AddedByKitchenUserId = kitchenUser?.KitchenUserId;
 
             Context.KitchenIngredient.Add(newIngredient);
@@ -466,7 +472,7 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("You do not have rights to add ingredients to this kitchen");
             }
 
-            KitchenUser kitchenUser = Context.KitchenUser.Where(u => u.KitchenId == kitchenId && u.UserId == user.Id).FirstOrDefault();
+            KitchenUser kitchenUser = Context.GetKitchenUser(kitchenId, user.Id);
 
             if (kitchenUser == null)
             {
@@ -605,7 +611,10 @@ namespace PantryPlanner.Services
                 throw new IngredientNotFoundException($"KitchenIngredient with ID {kitchenIngredientId} does not exist.");
             }
 
-            KitchenIngredient ingredientToDelete = Context.KitchenIngredient.Where(k => k.KitchenIngredientId == kitchenIngredientId).FirstOrDefault();
+            KitchenIngredient ingredientToDelete = Context.KitchenIngredient.Where(k => k.KitchenIngredientId == kitchenIngredientId)
+                                                                            .Include(k => k.Ingredient)
+                                                                            .Include(k => k.Category)
+                                                                            .FirstOrDefault();
 
             if (Permissions.UserHasRightsToKitchen(userDeleting, ingredientToDelete.KitchenId) == false)
             {

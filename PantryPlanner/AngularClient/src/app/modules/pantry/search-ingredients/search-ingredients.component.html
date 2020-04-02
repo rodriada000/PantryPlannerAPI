@@ -5,6 +5,6 @@
 </ng-template>
 
 <div class="input-group">
-  <input class="form-control" placeholder="Search Ingredients" type="text" maxlength="100" [(ngModel)]="searchText" [ngbTypeahead]="doSearch" [resultTemplate]="rt" [inputFormatter]="formatter" />
+  <input class="form-control" placeholder="Search Ingredients" type="text" maxlength="100" [(ngModel)]="searchText" [ngbTypeahead]="doSearch" [resultTemplate]="rt" [inputFormatter]="quickAdd" />
 </div>
 <small *ngIf="isSearching" class="form-text text-muted">searching...</small>

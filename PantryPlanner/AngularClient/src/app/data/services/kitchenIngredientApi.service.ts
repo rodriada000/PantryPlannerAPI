@@ -4,6 +4,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import KitchenIngredient from '../models/KitchenIngredient';
+import Ingredient from '../models/Ingredient';
 
 @Injectable({
   providedIn: 'root'
@@ -19,8 +20,12 @@ export default class KitchenIngredientApi {
     this.observableAddedIngredient = new BehaviorSubject<KitchenIngredient>(this.addedIngredient);
   }
 
-  addIngredientToKitchen(ingredient: KitchenIngredient): Observable<KitchenIngredient> {
+  public addIngredientToKitchen(ingredient: KitchenIngredient): Observable<KitchenIngredient> {
     return this.http.post<KitchenIngredient>(this.endPoint, ingredient);
+  }
+
+  public removeKitchenIngredient(ingredient: KitchenIngredient): Observable<KitchenIngredient> {
+    return this.http.delete<KitchenIngredient>(this.endPoint + "/" + ingredient.kitchenIngredientId.toString());
   }
 
   public setAddedIngredient(ingredient: KitchenIngredient): void {
@@ -28,9 +33,20 @@ export default class KitchenIngredientApi {
     this.observableAddedIngredient.next(this.addedIngredient);
   }
 
-  getIngredientsForKitchen(kitchenId: number): Observable<Array<KitchenIngredient>> {
+  public getIngredientsForKitchen(kitchenId: number): Observable<Array<KitchenIngredient>> {
     return this.http.get<Array<KitchenIngredient>>(this.endPoint, {
       params: { 'kitchenId': kitchenId.toString() }
     });
+  }
+
+  public createEmpty(i: Ingredient, kitchenId: number): KitchenIngredient {
+    const toAdd: KitchenIngredient = new KitchenIngredient();
+    toAdd.ingredientId = i.ingredientId;
+    toAdd.categoryId = i.categoryId;
+    toAdd.kitchenId = kitchenId;
+    toAdd.note = "";
+    toAdd.quantity = 1;
+
+    return toAdd;
   }
 }

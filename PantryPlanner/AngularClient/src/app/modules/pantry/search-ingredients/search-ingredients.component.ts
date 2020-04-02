@@ -1,11 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import IngredientApi from '../../../data/services/ingredientApi.service';
-import Ingredient from '../../../data/models/Ingredient';
-import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredient-modal.component';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
 import { isNullOrUndefined } from 'util';
+import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
+import IngredientApi from '../../../data/services/ingredientApi.service';
+import Ingredient from '../../../data/models/Ingredient';
+import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredient-modal.component';
+import KitchenIngredient from '../../../data/models/KitchenIngredient';
+import { ToastService } from '../../../shared/services/toast.service';
+import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -20,7 +24,12 @@ export class SearchIngredientsComponent implements OnInit {
   public searchResults: Array<Ingredient>
 
 
-  constructor(private apiService: IngredientApi, private modalService: NgbModal) { }
+  constructor(
+    private apiService: IngredientApi,
+    private kitchenIngredientApi: KitchenIngredientApi,
+    private modalService: NgbModal,
+    private activeKitchen: ActiveKitchenService,
+    private toastService: ToastService) { }
 
   ngOnInit(): void {
     this.searchText = "";
@@ -46,8 +55,38 @@ export class SearchIngredientsComponent implements OnInit {
       tap(() => this.isSearching = false)
     )
 
-  // don't keep the selected input just clear it out once done
-  formatter = (x: { name: string }) => "";
+  // don't keep the selected input just clear it out once added
+  // adds the ingredient to kitchen with quantity 1 and no notes
+  quickAdd = (x: Ingredient) => {
+
+    if (this.modalService.hasOpenModals()) {
+      return;
+    }
+
+    if (isNullOrUndefined(x) || isNullOrUndefined(x.ingredientId)) {
+      console.warn("can not quick add - ingredient is null");
+      return;
+    }
+
+    const toAdd: KitchenIngredient = this.kitchenIngredientApi.createEmpty(x, this.activeKitchen.getActiveKitchenId());
+
+    if (toAdd.kitchenId === 0) {
+      this.toastService.showDanger("Cannot add to kitchen - kitchen id is 0");
+      return;
+    }
+
+    this.kitchenIngredientApi.addIngredientToKitchen(toAdd).subscribe(data => {
+      this.kitchenIngredientApi.setAddedIngredient(data);
+      this.toastService.showSuccess("Added " + x.name);
+    },
+      resp => {
+        this.toastService.showDanger(resp.error);
+        this.kitchenIngredientApi.setAddedIngredient(null);
+      },
+    );
+
+    return "";
+  };
 
 
   openAddModal(selected: Ingredient): void {

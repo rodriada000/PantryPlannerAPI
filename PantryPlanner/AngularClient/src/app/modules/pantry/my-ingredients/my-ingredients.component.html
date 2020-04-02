@@ -1,3 +1,7 @@
+<div class="d-flex align-items-center" *ngIf="isLoading">
+  <strong>Loading...</strong>
+  <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+</div>
 <table class="table table-hover">
   <thead>
     <tr>
@@ -5,10 +9,11 @@
       <th scope="col">Category</th>
       <th scope="col">Quantity</th>
       <th scope="col">Notes</th>
+      <th scope="col"></th>
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let row of myIngredients">
+    <tr *ngFor="let row of myIngredients; let index=index" (mouseover)="hoveredIndex=index">
       <td>
         {{row.ingredient.name}}
       </td>
@@ -21,6 +26,11 @@
       <td>
         {{row.note}}
       </td>
+      <td>
+        <button type="button" class="btn btn-link btn-sm" *ngIf="hoveredIndex==index" (click)="removeFromKitchen(row, index)">Remove</button>
+      </td>
     </tr>
   </tbody>
 </table>
+
+<app-toast></app-toast>
