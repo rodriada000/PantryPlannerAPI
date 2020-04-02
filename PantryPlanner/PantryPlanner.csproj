@@ -35,6 +35,8 @@
     <None Remove="AngularClient\src\app\data\models\KitchenUser.ts" />
     <None Remove="AngularClient\src\app\data\services\ingredientApi.service.ts" />
     <None Remove="AngularClient\src\app\data\services\kitchenIngredientApi.service.ts" />
+    <None Remove="AngularClient\src\app\data\services\kitchenUserApi.service.ts" />
+    <None Remove="AngularClient\src\app\modules\pantry\pantry.component.ts" />
     <None Remove="AngularClient\src\app\shared\api.service.ts" />
     <None Remove="AngularClient\src\app\shared\components\kitchenNav.component.ts" />
     <None Remove="AngularClient\src\app\shared\Kitchen.ts" />
@@ -67,7 +69,6 @@
 
 
   <ItemGroup>
-    <Folder Include="AngularClient\src\app\modules\" />
     <Folder Include="AngularClient\src\app\shared\models\" />
   </ItemGroup>
 
@@ -89,6 +90,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Update="AngularClient\src\app\data\services\kitchenIngredientApi.service.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="AngularClient\src\app\data\services\kitchenUserApi.service.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

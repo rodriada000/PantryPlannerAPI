@@ -1,0 +1,38 @@
+
+<div class="input-group">
+  <input class="form-control" placeholder="Enter Username" type="text" maxlength="100" [(ngModel)]="username" (keyup.enter)="sendInvite()" />
+</div>
+<small *ngIf="isSendingInvite" class="form-text text-muted">sending invite...</small>
+
+<div class="d-flex align-items-center" *ngIf="isLoading">
+  <strong>Loading...</strong>
+  <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+</div>
+<table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Username</th>
+      <th scope="col">Owner?</th>
+      <th scope="col">Accepted?</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let row of users; let index=index" (mouseover)="hoveredIndex=index" (click)="hoveredIndex=index">
+      <td>
+        {{row.username}}
+      </td>
+      <td>
+        {{row.isOwner}}
+      </td>
+      <td>
+        {{row.hasAcceptedInvite}}
+      </td>
+      <td>
+        <button type="button" class="btn btn-link btn-sm" *ngIf="hoveredIndex==index" (click)="removeUser(row, index)">Remove</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<app-toast></app-toast>

@@ -1,0 +1,38 @@
+<div class="d-flex" id="wrapper">
+
+  <!-- Sidebar -->
+  <div class="bg-light border-right" id="sidebar-wrapper">
+    <!--<div class="sidebar-heading">Start Bootstrap </div>-->
+    <div class="list-group list-group-flush">
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isAddPageSelected ? 'active' : ''" (click)="switchToAddIngredients()">Add Ingredients</a>
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isSearchPantryPageSelected ? 'active' : ''" (click)="switchToSearchPantry()">Search Pantry</a>
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isManageUsersPageSelected ? 'active' : ''" (click)="switchToManageUsers()">Manage Users</a>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div id="page-content-wrapper" class="pt-3 pl-3">
+
+    <div id="addIngredientsPage" *ngIf="isAddPageSelected">
+      <pantry-search-ingredients></pantry-search-ingredients>
+      <br />
+      <br />
+      <h4>Pantry Ingredients</h4>
+      <pantry-my-ingredients></pantry-my-ingredients>
+    </div>
+
+    <div id="searchPantryPage" *ngIf="isSearchPantryPageSelected">
+      <h4>Pantry Ingredients</h4>
+      <br />
+      <pantry-my-ingredients></pantry-my-ingredients>
+    </div>
+
+    <div id="manageUsersPage" *ngIf="isManageUsersPageSelected">
+      <h4>Manage Users</h4>
+      <br />
+      <pantry-manage-users></pantry-manage-users>
+    </div>
+
+  </div>
+
+</div>

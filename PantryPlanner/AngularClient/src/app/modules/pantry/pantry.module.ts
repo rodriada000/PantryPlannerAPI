@@ -5,13 +5,17 @@ import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchIngredientsComponent } from './search-ingredients/search-ingredients.component';
 import { AddIngredientModalComponent } from './add-ingredient-modal/add-ingredient-modal.component';
 import { MyIngredientsComponent } from './my-ingredients/my-ingredients.component';
+import { PantryComponent } from './pantry.component';
+import { ManageUsersComponent } from './manage-users/manage-users.component';
 
 
 @NgModule({
   declarations: [
+    PantryComponent,
     SearchIngredientsComponent,
     AddIngredientModalComponent,
-    MyIngredientsComponent
+    MyIngredientsComponent,
+    ManageUsersComponent
   ],
   imports: [
     CommonModule,
@@ -22,8 +26,10 @@ import { MyIngredientsComponent } from './my-ingredients/my-ingredients.componen
     NgbActiveModal
   ],
   exports: [
+    PantryComponent,
     SearchIngredientsComponent,
-    MyIngredientsComponent
+    MyIngredientsComponent,
+    ManageUsersComponent
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })

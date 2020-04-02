@@ -13,7 +13,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let row of myIngredients; let index=index" (mouseover)="hoveredIndex=index">
+    <tr *ngFor="let row of myIngredients; let index=index" (mouseover)="hoveredIndex=index" (click)="hoveredIndex=index">
       <td>
         {{row.ingredient.name}}
       </td>

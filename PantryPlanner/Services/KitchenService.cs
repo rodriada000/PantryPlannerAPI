@@ -72,7 +72,7 @@ namespace PantryPlanner.Services
             }
 
             return Context.KitchenUser
-                    .Where(u => u.UserId == user.Id)
+                    .Where(u => u.UserId == user.Id && u.HasAcceptedInvite == true)
                     .Select(k => k.Kitchen)
                     .ToList();
         }

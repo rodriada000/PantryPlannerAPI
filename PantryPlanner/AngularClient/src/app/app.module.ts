@@ -14,6 +14,8 @@ import { PantryModule } from './modules/pantry/pantry.module';
 import { SearchIngredientsComponent } from './modules/pantry/search-ingredients/search-ingredients.component';
 import { MyIngredientsComponent } from './modules/pantry/my-ingredients/my-ingredients.component';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
+import { PantryComponent } from './modules/pantry/pantry.component';
+import { ManageUsersComponent } from './modules/pantry/manage-users/manage-users.component';
 
 @NgModule({
   declarations: [
@@ -44,11 +46,18 @@ export class AppModule {
     const toastElement = createCustomElement(ToastContainerComponent, { injector: this.injector });
     customElements.define('app-toast', toastElement);
 
+
+    const pantryElem = createCustomElement(PantryComponent, { injector: this.injector });
+    customElements.define('pantry-root', pantryElem);
+
     const searchElement = createCustomElement(SearchIngredientsComponent, { injector: this.injector });
     customElements.define('pantry-search-ingredients', searchElement);
 
     const myIngredElement = createCustomElement(MyIngredientsComponent, { injector: this.injector });
     customElements.define('pantry-my-ingredients', myIngredElement);
+
+    const manageUElement = createCustomElement(ManageUsersComponent, { injector: this.injector });
+    customElements.define('pantry-manage-users', manageUElement);
   }
 }
 
