@@ -88,9 +88,12 @@ namespace PantryPlanner.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("User logged in.");
 
+                    var jwtClaims = _accountService.GetClaimsPrincipalForJwtToken(jwtToken);
+
                     var claims = new List<Claim>
                             {
                               new Claim(ClaimTypes.Name, Input.Email),
+                              jwtClaims.FindFirst(ClaimTypes.NameIdentifier),
                               new Claim("jwt_token", jwtToken)
                             };
 

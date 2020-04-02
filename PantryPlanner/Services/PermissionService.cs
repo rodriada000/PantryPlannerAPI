@@ -32,7 +32,7 @@ namespace PantryPlanner.Services
                 return false;
             }
 
-            return Context.KitchenUser.Any(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id);
+            return Context.KitchenUser.Any(x => x.KitchenId == kitchen.KitchenId && x.UserId == user.Id && x.HasAcceptedInvite.Value == true);
         }
 
         internal bool UserOwnsKitchen(PantryPlannerUser user, long kitchenId)

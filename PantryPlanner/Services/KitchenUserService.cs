@@ -402,7 +402,9 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(user));
             }
 
-            var kitchenUser = Context.KitchenUser.Find(kitchenUserId);
+            var kitchenUser = Context.KitchenUser.Where(k => k.KitchenUserId == kitchenUserId)
+                                                 .Include(k => k.User)
+                                                 .FirstOrDefault();
             if (kitchenUser == null)
             {
                 throw new KitchenUserNotFoundException();

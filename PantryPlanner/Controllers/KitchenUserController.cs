@@ -310,6 +310,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
+                user.KitchenUser = _service.GetMyInvites(user);
                 _service.AcceptInviteToKitchenByKitchenId(kitchenId, user);
             }
             catch (ArgumentNullException e)
@@ -360,6 +361,7 @@ namespace PantryPlanner.Controllers
 
             try
             {
+                user.KitchenUser = _service.GetMyInvites(user);
                 _service.DenyInviteToKitchen(kitchenId, user);
             }
             catch (ArgumentNullException e)

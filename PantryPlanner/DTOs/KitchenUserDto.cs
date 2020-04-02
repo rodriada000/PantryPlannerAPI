@@ -21,7 +21,10 @@ namespace PantryPlanner.DTOs
         #region Properties Not In Model
 
         public string Username { get; set; }
+
         public string KitchenName { get; set; }
+
+        public KitchenDto Kitchen { get; set; }
 
         #endregion
 
@@ -41,6 +44,7 @@ namespace PantryPlanner.DTOs
 
             Username = user.User?.UserName;
             KitchenName = user.Kitchen?.Name;
+            Kitchen = new KitchenDto(user.Kitchen);
         }
 
 
