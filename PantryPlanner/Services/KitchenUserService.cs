@@ -269,7 +269,9 @@ namespace PantryPlanner.Services
             }
 
             kitchenToAccept.HasAcceptedInvite = true;
-            return UpdateKitchenUser(kitchenToAccept, userAccepting);
+            Context.Entry(kitchenToAccept).State = EntityState.Modified;
+            Context.SaveChanges();
+            return true;
         }
 
         public bool DenyInviteToKitchen(Kitchen kitchen, PantryPlannerUser user)
