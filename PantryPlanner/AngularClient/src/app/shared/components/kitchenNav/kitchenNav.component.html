@@ -2,11 +2,20 @@
   <a class="nav-link" style="cursor: pointer" ngbDropdownToggle id="navbarDropdown3" role="button">
     {{activeKitchenName}}
   </a>
-  <div ngbDropdownMenu aria-labelledby="navbarDropdown3" class="dropdown-menu">
-    <a ngbDropdownItem href="#" *ngFor="let k of myKitchens" (click)="setActiveKitchen(k)">
-      {{k.name}}
-      <br />
-    </a>
+
+  <div ngbDropdownMenu class="dropdown-menu">
+    <div class="input-group-append" ngbDropdownItem *ngFor="let k of myKitchens">
+      <a ngbDropdownItem href="#" (click)="setActiveKitchen(k)">{{k.name}}</a>
+    </div>
+
+    <div class="input-group-append" ngbDropdownItem *ngFor="let p of pendingKitchens; let index=index">
+      <a ngbDropdownItem href="#" class="disabled">{{p.kitchenName}}</a>
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-danger" (click)="denyInvite(p, index)">Deny</button>
+        <button type="button" class="btn btn-outline-success" (click)="acceptInvite(p, index)">Accept</button>
+      </div>
+    </div>
+
     <div class="dropdown-divider"></div>
     <div class="input-group col-auto">
       <input class="form-control" placeholder="New Kitchen Name" type="text" maxlength="30" [(ngModel)]="newKitchenName" />
@@ -16,3 +25,5 @@
     </div>
   </div>
 </li>
+
+<app-toast></app-toast>

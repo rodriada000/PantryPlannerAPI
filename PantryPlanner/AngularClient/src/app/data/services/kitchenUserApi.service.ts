@@ -33,7 +33,7 @@ export default class KitchenUserApi {
   }
 
   acceptKitchenInvite(kitchenId: number): Observable<any> {
-    return this.http.put<any>(this.endPoint + "/Invite", {
+    return this.http.put<any>(this.endPoint + "/Invite", null, {
       params: {
         'kitchenId': kitchenId.toString()
       }

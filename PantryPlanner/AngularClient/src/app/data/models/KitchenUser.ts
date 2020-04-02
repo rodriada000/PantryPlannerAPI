@@ -1,3 +1,5 @@
+import Kitchen from './Kitchen';
+
 export default class KitchenUser {
   kitchenUserId: number;
   kitchenId: number;
@@ -7,5 +9,6 @@ export default class KitchenUser {
   dateAdded: Date;
   username: string;
   kitchenName: string;
+  kitchen: Kitchen;
 }
 

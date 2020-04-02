@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import KitchenApi from '../../../data/services/kitchenApi.service';
-import Kitchen from '../../../data/models/Kitchen';
-import { ActiveKitchenService } from '../../services/active-kitchen.service';
 import { isNullOrUndefined } from 'util';
+import Kitchen from '../../../data/models/Kitchen';
+import KitchenUser from '../../../data/models/KitchenUser';
+import KitchenApi from '../../../data/services/kitchenApi.service';
+import KitchenUserApi from '../../../data/services/kitchenUserApi.service';
+import { ActiveKitchenService } from '../../services/active-kitchen.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'kitchen-nav',
@@ -11,11 +14,16 @@ import { isNullOrUndefined } from 'util';
 export class KitchenNavComponent implements OnInit {
   collapsed = true;
 
+  pendingKitchens: Array<KitchenUser>;
   myKitchens: Array<Kitchen>;
   activeKitchenName: string;
   public newKitchenName: string;
 
-  constructor(private apiService: KitchenApi, private activeKitchen: ActiveKitchenService) {}
+  constructor(
+    private apiService: KitchenApi,
+    private activeKitchen: ActiveKitchenService,
+    private kitchenUserService: KitchenUserApi,
+    private toastService: ToastService) { }
 
   ngOnInit() {
     this.newKitchenName = "";
@@ -26,6 +34,13 @@ export class KitchenNavComponent implements OnInit {
       this.myKitchens = data;
       this.updateActiveKitchenName();
     });
+
+    this.kitchenUserService.getKitchenInvitesForLoggedInUser().subscribe(data => {
+      this.pendingKitchens = data;
+    },
+      error => {
+        this.toastService.showDanger("Failed to get pending invites. refresh the page to try again - " + error.error);
+      });
   }
 
   updateActiveKitchenName() {
@@ -61,10 +76,7 @@ export class KitchenNavComponent implements OnInit {
 
   addNewKitchen() {
 
-    console.log("adding kitchen ...");
-
-    if (!this.validateKitchen()) {
-      console.log("not valid");
+    if (!this.validateKitchen(this.newKitchenName)) {
       return;
     }
 
@@ -77,17 +89,20 @@ export class KitchenNavComponent implements OnInit {
     });
   }
 
-  validateKitchen(): boolean {
+  validateKitchen(name: string): boolean {
 
-    if (this.newKitchenName === "") {
+    if (name === "") {
+      this.toastService.showDanger("Kitchen name required.");
       return false;
     }
 
-    if (this.myKitchens.some(kitchen => { return kitchen.name === this.newKitchenName})) {
+    if (this.myKitchens.some(kitchen => { return kitchen.name === name })) {
+      this.toastService.showDanger("Kitchen with that name already exists.");
       return false;
     }
 
     if (this.myKitchens.length >= 5) {
+      this.toastService.showDanger("Only 5 kitchens allowed. Delete or leave another kitchen first.");
       return false;
     }
 
@@ -103,6 +118,36 @@ export class KitchenNavComponent implements OnInit {
 
     this.activeKitchen.setActiveKitchen(selected);
     this.updateActiveKitchenName(); // call this to update navbar UI of selected
+  }
+
+  acceptInvite(selected: KitchenUser, index: number): void {
+
+    if (!this.validateKitchen(selected.kitchenName)) {
+      return;
+    }
+
+    this.kitchenUserService.acceptKitchenInvite(selected.kitchenId).subscribe(
+      data => {
+        console.log(data);
+        this.toastService.showStandard("Accepted invite to " + selected.kitchenName);
+        this.pendingKitchens.splice(index, 1);
+        this.myKitchens.push(selected.kitchen);
+      },
+      error => {
+        this.toastService.showDanger("Failed to accept kitchen invite - " + error.error);
+      });
+  }
+
+  denyInvite(selected: KitchenUser, index: number): void {
+    this.kitchenUserService.denyKitchenInvite(selected.kitchenId).subscribe(
+      data => {
+        console.log(data);
+        this.toastService.showStandard("Denied kitchen invite - removed.");
+        this.pendingKitchens.splice(index, 1);
+      },
+      error => {
+        this.toastService.showDanger("Failed to deny kitchen invite - " + error.error);
+      });
   }
 
 }
