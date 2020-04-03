@@ -1,12 +1,14 @@
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgSelectModule } from '@ng-select/ng-select';
 import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { SearchIngredientsComponent } from './search-ingredients/search-ingredients.component';
 import { AddIngredientModalComponent } from './add-ingredient-modal/add-ingredient-modal.component';
 import { MyIngredientsComponent } from './my-ingredients/my-ingredients.component';
 import { PantryComponent } from './pantry.component';
 import { ManageUsersComponent } from './manage-users/manage-users.component';
+import { CreateIngredientModalComponent } from './create-ingredient-modal/create-ingredient-modal.component';
 
 
 @NgModule({
@@ -15,12 +17,14 @@ import { ManageUsersComponent } from './manage-users/manage-users.component';
     SearchIngredientsComponent,
     AddIngredientModalComponent,
     MyIngredientsComponent,
-    ManageUsersComponent
+    ManageUsersComponent,
+    CreateIngredientModalComponent
   ],
   imports: [
     CommonModule,
     FormsModule,
-    NgbModule
+    NgbModule,
+    NgSelectModule
   ],
   providers: [
     NgbActiveModal

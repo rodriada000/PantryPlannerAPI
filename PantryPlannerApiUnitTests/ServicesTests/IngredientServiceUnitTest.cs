@@ -31,7 +31,7 @@ namespace PantryPlannerApiUnitTests
         {
             int expectedCount = _context.Ingredient.Where(i => i.Name.Contains("butter", StringComparison.OrdinalIgnoreCase)).Count();
 
-            List<Ingredient> ingredients = _ingredientService.GetIngredientByName("butter");
+            List<Ingredient> ingredients = _ingredientService.GetIngredientByName("butter", _testUser.Id);
 
             Assert.Equal(expectedCount, ingredients.Count);
         }
@@ -43,7 +43,7 @@ namespace PantryPlannerApiUnitTests
 
             int expectedCount = _context.Ingredient.Where(i => i.Name.Contains("butter", StringComparison.OrdinalIgnoreCase) && i.CategoryId == dairyCat.CategoryId).Count();
 
-            List<Ingredient> ingredients = _ingredientService.GetIngredientByNameAndCategory("butter", "Dairy and Egg Products");
+            List<Ingredient> ingredients = _ingredientService.GetIngredientByNameAndCategory("butter", "Dairy and Egg Products", _testUser.Id);
 
             Assert.Equal(expectedCount, ingredients.Count);
         }

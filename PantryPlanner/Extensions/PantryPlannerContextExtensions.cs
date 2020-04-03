@@ -68,7 +68,7 @@ namespace PantryPlanner.Extensions
                 return false;
             }
 
-            return context.Ingredient.Any(i => i.Name == ingredient.Name && i.CategoryId == ingredient.CategoryId && i.IsPublic);
+            return context.Ingredient.Any(i => i.Name.Equals(ingredient.Name, StringComparison.InvariantCultureIgnoreCase) && i.CategoryId == ingredient.CategoryId && i.IsPublic);
         }
 
         public static bool IngredientExistsForUser(this PantryPlannerContext context, Ingredient ingredient, PantryPlannerUser user)
@@ -86,7 +86,7 @@ namespace PantryPlanner.Extensions
             }
 
             // check that user added the ingredient and it is non-public
-            return context.Ingredient.Any(i => i.Name == ingredient.Name && i.CategoryId == ingredient.CategoryId && i.AddedByUserId == user.Id && i.IsPublic == false);
+            return context.Ingredient.Any(i => i.Name.Equals(ingredient.Name, StringComparison.InvariantCultureIgnoreCase) && i.CategoryId == ingredient.CategoryId && i.AddedByUserId == user.Id && i.IsPublic == false);
         }
 
 

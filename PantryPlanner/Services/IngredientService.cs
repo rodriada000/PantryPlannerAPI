@@ -60,7 +60,7 @@ namespace PantryPlanner.Services
         /// Return list of Ingredients with names that match the given <paramref name="name"/> passed in.
         /// </summary>
         /// <param name="name"> name to search for </param>
-        public List<Ingredient> GetIngredientByName(string name)
+        public List<Ingredient> GetIngredientByName(string name, string userId)
         {
             if (String.IsNullOrWhiteSpace(name))
             {
@@ -68,16 +68,16 @@ namespace PantryPlanner.Services
             }
 
             // first check for exact match
-            if (Context.Ingredient.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && i.IsPublic))
+            if (Context.Ingredient.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId)))
             {
-                return Context.Ingredient.Where(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && i.IsPublic).ToList();
+                return Context.Ingredient.Where(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId)).ToList();
             }
 
 
             // second check for any matches that have all the words entered
             List<string> wordsToSearchFor = name.Split(new string[] { " " }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
-            List<Ingredient> ingredients = Context.Ingredient.Where(i => wordsToSearchFor.All(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && i.IsPublic)
+            List<Ingredient> ingredients = Context.Ingredient.Where(i => wordsToSearchFor.All(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && (i.IsPublic || i.AddedByUserId == userId))
                             .Include(i => i.Category)
                             .Include(i => i.AddedByUser)
                             .ToList();
@@ -86,7 +86,7 @@ namespace PantryPlanner.Services
             if (ingredients.Count == 0)
             {
                 // if no matches then lastly check if any word entered matches
-                ingredients = Context.Ingredient.Where(i => wordsToSearchFor.Any(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && i.IsPublic)
+                ingredients = Context.Ingredient.Where(i => wordsToSearchFor.Any(w => i.Name.Contains(w, StringComparison.OrdinalIgnoreCase)) && (i.IsPublic || i.AddedByUserId == userId))
                             .Include(i => i.Category)
                             .Include(i => i.AddedByUser)
                             .ToList();
@@ -98,7 +98,7 @@ namespace PantryPlanner.Services
         /// <summary>
         /// Return list of Ingredients in the passed in <paramref name="category"/> and with names that match the given <paramref name="name"/> passed in.
         /// </summary>
-        public List<Ingredient> GetIngredientByNameAndCategory(string name, Category category)
+        public List<Ingredient> GetIngredientByNameAndCategory(string name, Category category, string userId)
         {
             if (String.IsNullOrWhiteSpace(name))
             {
@@ -110,13 +110,13 @@ namespace PantryPlanner.Services
                 throw new ArgumentNullException(nameof(category));
             }
 
-            return GetIngredientByName(name).Where(i => i.CategoryId == category.CategoryId).ToList();
+            return GetIngredientByName(name, userId).Where(i => i.CategoryId == category.CategoryId).ToList();
         }
 
         /// <summary>
         /// Return list of Ingredients with names that match the given <paramref name="name"/> passed in.
         /// </summary>
-        public List<Ingredient> GetIngredientByNameAndCategory(string name, string categoryName)
+        public List<Ingredient> GetIngredientByNameAndCategory(string name, string categoryName, string userId)
         {
             if (String.IsNullOrWhiteSpace(categoryName))
             {
@@ -134,14 +134,14 @@ namespace PantryPlanner.Services
             }
 
 
-            return GetIngredientByNameAndCategory(name, foundCategory);
+            return GetIngredientByNameAndCategory(name, foundCategory, userId);
         }
 
         /// <summary>
         /// Return list of ingredients with descriptions that match the given <paramref name="description"/> passed in.
         /// </summary>
         /// <param name="description"> text to search for in Ingredient description </param>
-        public List<Ingredient> GetIngredientByDescription(string description)
+        public List<Ingredient> GetIngredientByDescription(string description, string userId)
         {
             if (String.IsNullOrWhiteSpace(description))
             {
@@ -149,7 +149,7 @@ namespace PantryPlanner.Services
             }
 
 
-            return Context.Ingredient.Where(i => i.Description.Contains(description, StringComparison.OrdinalIgnoreCase) && i.IsPublic)
+            return Context.Ingredient.Where(i => i.Description.Contains(description, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId))
                                     .Include(i => i.Category)
                                     .Include(i => i.AddedByUser)
                                     .ToList();
@@ -158,31 +158,72 @@ namespace PantryPlanner.Services
         /// <summary>
         /// Return list of ingredients with in the the given <paramref name="category"/>.
         /// </summary>
-        public List<Ingredient> GetIngredientByCategory(Category category)
+        public List<Ingredient> GetIngredientByCategory(Category category, string userId)
         {
             if (category == null)
             {
                 throw new ArgumentNullException(nameof(category));
             }
 
-            return GetIngredientByCategory(category.CategoryId);
+            return GetIngredientByCategory(category.CategoryId, userId);
         }
 
         /// <summary>
         /// Return list of ingredients with in the the given <paramref name="categoryId"/>.
         /// </summary>
-        public List<Ingredient> GetIngredientByCategory(long categoryId)
+        public List<Ingredient> GetIngredientByCategory(long categoryId, string userId)
         {
             if (Context.CategoryExists(categoryId) == false)
             {
                 throw new CategoryNotFoundException(categoryId);
             }
 
-            return Context.Ingredient.Where(i => i.CategoryId == categoryId && i.IsPublic)
+            return Context.Ingredient.Where(i => i.CategoryId == categoryId && (i.IsPublic || i.AddedByUserId == userId))
                                 .Include(i => i.Category)
                                 .Include(i => i.AddedByUser)
                                 .ToList();
         }
+
+        /// <summary>
+        /// Return list of categories for ingredients that user has rights to.
+        /// </summary>
+        public List<Category> GetIngredientCategories(PantryPlannerUser user)
+        {
+            // ensure CategoryType 'Ingredient' exists
+            CategoryType ingredientCategoryType;
+
+            if (Context.CategoryType.Any(c => c.Name == "Ingredient") == false)
+            {
+                ingredientCategoryType = new CategoryType()
+                {
+                    Name = "Ingredient"
+                };
+
+                Context.CategoryType.Add(ingredientCategoryType);
+                Context.SaveChanges();
+            }
+            else
+            {
+                ingredientCategoryType = Context.CategoryType.Where(c => c.Name == "Ingredient").FirstOrDefault();
+            }
+
+            List<Category> publicCategories = Context.Category.Where(c => c.CategoryTypeId == ingredientCategoryType.CategoryTypeId && c.CreatedByKitchenId == null)
+                                                              .Include(c => c.CategoryType)
+                                                              .ToList();
+
+            List<long> kitchens = Context.KitchenUser.Where(k => k.HasAcceptedInvite.Value == true && k.UserId == user.Id)
+                                                     .Select(k => k.KitchenId)
+                                                     .ToList();
+
+
+            List<Category> privateCategories = Context.Category.Where(c => c.CategoryTypeId == ingredientCategoryType.CategoryTypeId && kitchens.Contains(c.CreatedByKitchenId.GetValueOrDefault(0)))
+                                                              .Include(c => c.CategoryType)
+                                                              .ToList();
+
+            publicCategories.AddRange(privateCategories);
+            return publicCategories;
+        }
+
 
         #endregion
 

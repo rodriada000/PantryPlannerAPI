@@ -109,7 +109,6 @@ namespace PantryPlanner.Services
         /// </summary>
         public ClaimsPrincipal GetClaimsPrincipalForJwtToken(string token)
         {
-            PantryPlannerUser user;
             ClaimsPrincipal tokenClaims;
 
             if (IsJwtTokenValid(token, _configuration, out tokenClaims) == false)

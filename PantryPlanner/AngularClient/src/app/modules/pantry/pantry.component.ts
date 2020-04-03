@@ -1,4 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { isNullOrUndefined } from 'util';
+import { CreateIngredientModalComponent } from './create-ingredient-modal/create-ingredient-modal.component';
 
 @Component({
   selector: 'pantry-root',
@@ -11,7 +14,7 @@ export class PantryComponent implements OnInit, OnDestroy {
   public isManageUsersPageSelected: boolean;
 
 
-  constructor() { }
+  constructor(private modalService: NgbModal) { }
 
   ngOnInit(): void {
     this.switchToAddIngredients();
@@ -37,6 +40,10 @@ export class PantryComponent implements OnInit, OnDestroy {
     this.isAddPageSelected = false;
     this.isSearchPantryPageSelected = false;
     this.isManageUsersPageSelected = true;
+  }
+
+  openCreateIngredientModal(): void {
+    this.modalService.open(CreateIngredientModalComponent);
   }
 
 
