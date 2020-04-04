@@ -6,13 +6,16 @@
 @inject PantryPlannerContext Context
 
 @{
-    PantryPlannerUser user = await UserManager.GetUserFromCookieOrJwtAsync(this.User);
     bool hasKitchens = false;
 
-    if (user != null)
+    if (User.Identity.IsAuthenticated)
     {
-        KitchenService service = new KitchenService(Context);
-        hasKitchens = service.GetAllKitchensForUser(user).Count > 0;
+        PantryPlannerUser user = await UserManager.GetUserFromCookieOrJwtAsync(this.User);
+        if (user != null)
+        {
+            KitchenService service = new KitchenService(Context);
+            hasKitchens = service.GetAllKitchensForUser(user).Count > 0;
+        }
     }
 }
 
