@@ -5,14 +5,10 @@
   </button>
 </div>
 <div class="modal-body">
-  <p>Some info text here about creating a new ingredient.</p>
+  <p>Enter the name of the ingredient and set the category.</p>
   <div class="form-group">
     <label for="nameInput">Name</label>
     <input type="text" class="form-control" id="nameInput" [(ngModel)]="name" />
-  </div>
-  <div class="form-group">
-    <label for="descriptionTextarea">Description</label>
-    <textarea class="form-control" id="descriptionTextarea" rows="3" [(ngModel)]="description"></textarea>
   </div>
   <div class="form-group">
     <label>Category</label>
@@ -24,11 +20,24 @@
   </div>
   <div class="form-check">
     <input type="checkbox" class="form-check-input" id="publicCheck" [(ngModel)]="isPublic">
-    <label class="form-check-label" for="publicCheck">Is Public</label>
+    <label class="form-check-label" for="publicCheck" placement="top" ngbTooltip="Allow other users to search this ingredient and add it to their pantry.">Is Public</label>
   </div>
+
+  <br />
   <div class="form-check">
     <input type="checkbox" class="form-check-input" id="addCheck" [(ngModel)]="isAddToPantry">
-    <label class="form-check-label" for="addCheck">Add to Pantry</label>
+    <label class="form-check-label" for="addCheck" placement="top" ngbTooltip="Additionally add this ingredient to your pantry.">Add to Pantry</label>
+  </div>
+  <div class="text-sm-left font-italic text-secondary" *ngIf="isAddToPantry"> The info below is for your pantry; This will not be made public.</div>
+
+  <br />
+  <div class="form-group" *ngIf="isAddToPantry">
+    <label for="quantityInput">Quantity</label>
+    <input type="number" class="form-control" id="quantityInput" [(ngModel)]="quantity">
+  </div>
+  <div class="form-group" *ngIf="isAddToPantry">
+    <label for="notesTextarea">Notes</label>
+    <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="notes"></textarea>
   </div>
 </div>
 <div class="modal-footer">

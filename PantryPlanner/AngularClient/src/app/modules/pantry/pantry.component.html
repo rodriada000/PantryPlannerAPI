@@ -1,4 +1,4 @@
-<div class="d-flex" id="wrapper">
+<div class="d-flex" id="wrapper" [ngClass]="!showSideMenu ? 'toggled' : ''">
 
   <!-- Sidebar -->
   <div class="bg-light border-right" id="sidebar-wrapper">
@@ -12,6 +12,9 @@
 
   <!-- Page Content -->
   <div id="page-content-wrapper" class="pt-3 pl-3">
+    <button class="navbar-toggler bg-light pb-2" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
+      <span class="navbar-toggler-icon">|||</span>
+    </button>
 
     <div id="addIngredientsPage" *ngIf="isAddPageSelected">
       <pantry-search-ingredients></pantry-search-ingredients>

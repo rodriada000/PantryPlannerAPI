@@ -7,5 +7,12 @@
     <ng-template [ngTemplateOutlet]="toast.textOrTpl"></ng-template>
   </ng-template>
 
-  <ng-template #text>{{ toast.textOrTpl }}</ng-template>
+  <ng-template #text>
+    <div class="btn-group text-center">
+      <span>{{ toast.textOrTpl }}</span>
+      <button type="button" class="close text-center" aria-label="Close" (click)="toastService.remove(toast)">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  </ng-template>
 </ngb-toast>

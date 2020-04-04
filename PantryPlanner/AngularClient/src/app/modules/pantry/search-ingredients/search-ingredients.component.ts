@@ -10,6 +10,7 @@ import { AddIngredientModalComponent } from '../add-ingredient-modal/add-ingredi
 import KitchenIngredient from '../../../data/models/KitchenIngredient';
 import { ToastService } from '../../../shared/services/toast.service';
 import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
+import { CreateIngredientModalComponent } from '../create-ingredient-modal/create-ingredient-modal.component';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -46,14 +47,28 @@ export class SearchIngredientsComponent implements OnInit {
       switchMap(term => term === "" || term.length < 2 ? of([]) :
         this.apiService.getIngredientsByName(term).pipe(
           tap(() => this.searchFailed = false),
-          map(r => r.slice(0,20)),
+          map(r => r.slice(0, 20)),
+          map(r => {
+            const createMissing: Ingredient = new Ingredient();
+            createMissing.name = "Create Missing Ingredient";
+            createMissing.categoryName = "CreateMissing";
+            r.push(createMissing);
+
+            return r;
+          }),
           catchError(() => {
             this.searchFailed = true;
             return of([]);
           }))
       ),
-      tap(() => this.isSearching = false)
+      tap(() => {
+        this.isSearching = false;
+      })
     )
+
+  isCreateMissingDropdownItem(dropdownItem: Ingredient): boolean {
+    return !isNullOrUndefined(dropdownItem) && dropdownItem.categoryName === "CreateMissing";
+  }
 
   // don't keep the selected input just clear it out once added
   // adds the ingredient to kitchen with quantity 1 and no notes
@@ -98,6 +113,11 @@ export class SearchIngredientsComponent implements OnInit {
         console.log(result);
       }
     });
+  }
+
+  openCreateIngredientModal(): void {
+    const modalRef = this.modalService.open(CreateIngredientModalComponent);
+    modalRef.componentInstance.name = this.searchText;
   }
 
 }

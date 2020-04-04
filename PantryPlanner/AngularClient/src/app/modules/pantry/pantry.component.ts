@@ -12,11 +12,13 @@ export class PantryComponent implements OnInit, OnDestroy {
   public isAddPageSelected: boolean;
   public isSearchPantryPageSelected: boolean;
   public isManageUsersPageSelected: boolean;
+  public showSideMenu: boolean;
 
 
   constructor(private modalService: NgbModal) { }
 
   ngOnInit(): void {
+    this.showSideMenu = true;
     this.switchToAddIngredients();
   }
 
@@ -44,6 +46,10 @@ export class PantryComponent implements OnInit, OnDestroy {
 
   openCreateIngredientModal(): void {
     this.modalService.open(CreateIngredientModalComponent);
+  }
+
+  toggleSideMenu(): void {
+    this.showSideMenu = !this.showSideMenu;
   }
 
 

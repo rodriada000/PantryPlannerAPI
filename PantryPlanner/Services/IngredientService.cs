@@ -70,7 +70,9 @@ namespace PantryPlanner.Services
             // first check for exact match
             if (Context.Ingredient.Any(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId)))
             {
-                return Context.Ingredient.Where(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId)).ToList();
+                return Context.Ingredient.Where(i => i.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && (i.IsPublic || i.AddedByUserId == userId))
+                                         .Include(i => i.Category)
+                                         .Include(i => i.AddedByUser).ToList();
             }
 
 

@@ -21,6 +21,8 @@ export class CreateIngredientModalComponent implements OnInit {
   public selectedCategoryId: number;
   public isPublic: boolean;
   public isAddToPantry: boolean;
+  public quantity: number;
+  public notes: string;
   public isAdding: boolean;
 
   public categories: Array<Category>;
@@ -33,13 +35,15 @@ export class CreateIngredientModalComponent implements OnInit {
     private activeKitchen: ActiveKitchenService) { }
 
   ngOnInit(): void {
-    this.name = "";
+    this.name = this.name ?? "";
     this.description = "";
     this.isPublic = true;
     this.isAddToPantry = false;
     this.isAdding = false;
     this.categories = [];
     this.selectedCategoryId = -1;
+    this.quantity = 1;
+    this.notes = "";
 
     this.apiService.getIngredientCategories().subscribe(
       data => {
@@ -79,6 +83,9 @@ export class CreateIngredientModalComponent implements OnInit {
 
         if (this.isAddToPantry) {
           const toPantry: KitchenIngredient = this.kitchenIngredientApi.createEmpty(data, this.activeKitchen.getActiveKitchenId());
+          toPantry.quantity = this.quantity;
+          toPantry.note = this.notes;
+
           this.kitchenIngredientApi.addIngredientToKitchen(toPantry).subscribe(
             data => {
               this.kitchenIngredientApi.setAddedIngredient(data);

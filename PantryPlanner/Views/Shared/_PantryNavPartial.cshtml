@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using PantryPlanner.Extensions;
+@using PantryPlanner.Services;
+
+@inject UserManager<PantryPlannerUser> UserManager
+@inject PantryPlannerContext Context
+
+@{
+    PantryPlannerUser user = await UserManager.GetUserFromCookieOrJwtAsync(this.User);
+    bool hasKitchens = false;
+
+    if (user != null)
+    {
+        KitchenService service = new KitchenService(Context);
+        hasKitchens = service.GetAllKitchensForUser(user).Count > 0;
+    }
+}
+
+@if (User.Identity.IsAuthenticated && hasKitchens)
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-controller="Pantry" asp-action="Index">Pantry</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-controller="MyRecipes" asp-action="Index">Recipes</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-controller="MyMealPlans" asp-action="Index">Mealplans</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="" asp-controller="GroceryLists" asp-action="Index">Grocery Lists</a>
+    </li>
+}
