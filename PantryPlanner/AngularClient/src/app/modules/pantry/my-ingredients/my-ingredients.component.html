@@ -2,33 +2,17 @@
   <strong>Loading...</strong>
   <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
 </div>
-<table class="table table-hover">
-  <thead>
-    <tr>
-      <th scope="col">Name</th>
-      <!--<th scope="col">Category</th>-->
-      <th scope="col">Quantity</th>
-      <th scope="col">Notes</th>
-      <th scope="col"></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let row of myIngredients; let index=index" (mouseover)="hoveredIndex=index" (click)="hoveredIndex=index">
-      <td>
-        {{row.ingredient.name}}
-      </td>
-      <!--<td>
-        {{row.category.name}}
-      </td>-->
-      <td>
-        {{row.quantity}}
-      </td>
-      <td>
-        {{row.note}}
-      </td>
-      <td>
-        <button type="button" class="btn btn-link btn-sm" *ngIf="hoveredIndex==index" (click)="removeFromKitchen(row, index)">Remove</button>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<div class="list-group">
+  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start"
+     *ngFor="let row of myIngredients; let index=index"
+     (click)="hoveredIndex=index">
+    <div class="d-flex w-100 justify-content-between">
+      {{row.ingredient.name}}
+      <small class="text-muted">Qty: {{row.quantity}}</small>
+    </div>
+    <div *ngIf="hoveredIndex==index">
+      {{row.note}}
+      <div role="button" class="btn btn-link btn-sm" (click)="removeFromKitchen(row, index)">Remove</div>
+    </div>
+  </a>
+</div>

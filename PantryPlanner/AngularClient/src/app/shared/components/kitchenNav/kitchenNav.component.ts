@@ -45,7 +45,12 @@ export class KitchenNavComponent implements OnInit {
 
   updateActiveKitchenName() {
 
-    const activeId: number = this.activeKitchen.getActiveKitchenId();
+    let activeId: number = this.activeKitchen.getActiveKitchenId();
+
+    if (activeId === 0 && this.myKitchens.length > 0) {
+      activeId = this.myKitchens[0].kitchenId;
+      this.activeKitchen.setActiveKitchen(this.myKitchens[0]);
+    }
 
     if (activeId === 0) {
       // user has not set the active kitchen so show text based on amount of kitchens the user has
