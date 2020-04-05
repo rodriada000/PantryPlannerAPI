@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using PantryPlanner.DTOs;
 using PantryPlanner.Exceptions;
 using PantryPlanner.Extensions;
@@ -156,6 +157,27 @@ namespace PantryPlanner.Services
                                       .Include(x => x.Kitchen)
                                       .ToList();
         }
+
+        internal bool IsUserOwnerOfKitchen(PantryPlannerUser user, long kitchenId)
+        {
+            if (user == null)
+            {
+                return false;
+            }
+
+            if (!Context.KitchenExists(kitchenId))
+            {
+                return false;
+            }
+
+            if (!Context.KitchenUserExists(kitchenId, user.Id))
+            {
+                return false;
+            }
+
+            return Context.GetKitchenUser(kitchenId, user.Id).IsOwner;
+        }
+
 
         #endregion
 
@@ -460,7 +482,7 @@ namespace PantryPlanner.Services
                 throw new KitchenUserNotFoundException();
             }
 
-            KitchenUser kitchenUser = user.KitchenUser.Where(ku => ku.KitchenId == kitchen.KitchenId).FirstOrDefault();
+            KitchenUser kitchenUser = Context.GetKitchenUser(kitchen.KitchenId, user.Id);
 
             return DeleteMyselfFromKitchenByKitchenUserId(kitchenUser.KitchenUserId, user);
         }

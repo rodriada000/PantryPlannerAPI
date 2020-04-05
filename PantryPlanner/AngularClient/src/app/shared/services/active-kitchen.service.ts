@@ -9,13 +9,15 @@ import { BehaviorSubject } from 'rxjs';
 export class ActiveKitchenService {
 
   public activeKitchen: Kitchen;
-  private activeKitchenId: number;
+  public activeKitchenId: number;
 
   public observableKitchenId: BehaviorSubject<number>;
+  public observableKitchen: BehaviorSubject<Kitchen>;
 
   constructor() {
-    this.activeKitchenId = 0;
+    this.activeKitchenId = this.getActiveKitchenId();
     this.observableKitchenId = new BehaviorSubject<number>(this.activeKitchenId);
+    this.observableKitchen = new BehaviorSubject<Kitchen>(this.activeKitchen);
   }
 
   getActiveKitchenId(): number {
@@ -29,12 +31,24 @@ export class ActiveKitchenService {
     return this.activeKitchenId;
   }
 
-  setActiveKitchen(kitchen: Kitchen) {
+  setActiveKitchen(kitchen: Kitchen): void {
     this.activeKitchenId = kitchen.kitchenId;
     this.activeKitchen = kitchen;
     localStorage.setItem("ActiveKitchenID", kitchen.kitchenId.toString());
 
     this.observableKitchenId.next(this.activeKitchenId);
+    this.observableKitchen.next(this.activeKitchen);
+  }
+
+  clearActiveKitchen(updateObservable: boolean): void {
+    this.activeKitchenId = 0;
+    this.activeKitchen = null;
+    localStorage.removeItem("ActiveKitchenID");
+
+    if (updateObservable) {
+      this.observableKitchenId.next(this.activeKitchenId);
+      this.observableKitchen.next(this.activeKitchen);
+    }
   }
 
 

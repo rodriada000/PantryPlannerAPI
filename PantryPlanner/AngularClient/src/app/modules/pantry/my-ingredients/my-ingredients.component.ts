@@ -28,7 +28,11 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
 
     // refresh list of ingredients in pantry after user changes kitchen
     this.kitchenId = this.activeKitchen.observableKitchenId.subscribe(id => {
-      this.refreshIngredients();
+      if (id === 0) {
+        this.myIngredients = [];
+      } else {
+        this.refreshIngredients();
+      }
     });
 
     // add new ingredients to list when they are added to kitchen

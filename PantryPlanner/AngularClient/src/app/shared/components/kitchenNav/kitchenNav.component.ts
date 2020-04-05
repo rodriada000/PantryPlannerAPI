@@ -23,12 +23,16 @@ export class KitchenNavComponent implements OnInit {
     private apiService: KitchenApi,
     private activeKitchen: ActiveKitchenService,
     private kitchenUserService: KitchenUserApi,
-    private toastService: ToastService) { }
+    private toastService: ToastService) {
+
+    this.newKitchenName = "";
+    this.myKitchens = [];
+    this.updateActiveKitchenName();
+    this.activeKitchenName = "Loading Kitchens";
+
+  }
 
   ngOnInit() {
-    this.newKitchenName = "";
-    this.activeKitchenName = "Loading Kitchens";
-    this.myKitchens = [];
 
     this.apiService.getAllKitchens().subscribe(data => {
       this.myKitchens = data;
@@ -61,13 +65,14 @@ export class KitchenNavComponent implements OnInit {
       }
     }
     else {
-      // user has 
+      // user has active kitchen id set so set name in nav bar
       if (this.myKitchens.length > 0) {
 
         const kitchenIndex: number = this.myKitchens.findIndex(kit => { return kit.kitchenId === activeId; });
         if (kitchenIndex === -1) {
           this.activeKitchenName = "Select Kitchen";
         } else {
+          this.activeKitchen.activeKitchen = this.myKitchens[kitchenIndex];
           this.activeKitchenName = this.myKitchens[kitchenIndex].name;
         }
 
@@ -114,8 +119,7 @@ export class KitchenNavComponent implements OnInit {
     return true;
   }
 
-  setActiveKitchen(selected: Kitchen) {
-    console.log(selected);
+  setSelectedKitchenAsActive(selected: Kitchen) {
 
     if (isNullOrUndefined(selected)) {
       return;

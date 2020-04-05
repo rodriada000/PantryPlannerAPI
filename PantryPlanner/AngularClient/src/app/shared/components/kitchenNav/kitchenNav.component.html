@@ -5,7 +5,7 @@
 
   <div ngbDropdownMenu class="dropdown-menu">
     <div class="input-group-append" ngbDropdownItem *ngFor="let k of myKitchens">
-      <a ngbDropdownItem href="#" (click)="setActiveKitchen(k)">{{k.name}}</a>
+      <a ngbDropdownItem href="#" (click)="setSelectedKitchenAsActive(k)">{{k.name}}</a>
     </div>
 
     <div class="input-group-append" ngbDropdownItem *ngFor="let p of pendingKitchens; let index=index">

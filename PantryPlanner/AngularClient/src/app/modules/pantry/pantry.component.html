@@ -6,7 +6,8 @@
     <div class="list-group list-group-flush">
       <a href="#" class="list-group-item list-group-item-action" [ngClass]="isAddPageSelected ? 'active' : ''" (click)="switchToAddIngredients()">Add Ingredients</a>
       <a href="#" class="list-group-item list-group-item-action" [ngClass]="isSearchPantryPageSelected ? 'active' : ''" (click)="switchToSearchPantry()">Search Pantry</a>
-      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isManageUsersPageSelected ? 'active' : ''" (click)="switchToManageUsers()">Manage Users</a>
+      <a href="#" class="list-group-item list-group-item-action" *ngIf="isOwnerOfKitchen" [ngClass]="isManagePantryPageSelected ? 'active' : ''" (click)="switchToManagePantry()">Manage Pantry</a>
+      <a href="#" class="list-group-item list-group-item-action" *ngIf="!isOwnerOfKitchen" [ngClass]="isLeavePantryPageSelected ? 'active' : ''" (click)="switchToLeavePantry()">Leave Pantry</a>
     </div>
   </div>
 
@@ -31,10 +32,27 @@
       <pantry-my-ingredients></pantry-my-ingredients>
     </div>
 
-    <div id="manageUsersPage" *ngIf="isManageUsersPageSelected">
-      <h4>Manage Users</h4>
+    <div id="mangePantryPage" *ngIf="isManagePantryPageSelected && isOwnerOfKitchen">
+      <h4>Kitchen Name</h4>
+      <input type="text" class="form-control form-text w-50" [(ngModel)]="activeKitchenName" />
       <br />
+
+      <h4>Manage Users</h4>
       <pantry-manage-users></pantry-manage-users>
+      <br />
+
+      <h4>Delete Pantry</h4>
+      <p>
+        Are you sure you want to delete this pantry? All data associated with this kitchen will be deleted.
+      </p>
+      <button class="btn btn-outline-danger" (click)="deleteKitchen()">Delete Pantry</button>
+    </div>
+
+    <div id="leavePantryPage" *ngIf="isLeavePantryPageSelected">
+      <p>
+        Are you sure you want to leave this pantry? You will not have access to this kitchen until the kitchen owner sends another invite.
+      </p>
+      <button class="btn btn-outline-danger" (click)="removeSelfFromKitchen()">Leave Pantry</button>
     </div>
 
     <app-toast></app-toast>

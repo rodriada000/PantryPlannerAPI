@@ -231,6 +231,46 @@ namespace PantryPlanner.Controllers
             return myInvites;
         }
 
+        // GET: api/KitchenUser/IsOwner
+        [HttpGet]
+        [Route("IsOwner")]
+        public async Task<ActionResult<bool>> IsUserOwnerOfKitchen(long kitchenId)
+        {
+            PantryPlannerUser user;
+
+            try
+            {
+                user = await _userManager.GetUserFromCookieOrJwtAsync(this.User);
+            }
+            catch (PermissionsException e)
+            {
+                // this will be thrown if the user is null
+                return Unauthorized(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+
+
+            try
+            {
+                return _service.IsUserOwnerOfKitchen(user, kitchenId);
+            }
+            catch (ArgumentNullException e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch (UserNotFoundException e)
+            {
+                return NotFound(e.Message);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, e.Message);
+            }
+        }
+
 
 
         // POST: api/KitchenUser/Invite

@@ -10,7 +10,7 @@ import Kitchen from '../models/Kitchen';
 })
 export default class KitchenApi {
   public API = environment.baseUrl;
-  public KITCHEN_ENDPOINT = `${this.API}/kitchen`;
+  public KITCHEN_ENDPOINT = `${this.API}/Kitchen`;
 
   constructor(private http: HttpClient) { }
 
@@ -20,5 +20,9 @@ export default class KitchenApi {
 
   addKitchen(kitchen: Kitchen): Observable<Kitchen> {
     return this.http.post<Kitchen>(this.KITCHEN_ENDPOINT, kitchen); 
+  }
+
+  deleteKitchen(kitchenId: number): Observable<Kitchen> {
+    return this.http.delete<Kitchen>(this.KITCHEN_ENDPOINT + "/" + kitchenId.toString());
   }
 }

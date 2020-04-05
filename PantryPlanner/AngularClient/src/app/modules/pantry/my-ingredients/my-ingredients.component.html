@@ -2,7 +2,7 @@
   <strong>Loading...</strong>
   <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
 </div>
-<div class="list-group">
+<div class="list-group mr-3">
   <a href="#" class="list-group-item list-group-item-action flex-column align-items-start"
      *ngFor="let row of myIngredients; let index=index"
      (click)="hoveredIndex=index">
@@ -11,7 +11,7 @@
       <small class="text-muted">Qty: {{row.quantity}}</small>
     </div>
     <div *ngIf="hoveredIndex==index">
-      {{row.note}}
+      <p>{{row.note}}</p>
       <div role="button" class="btn btn-link btn-sm" (click)="removeFromKitchen(row, index)">Remove</div>
     </div>
   </a>

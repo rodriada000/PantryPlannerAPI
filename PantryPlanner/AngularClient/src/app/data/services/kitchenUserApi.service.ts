@@ -52,4 +52,20 @@ export default class KitchenUserApi {
     return this.http.delete<any>(this.endPoint + "/" + kitchenUserId.toString());
   }
 
+  deleteSelfFromKitchen(kitchenId: number): Observable<KitchenUser> {
+    return this.http.delete<KitchenUser>(this.endPoint, {
+      params: {
+        'kitchenId': kitchenId.toString()
+      }
+    });
+  }
+
+  isOwnerOfKitchen(kitchenId: number): Observable<boolean> {
+    return this.http.get<boolean>(this.endPoint + "/IsOwner", {
+      params: {
+        'kitchenId': kitchenId.toString()
+      }
+    });
+  }
+
 }
