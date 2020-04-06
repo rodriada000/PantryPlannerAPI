@@ -18,12 +18,13 @@ namespace PantryPlanner.DTOs
 
         #region Additional Properties Not In Model
 
+        public IngredientDto Ingredient { get; set; }
 
         #endregion
 
         public RecipeIngredientDto()
         {
-
+            
         }
 
         public RecipeIngredientDto(RecipeIngredient ingredient)
@@ -40,6 +41,7 @@ namespace PantryPlanner.DTOs
             UnitOfMeasure = ingredient.UnitOfMeasure;
             Method = ingredient.Method;
             SortOrder = ingredient.SortOrder;
+            Ingredient = new IngredientDto(ingredient.Ingredient);
         }
 
         public static List<RecipeIngredientDto> ToList(IEnumerable<RecipeIngredient> list)

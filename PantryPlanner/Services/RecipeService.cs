@@ -71,7 +71,11 @@ namespace PantryPlanner.Services
             // first check for exact match
             if (Context.Recipe.Any(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && r.IsPublic.Value))
             {
-                return Context.Recipe.Where(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && r.IsPublic.Value).ToList();
+                return Context.Recipe.Where(r => r.Name.Equals(name, StringComparison.OrdinalIgnoreCase) && r.IsPublic.Value)
+                                     .Include(i => i.RecipeIngredient)
+                                     .Include(i => i.RecipeStep)
+                                     .Include(i => i.CreatedByUser)
+                                     .ToList();
             }
 
 

@@ -1,0 +1,35 @@
+<div class="d-flex" id="wrapper" [ngClass]="!showSideMenu ? 'toggled' : ''">
+
+  <!-- Sidebar -->
+  <div class="bg-light border-right" id="sidebar-wrapper">
+    <!--<div class="sidebar-heading">Start Bootstrap </div>-->
+    <div class="list-group list-group-flush">
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isMyRecipesPageSelected ? 'active' : ''" (click)="switchToMyRecipes()">Pantry Recipes</a>
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isExplorePageSelected ? 'active' : ''" (click)="switchToExploreRecipes()">Explore Recipes</a>
+      <a href="#" class="list-group-item list-group-item-action" [ngClass]="isCreateRecipeSelected ? 'active' : ''" (click)="switchToCreateRecipe()">Create Recipes</a>
+    </div>
+  </div>
+
+  <!-- Page Content -->
+  <div id="page-content-wrapper" class="pt-3 pl-3">
+    <button class="navbar-toggler bg-light pb-2" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="showSideMenu = !showSideMenu">
+      <span class="navbar-toggler-icon">|||</span>
+    </button>
+
+    <div id="myRecipesPage" *ngIf="isMyRecipesPageSelected">
+      
+    </div>
+
+    <div id="explorePage" *ngIf="isExplorePageSelected">
+
+    </div>
+
+    <div id="createRecipePage" *ngIf="isCreateRecipeSelected">
+
+    </div>
+
+    <app-toast></app-toast>
+
+  </div>
+
+</div>

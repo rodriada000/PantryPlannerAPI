@@ -68,7 +68,9 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("You do not have rights to this recipe");
             }
 
-            return Context.RecipeIngredient.Where(r => r.RecipeId == recipeId).ToList();
+            return Context.RecipeIngredient.Where(r => r.RecipeId == recipeId)
+                                           .Include(r => r.Ingredient)
+                                           .ToList();
         }
 
         #endregion

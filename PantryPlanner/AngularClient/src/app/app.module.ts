@@ -17,6 +17,10 @@ import { ToastContainerComponent } from './shared/components/toast-container/toa
 import { PantryComponent } from './modules/pantry/pantry.component';
 import { ManageUsersComponent } from './modules/pantry/manage-users/manage-users.component';
 
+
+import { RecipeModule } from './modules/recipe/recipe.module';
+import { RecipeComponent } from './modules/recipe/recipe.component';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -28,7 +32,8 @@ import { ManageUsersComponent } from './modules/pantry/manage-users/manage-users
     HttpClientModule,
     FormsModule,
     NgbModule,
-    PantryModule
+    PantryModule,
+    RecipeModule
   ],
   providers: [
     ToastService
@@ -58,6 +63,10 @@ export class AppModule {
 
     const manageUElement = createCustomElement(ManageUsersComponent, { injector: this.injector });
     customElements.define('pantry-manage-users', manageUElement);
+
+
+    const recipesElem = createCustomElement(RecipeComponent, { injector: this.injector });
+    customElements.define('recipe-root', recipesElem);
   }
 }
 

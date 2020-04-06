@@ -33,6 +33,9 @@
     <None Remove="AngularClient\src\app\data\models\Ingredient.ts" />
     <None Remove="AngularClient\src\app\data\models\KitchenIngredient.ts" />
     <None Remove="AngularClient\src\app\data\models\KitchenUser.ts" />
+    <None Remove="AngularClient\src\app\data\models\Recipe.ts" />
+    <None Remove="AngularClient\src\app\data\models\RecipeIngredient.ts" />
+    <None Remove="AngularClient\src\app\data\models\RecipeStep.ts" />
     <None Remove="AngularClient\src\app\data\services\ingredientApi.service.ts" />
     <None Remove="AngularClient\src\app\data\services\kitchenIngredientApi.service.ts" />
     <None Remove="AngularClient\src\app\data\services\kitchenUserApi.service.ts" />
@@ -84,6 +87,15 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Update="AngularClient\src\app\data\models\KitchenUser.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="AngularClient\src\app\data\models\Recipe.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="AngularClient\src\app\data\models\RecipeIngredient.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Update="AngularClient\src\app\data\models\RecipeStep.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Update="AngularClient\src\app\data\services\ingredientApi.service.ts">

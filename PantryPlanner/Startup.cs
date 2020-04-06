@@ -18,12 +18,14 @@ namespace PantryPlanner
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IHostingEnvironment _env { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -32,7 +34,7 @@ namespace PantryPlanner
             {
                 options.MinimumSameSitePolicy = SameSiteMode.None;
                 options.HttpOnly = HttpOnlyPolicy.None;
-                options.Secure = true ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
+                options.Secure = _env.IsDevelopment() ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
             });
 
             services.AddCors();
@@ -45,7 +47,7 @@ namespace PantryPlanner
                     .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
                     {
                         options.Cookie.HttpOnly = true;
-                        options.Cookie.SecurePolicy = true ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
+                        options.Cookie.SecurePolicy = _env.IsDevelopment() ? CookieSecurePolicy.None : CookieSecurePolicy.Always;
                         options.Cookie.SameSite = SameSiteMode.Lax;
                         options.Cookie.Name = "Pantry.AuthCookieAspNetCore";
                         options.LoginPath = "/Identity/Account/Login";
