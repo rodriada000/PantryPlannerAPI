@@ -26,6 +26,7 @@ namespace PantryPlanner.Controllers
     /// </remarks>
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class AccountController : ControllerBase
     {
         private readonly AccountService _accountService;
@@ -76,7 +77,6 @@ namespace PantryPlanner.Controllers
 
         [HttpGet]
         [Route("NewToken")]
-        [Authorize]
         public async Task<ActionResult<string>> GetNewTokenForLoggedInUserAsync()
         {
             PantryPlannerUser user;
