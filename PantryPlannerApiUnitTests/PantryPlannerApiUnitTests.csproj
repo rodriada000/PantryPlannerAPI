@@ -7,6 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="TestData\FD_GROUP.txt" />
+    <None Remove="TestData\FOOD_DES.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestData\FD_GROUP.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestData\FOOD_DES.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="Moq" Version="4.12.0" />
@@ -20,19 +34,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PantryPlanner\PantryPlanner.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="TestData\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="TestData\FD_GROUP.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="TestData\FOOD_DES.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
