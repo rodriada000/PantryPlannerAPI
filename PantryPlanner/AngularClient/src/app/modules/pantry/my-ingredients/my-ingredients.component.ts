@@ -16,9 +16,13 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
   public isLoading: boolean;
   public hoveredIndex: number;
   public myIngredients: Array<KitchenIngredient>;
+  public isEditing: boolean;
+  
+
 
   private kitchenId: Subscription;
   private itemAddedSub: Subscription;
+  private origIngredient: KitchenIngredient;
 
   constructor(public apiService: KitchenIngredientApi, public activeKitchen: ActiveKitchenService, public toasts: ToastService) { }
 
@@ -53,12 +57,44 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
       () => { this.isLoading = false; });
   }
 
+  setSelected(index: number) {
+    if (this.hoveredIndex != index && this.isEditing) {
+      this.cancelEdit(this.myIngredients[this.hoveredIndex]);
+      this.isEditing = false;
+    }
+
+    this.hoveredIndex = index;
+  }
+
   removeFromKitchen(ingredient: KitchenIngredient, index: number): void {
     this.apiService.removeKitchenIngredient(ingredient).subscribe(data => {
       this.myIngredients.splice(index, 1);
       this.toasts.showSuccess("Removed " + data.ingredient.name);
     },
       error => { this.toasts.showDanger("Could not remove - " + error.error); });
+  }
+
+  editIngredient(ingredient: KitchenIngredient): void {
+    this.isEditing = true;
+    this.origIngredient = {...ingredient};
+  }
+
+  saveEdit(ingredient: KitchenIngredient): void {
+    this.apiService.updateKitchenIngredient(ingredient).subscribe(data => {
+      this.toasts.showSuccess("Updated " + ingredient.ingredient.name);
+      this.isEditing = false;
+    },
+      error => {
+        this.toasts.showDanger("Could not update - " + error.error);
+        this.isEditing = false;
+      });
+  }
+
+  cancelEdit(ingredient: KitchenIngredient): void {
+    ingredient.note = this.origIngredient.note;
+    ingredient.quantity = this.origIngredient.quantity;
+    this.origIngredient = null;
+    this.isEditing = false;
   }
 
 

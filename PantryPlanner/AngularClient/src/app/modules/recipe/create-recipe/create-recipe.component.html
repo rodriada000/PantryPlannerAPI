@@ -1,0 +1,81 @@
+<h4>Create New Recipe</h4>
+<br />
+
+<h5>General</h5>
+<div class="form-group">
+  <label for="inputUrl">Source Url</label>
+  <input type="text" class="form-control" id="inputUrl" placeholder="Enter url for recipe" [(ngModel)]="recipeUrl">
+</div>
+<div class="form-group">
+  <label for="inputName">Name</label>
+  <input type="text" class="form-control" id="inputName" placeholder="Enter name of recipe" [(ngModel)]="name">
+</div>
+<div class="form-group">
+  <label for="inputDescription">Description</label>
+  <textarea class="form-control" id="inputDescription" placeholder="(Optional) Describe your recipe" [(ngModel)]="description"></textarea>
+</div>
+<div class="form-group">
+  <label for="inputPrep">Prep Time (in minutes)</label>
+  <input type="number" class="form-control" id="inputPrep" placeholder="Enter preparation time" [(ngModel)]="prepTime">
+</div>
+<div class="form-group">
+  <label for="inputCook">Cook Time (in minutes)</label>
+  <input type="number" class="form-control" id="inputCook" placeholder="Enter cook time" [(ngModel)]="cookTime">
+</div>
+<div class="form-group">
+  <label for="inputServing">Serving Size</label>
+  <input type="text" class="form-control" id="inputServing" placeholder="E.g. '12 waffles', '2 dozen cookies'" [(ngModel)]="servingSize">
+</div>
+<div class="form-check">
+  <input type="checkbox" class="form-check-input" id="publicCheck" [(ngModel)]="isPublic">
+  <label class="form-check-label" for="publicCheck" placement="top" ngbTooltip="Allow other users to see this recipe in search results.">Is Public</label>
+</div>
+
+<br />
+<h5>Ingredients</h5>
+
+<ng-template #rt let-r="result" let-t="term">
+  <div *ngIf="r.categoryName !== 'CreateMissing'">
+    <ngb-highlight result="{{r.name}}" [term]="t"></ngb-highlight>
+  </div>
+  <div *ngIf="r.categoryName === 'CreateMissing'">
+    <button class="btn btn-outline-secondary">Create Missing Ingredient</button>
+  </div>
+</ng-template>
+
+<div *ngFor="let ing of ingredients; let index=index">
+  <div class="form-row mb-3">
+    <div class="col-6">
+      <input class="form-control" placeholder="Ingredient" type="text" maxlength="100" [(ngModel)]="ing.ingredient.name" (selectItem)="selectIngredient($event, index)" [ngbTypeahead]="doIngredientSearch" [resultTemplate]="rt" />
+    </div>
+    <div class="col">
+      <input type="text" class="form-control" placeholder="Method e.g. 'shredded' 'chopped' " [(ngModel)]="ing.method">
+    </div>
+    <div class="col">
+      <input type="number" class="form-control" placeholder="Quantity e.g. 1.5 or 0.25" [(ngModel)]="ing.quantity">
+    </div>
+    <div class="col">
+      <input type="text" class="form-control" placeholder="Unit of Measure e.g. 'cups' or 'oz'" [(ngModel)]="ing.unitOfMeasure">
+    </div>
+  </div>
+</div>
+<button class="btn btn-outline-secondary" ngbTooltip="Add Ingredient To Recipe" (click)="addEmptyIngredient()">+</button>
+
+<br />
+<h5>Steps</h5>
+
+<div *ngFor="let step of steps; let index=index">
+  <div class="form-group">
+    <h6>Step {{index+1}}</h6>
+    <textarea class="form-control" placeholder="Enter description of what to do" [(ngModel)]="step.text" rows="3"></textarea>
+  </div>
+</div>
+<button class="btn btn-outline-secondary" ngbTooltip="Add Step" (click)="addStep()">+</button>
+
+<br />
+<br />
+
+<div class="form-row">
+  <button type="button" class="btn btn-outline-primary col-2 mr-3" (click)="saveRecipe()" [ngClass]="isSaving ? 'disabled' : ''">Save</button>
+  <button type="button" class="btn btn-light col-2" (click)="discardChanges()">Discard Changes</button>
+</div>

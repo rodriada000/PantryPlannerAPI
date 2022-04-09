@@ -96,6 +96,7 @@ export class KitchenNavComponent implements OnInit {
 
     this.apiService.addKitchen(kitchen).subscribe(data => {
       this.myKitchens.push(data);
+      this.newKitchenName = "";
     });
   }
 

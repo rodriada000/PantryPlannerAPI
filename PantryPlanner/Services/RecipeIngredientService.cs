@@ -156,11 +156,16 @@ namespace PantryPlanner.Services
                 throw new InvalidOperationException($"Quantity must be greater than or equal to zero.");
             }
 
-            newRecipeIngredient.SortOrder = GetNextSortOrderForRecipe(newRecipeIngredient.RecipeId);
+            if (newRecipeIngredient.SortOrder <= 0)
+            {
+                newRecipeIngredient.SortOrder = GetNextSortOrderForRecipe(newRecipeIngredient.RecipeId);
+            }
 
             Context.RecipeIngredient.Add(newRecipeIngredient);
             Context.SaveChanges();
 
+            // ensure Ingredient information is returned with new dto
+            newRecipeIngredient.Ingredient = Context.Ingredient.Where(r => r.IngredientId == newRecipeIngredient.IngredientId).FirstOrDefault();
             return newRecipeIngredient;
         }
 

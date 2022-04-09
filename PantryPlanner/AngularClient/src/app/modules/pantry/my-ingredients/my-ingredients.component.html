@@ -3,16 +3,29 @@
   <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
 </div>
 <div class="list-group mr-3">
-  <a href="#" class="list-group-item list-group-item-action flex-column align-items-start"
+  <div class="list-group-item list-group-item-action flex-column align-items-start"
      *ngFor="let row of myIngredients; let index=index"
-     (click)="hoveredIndex=index">
-    <div class="d-flex w-100 justify-content-between">
+     (click)="setSelected(index)">
+    <div class="d-flex w-100 justify-content-between" [ngClass]="{'bold-text': hoveredIndex==index}">
       {{row.ingredient.name}}
       <small class="text-muted">Qty: {{row.quantity}}</small>
     </div>
     <div *ngIf="hoveredIndex==index">
-      <p>{{row.note}}</p>
-      <div role="button" class="btn btn-link btn-sm" (click)="removeFromKitchen(row, index)">Remove</div>
+      <p *ngIf="!isEditing">{{row.note}}</p>
+
+      <div *ngIf="isEditing" class="form-group pt-1">
+        <label for="quantityInput">Quantity</label>
+        <input type="number" class="form-control" id="quantityInput" [(ngModel)]="row.quantity">
+      </div>
+      <div *ngIf="isEditing" class="form-group">
+        <label for="notesTextarea">Notes</label>
+        <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="row.note"></textarea>
+      </div>
+
+      <div role="button" *ngIf="!isEditing" class="btn btn-link btn-sm" (click)="removeFromKitchen(row, index)">Remove</div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-link btn-sm" (click)="editIngredient(row)">Edit</div>
+      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
+      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row)">Cancel</div>
     </div>
-  </a>
+  </div>
 </div>

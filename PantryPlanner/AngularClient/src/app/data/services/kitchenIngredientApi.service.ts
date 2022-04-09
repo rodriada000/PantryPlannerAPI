@@ -24,6 +24,10 @@ export default class KitchenIngredientApi {
     return this.http.post<KitchenIngredient>(this.endPoint, ingredient);
   }
 
+  public updateKitchenIngredient(ingredient: KitchenIngredient): Observable<any> {
+    return this.http.put<any>(this.endPoint + "/" + ingredient.kitchenIngredientId.toString(), ingredient);
+  }
+
   public removeKitchenIngredient(ingredient: KitchenIngredient): Observable<KitchenIngredient> {
     return this.http.delete<KitchenIngredient>(this.endPoint + "/" + ingredient.kitchenIngredientId.toString());
   }

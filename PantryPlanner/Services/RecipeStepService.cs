@@ -131,7 +131,10 @@ namespace PantryPlanner.Services
                 throw new InvalidOperationException($"Step with same ID already exists in recipe.");
             }
 
-            newRecipeStep.SortOrder = GetNextSortOrderForRecipeStep(newRecipeStep.RecipeId);
+            if (newRecipeStep.SortOrder <= 0)
+            {
+                newRecipeStep.SortOrder = GetNextSortOrderForRecipeStep(newRecipeStep.RecipeId);
+            }
 
             ValidateProperties(newRecipeStep);
 

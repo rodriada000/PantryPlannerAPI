@@ -17,8 +17,8 @@
     </div>
 
     <div class="dropdown-divider"></div>
-    <div class="input-group col-auto">
-      <input class="form-control" placeholder="New Kitchen Name" type="text" maxlength="30" [(ngModel)]="newKitchenName" />
+    <div class="input-group col-auto" style="width: 250px">
+      <input class="form-control" placeholder="Kitchen Name" type="text" maxlength="30" style="width: 250px" [(ngModel)]="newKitchenName" (keydown.Enter)="addNewKitchen()" />
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" (click)="addNewKitchen()">Add</button>
       </div>

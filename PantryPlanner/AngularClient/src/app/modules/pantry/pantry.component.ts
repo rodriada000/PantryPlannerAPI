@@ -7,6 +7,7 @@ import { ToastService } from '../../shared/services/toast.service';
 import KitchenApi from '../../data/services/kitchenApi.service';
 import { Subscription } from 'rxjs';
 import { isNullOrUndefined } from 'util';
+import { skipWhile, skipUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'pantry-root',
@@ -26,7 +27,7 @@ export class PantryComponent implements OnInit, OnDestroy {
 
   constructor(
     private modalService: NgbModal,
-    private activeKitchen: ActiveKitchenService,
+    private activeKitchenService: ActiveKitchenService,
     private toastService: ToastService,
     private kitchenUserApi: KitchenUserApi,
     private kitchenApi: KitchenApi) { }
@@ -37,7 +38,7 @@ export class PantryComponent implements OnInit, OnDestroy {
     this.switchToAddIngredients();
     this.isOwnerOfKitchen = false;
 
-    this.observingKitchen = this.activeKitchen.observableKitchen.subscribe(k => {
+    this.observingKitchen = this.activeKitchenService.observableKitchen.pipe(skipWhile(k => !k)).subscribe(k => {
       if (!isNullOrUndefined(k)) {
         this.activeKitchenName = k.name;
 
@@ -99,9 +100,9 @@ export class PantryComponent implements OnInit, OnDestroy {
   }
 
   deleteKitchen(): void {
-    this.kitchenApi.deleteKitchen(this.activeKitchen.getActiveKitchenId()).subscribe(
+    this.kitchenApi.deleteKitchen(this.activeKitchenService.getActiveKitchenId()).subscribe(
       data => {
-        this.activeKitchen.clearActiveKitchen(false);
+        this.activeKitchenService.clearActiveKitchen(false);
         window.location.reload();
       },
       error => {
@@ -111,9 +112,9 @@ export class PantryComponent implements OnInit, OnDestroy {
   }
 
   removeSelfFromKitchen(): void {
-    this.kitchenUserApi.deleteSelfFromKitchen(this.activeKitchen.getActiveKitchenId()).subscribe(
+    this.kitchenUserApi.deleteSelfFromKitchen(this.activeKitchenService.getActiveKitchenId()).subscribe(
       data => {
-        this.activeKitchen.clearActiveKitchen(false);
+        this.activeKitchenService.clearActiveKitchen(false);
         window.location.reload();
       },
       error => {
