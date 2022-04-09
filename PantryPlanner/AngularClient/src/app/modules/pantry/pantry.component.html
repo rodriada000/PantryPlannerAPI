@@ -13,8 +13,7 @@
 
   <!-- Page Content -->
   <div id="page-content-wrapper" class="pt-3 pl-3">
-    <button class="navbar-toggler bg-light pb-2" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
-      <span class="navbar-toggler-icon">|||</span>
+    <button class="navbar-toggler bg-light fa-solid fa-bars" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
     </button>
 
     <div id="addIngredientsPage" *ngIf="isAddPageSelected" class="pt-2">
@@ -22,12 +21,10 @@
       <a class="btn btn-link btn-sm pl-0" href="#" (click)="openCreateIngredientModal()">Ingredient missing? Click here to create it.</a>
       <br />
       <br />
-      <h4>Pantry Ingredients</h4>
       <pantry-my-ingredients></pantry-my-ingredients>
     </div>
 
     <div id="searchPantryPage" *ngIf="isSearchPantryPageSelected">
-      <h4>Pantry Ingredients</h4>
       <br />
       <pantry-my-ingredients></pantry-my-ingredients>
     </div>

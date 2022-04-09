@@ -17,7 +17,10 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
   public hoveredIndex: number;
   public myIngredients: Array<KitchenIngredient>;
   public isEditing: boolean;
-  
+  public selectedSort: string = "";
+  public selectedSortOrder: number = 1;
+
+
 
 
   private kitchenId: Subscription;
@@ -52,9 +55,52 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
 
     this.apiService.getIngredientsForKitchen(this.activeKitchen.getActiveKitchenId()).subscribe(data => {
       this.myIngredients = data;
+      this.sortBy('name')
     },
       error => { this.toasts.showDanger(error.message + " - " + error.error); },
       () => { this.isLoading = false; });
+  }
+
+  sortBy(field: string): void {
+    field = field.toLowerCase();
+    if (this.selectedSort.toLowerCase() === field) {
+      // toggle sort asc/desc when clicking same field already sorted by
+      this.selectedSortOrder *= -1;
+    } else {
+      this.selectedSortOrder = 1; // set back to A->Z
+    }
+
+    this.myIngredients = this.myIngredients.sort((a, b) => {
+      let valA: string = a.ingredient.name;
+      let valB: string = b.ingredient.name;
+      this.selectedSort = "Name";
+
+      if (field == 'category') {
+        this.selectedSort = "Category";
+        valA = a.ingredient.categoryName;
+        valB = a.ingredient.categoryName;
+      }
+
+      if (valA.toLowerCase() > valB.toLowerCase()) {
+        return 1 * this.selectedSortOrder;
+      } else if (valA.toLowerCase() < valB.toLowerCase()) {
+        return -1 * this.selectedSortOrder;
+      }
+
+      if (field == 'category') {
+        if (a.ingredient.name.toLowerCase() > b.ingredient.name.toLowerCase()) {
+          return 1 * this.selectedSortOrder;
+        } else if (a.ingredient.name.toLowerCase() < b.ingredient.name.toLowerCase()) {
+          return -1 * this.selectedSortOrder;
+        }
+      }
+
+      return 0;
+    });
+  }
+
+  toggleSortOrder() {
+    this.sortBy(this.selectedSort);
   }
 
   setSelected(index: number) {
@@ -76,7 +122,7 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
 
   editIngredient(ingredient: KitchenIngredient): void {
     this.isEditing = true;
-    this.origIngredient = {...ingredient};
+    this.origIngredient = { ...ingredient };
   }
 
   saveEdit(ingredient: KitchenIngredient): void {

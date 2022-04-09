@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="wwwroot\lib\%40fortawesome\svgs\**" />
+    <Content Remove="wwwroot\lib\%40fortawesome\svgs\**" />
+    <EmbeddedResource Remove="wwwroot\lib\%40fortawesome\svgs\**" />
+    <None Remove="wwwroot\lib\%40fortawesome\svgs\**" />
+    <TypeScriptCompile Remove="wwwroot\lib\%40fortawesome\svgs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Remove="Migrations\20190703051530_AddIdentityColumns.cs" />
     <Compile Remove="Migrations\20190703051530_AddIdentityColumns.Designer.cs" />
     <Compile Remove="Migrations\20190703052212_AddIdentityColumnsV2.cs" />
@@ -73,6 +81,38 @@
 
   <ItemGroup>
     <Folder Include="AngularClient\src\app\shared\models\" />
+    <Folder Include="wwwroot\dist\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="wwwroot\lib\%40fortawesome\webfonts\fa-brands-400.woff2" />
+    <None Include="wwwroot\lib\%40fortawesome\webfonts\fa-v4compatibility.woff2" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Content Update="wwwroot\lib\%40fortawesome\css\fontawesome.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\css\regular.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\css\solid.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\webfonts\fa-regular-400.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\webfonts\fa-regular-400.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\webfonts\fa-solid-900.ttf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\lib\%40fortawesome\webfonts\fa-solid-900.woff2">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 

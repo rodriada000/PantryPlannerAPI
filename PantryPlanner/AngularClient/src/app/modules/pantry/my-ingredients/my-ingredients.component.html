@@ -3,6 +3,21 @@
   <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
 </div>
 <div class="list-group mr-3">
+  <div class="d-flex justify-content-between">
+    <h4>Pantry Ingredients</h4>
+
+    <div class="btn-group me-3 pb-2">
+      <button type="button" class="btn btn-outline-success fa-solid" [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}" (click)="toggleSortOrder()"></button>
+      <div ngbDropdown class="d-inline-block btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" id="dropdownSort" ngbDropdownToggle>Sort By: {{selectedSort}}</button>
+        <div ngbDropdownMenu aria-labelledby="dropdownSort">
+          <button ngbDropdownItem (click)="sortBy('name')">Name</button>
+          <button ngbDropdownItem (click)="sortBy('category')">Category</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="list-group-item list-group-item-action flex-column align-items-start"
      *ngFor="let row of myIngredients; let index=index"
      (click)="setSelected(index)">
@@ -15,15 +30,15 @@
 
       <div *ngIf="isEditing" class="form-group pt-1">
         <label for="quantityInput">Quantity</label>
-        <input type="number" class="form-control" id="quantityInput" [(ngModel)]="row.quantity">
+        <input type="number" class="form-control" id="quantityInput" [(ngModel)]="row.quantity" (keydown.Enter)="saveEdit(row)">
       </div>
       <div *ngIf="isEditing" class="form-group">
         <label for="notesTextarea">Notes</label>
         <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="row.note"></textarea>
       </div>
 
-      <div role="button" *ngIf="!isEditing" class="btn btn-link btn-sm" (click)="removeFromKitchen(row, index)">Remove</div>
-      <div role="button" *ngIf="!isEditing" class="btn btn-link btn-sm" (click)="editIngredient(row)">Edit</div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-trash-can mr-2" (click)="removeFromKitchen(row, index)"></div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-pen-to-square" (click)="editIngredient(row)"></div>
       <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
       <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row)">Cancel</div>
     </div>

@@ -38,7 +38,7 @@ export class CreateIngredientModalComponent implements OnInit {
     this.name = this.name ?? "";
     this.description = "";
     this.isPublic = true;
-    this.isAddToPantry = false;
+    this.isAddToPantry = true;
     this.isAdding = false;
     this.categories = [];
     this.selectedCategoryId = -1;
