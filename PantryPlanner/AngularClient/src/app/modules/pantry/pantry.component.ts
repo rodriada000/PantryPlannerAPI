@@ -5,9 +5,10 @@ import { ActiveKitchenService } from '../../shared/services/active-kitchen.servi
 import KitchenUserApi from '../../data/services/kitchenUserApi.service';
 import { ToastService } from '../../shared/services/toast.service';
 import KitchenApi from '../../data/services/kitchenApi.service';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { isNullOrUndefined } from 'util';
 import { skipWhile, skipUntil } from 'rxjs/operators';
+import { PantryPageService } from './pantry-page.service';
 
 @Component({
   selector: 'pantry-root',
@@ -23,6 +24,8 @@ export class PantryComponent implements OnInit, OnDestroy {
   public activeKitchenName: string;
   public showSideMenu: boolean;
 
+  
+  private pageSelection: Subscription;
   private observingKitchen: Subscription;
 
   constructor(
@@ -30,7 +33,9 @@ export class PantryComponent implements OnInit, OnDestroy {
     private activeKitchenService: ActiveKitchenService,
     private toastService: ToastService,
     private kitchenUserApi: KitchenUserApi,
-    private kitchenApi: KitchenApi) { }
+    private kitchenApi: KitchenApi,
+    private pageService: PantryPageService) { 
+    }
 
   ngOnInit(): void {
     this.showSideMenu = true;
@@ -54,42 +59,38 @@ export class PantryComponent implements OnInit, OnDestroy {
       }
     });
 
+    this.pageSelection = this.pageService.observableSelectedPages.subscribe(p => {
+      if (p !== null && p !== undefined) {
+        this.isAddPageSelected = this.pageService.isAddPageSelected;
+        this.isLeavePantryPageSelected = this.pageService.isLeavePantryPageSelected;
+        this.isManagePantryPageSelected = this.pageService.isManagePantryPageSelected;
+        this.isSearchPantryPageSelected = this.pageService.isSearchPantryPageSelected;
+      }
+    })
+
   }
 
   ngOnDestroy(): void {
     this.observingKitchen.unsubscribe();
+    this.pageSelection?.unsubscribe();
   }
 
-
   public switchToAddIngredients(): void {
-    this.isAddPageSelected = true;
-    this.isSearchPantryPageSelected = false;
-    this.isManagePantryPageSelected = false;
-    this.isLeavePantryPageSelected = false;
-
+    this.pageService.switchToAddIngredients();
   }
 
   public switchToSearchPantry(): void {
-    this.isAddPageSelected = false;
-    this.isSearchPantryPageSelected = true;
-    this.isManagePantryPageSelected = false;
-    this.isLeavePantryPageSelected = false;
-
+    this.pageService.switchToSearchPantry();
   }
 
   public switchToManagePantry(): void {
-    this.isAddPageSelected = false;
-    this.isSearchPantryPageSelected = false;
-    this.isManagePantryPageSelected = true;
-    this.isLeavePantryPageSelected = false;
+    this.pageService.switchToManagePantry();
   }
 
   public switchToLeavePantry(): void {
-    this.isAddPageSelected = false;
-    this.isSearchPantryPageSelected = false;
-    this.isManagePantryPageSelected = false;
-    this.isLeavePantryPageSelected = true;
+    this.pageService.switchToLeavePantry();
   }
+
 
   openCreateIngredientModal(): void {
     this.modalService.open(CreateIngredientModalComponent);

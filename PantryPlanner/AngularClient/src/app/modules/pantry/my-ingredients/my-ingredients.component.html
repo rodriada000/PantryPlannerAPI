@@ -2,6 +2,9 @@
   <strong>Loading...</strong>
   <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
 </div>
+<div class="input-group pb-4" *ngIf="isFilterVisible">
+  <input class="form-control" placeholder="Filter Ingredients" type="text" maxlength="100" [(ngModel)]="filterText" (ngModelChange)="doFilter()"/>
+</div>
 <div class="list-group mr-3">
   <div class="d-flex justify-content-between">
     <h4>Pantry Ingredients</h4>
@@ -19,11 +22,15 @@
   </div>
 
   <div class="list-group-item list-group-item-action flex-column align-items-start"
-     *ngFor="let row of myIngredients; let index=index"
-     (click)="setSelected(index)">
+     *ngFor="let row of filteredIngredients; let index=index"
+     (click)="setSelected(index, $event)">
     <div class="d-flex w-100 justify-content-between" [ngClass]="{'bold-text': hoveredIndex==index}">
-      {{row.ingredient.name}}
-      <small class="text-muted">Qty: {{row.quantity}}</small>
+      <div (click)="unselect(index, $event)">{{row.ingredient.name}}</div>
+      <div class="d-flex justify-content-end">
+        <button *ngIf="hoveredIndex==index && !isEditing" class="btn primary-icon no-border btn-sm fa-solid fa-circle-minus pl-0 pr-0 mr-1" (click)="quickEditQty(row, -1)"></button>
+        <small class="text-muted">Qty: {{row.quantity}}</small>
+        <button *ngIf="hoveredIndex==index && !isEditing" class="btn primary-icon no-border btn-sm fa-solid fa-circle-plus pl-0 pr-0 ml-1" (click)="quickEditQty(row, 1)"></button>
+      </div>
     </div>
     <div *ngIf="hoveredIndex==index">
       <p *ngIf="!isEditing">{{row.note}}</p>
@@ -37,10 +44,12 @@
         <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="row.note"></textarea>
       </div>
 
-      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-trash-can mr-2" (click)="removeFromKitchen(row, index)"></div>
-      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-pen-to-square" (click)="editIngredient(row)"></div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-cart-arrow-down mr-2" (click)="addToGroceryList(row, $event)" disabled="true"></div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-pencil mr-2" (click)="editIngredient(row, $event)"></div>
+      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-trash-can" (click)="removeFromKitchen(row, index, $event)"></div>
+
       <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
-      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row)">Cancel</div>
+      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row, $event)">Cancel</div>
     </div>
   </div>
 </div>

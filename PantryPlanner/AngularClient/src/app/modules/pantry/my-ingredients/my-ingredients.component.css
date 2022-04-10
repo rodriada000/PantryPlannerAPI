@@ -1,3 +1,15 @@
 .bold-text {
     font-weight: 600;
 }
+
+.no-border {
+    border: 0;
+}
+
+.primary-icon {
+    color: #007bff;
+}
+
+.primary-icon:hover {
+    color: #115196;
+}

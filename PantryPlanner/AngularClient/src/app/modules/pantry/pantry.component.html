@@ -16,16 +16,10 @@
     <button class="navbar-toggler bg-light fa-solid fa-bars" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
     </button>
 
-    <div id="addIngredientsPage" *ngIf="isAddPageSelected" class="pt-2">
-      <pantry-search-ingredients></pantry-search-ingredients>
-      <a class="btn btn-link btn-sm pl-0" href="#" (click)="openCreateIngredientModal()">Ingredient missing? Click here to create it.</a>
-      <br />
-      <br />
-      <pantry-my-ingredients></pantry-my-ingredients>
-    </div>
-
-    <div id="searchPantryPage" *ngIf="isSearchPantryPageSelected">
-      <br />
+    <div id="addIngredientsPage" *ngIf="isAddPageSelected || isSearchPantryPageSelected" class="pt-2">
+      <pantry-search-ingredients *ngIf="isAddPageSelected"></pantry-search-ingredients>
+      <a *ngIf="isAddPageSelected" class="btn btn-link btn-sm pl-0 pb-2" href="#" (click)="openCreateIngredientModal()">Ingredient missing? Click here to create it.</a>
+      
       <pantry-my-ingredients></pantry-my-ingredients>
     </div>
 
