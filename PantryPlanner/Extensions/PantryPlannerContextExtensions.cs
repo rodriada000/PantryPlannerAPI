@@ -25,6 +25,11 @@ namespace PantryPlanner.Extensions
             return context.KitchenList.Any(e => e.KitchenListId == kitchenListId);
         }
 
+        public static bool KitchenListIngredientExists(this PantryPlannerContext context, long id)
+        {
+            return context.KitchenListIngredient.Any(e => e.Id == id);
+        }
+
         public static bool KitchenUserExists(this PantryPlannerContext context, long kitchenUserId)
         {
             return context.KitchenUser.Any(e => e.KitchenUserId == kitchenUserId);
@@ -122,6 +127,11 @@ namespace PantryPlanner.Extensions
         public static bool IngredientExistsForKitchen(this PantryPlannerContext context, long ingredientId, long kitchenId)
         {
             return context.KitchenIngredient.Any(i => i.KitchenId == kitchenId && i.IngredientId == ingredientId);
+        }
+
+        public static bool IngredientExistsForKitchenList(this PantryPlannerContext context, long ingredientId, long kitchenListId)
+        {
+            return context.KitchenListIngredient.Any(i => i.KitchenListId == kitchenListId && i.IngredientId == ingredientId);
         }
 
 

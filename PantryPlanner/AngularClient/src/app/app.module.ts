@@ -22,14 +22,14 @@ import { RecipeModule } from './modules/recipe/recipe.module';
 import { RecipeComponent } from './modules/recipe/recipe.component';
 import { GroceryListComponent } from './modules/grocery-list/grocery-list.component';
 import { ManageListComponent } from './modules/grocery-list/manage-list/manage-list.component';
+import { ListDetailComponent } from './modules/grocery-list/list-detail/list-detail.component';
+import { GroceryListModule } from './modules/grocery-list/grocery-list.module';
 
 @NgModule({
   declarations: [
     AppComponent,
     KitchenNavComponent,
-    ToastContainerComponent,
-    GroceryListComponent,
-    ManageListComponent
+    ToastContainerComponent
   ],
   imports: [
     BrowserModule,
@@ -37,7 +37,8 @@ import { ManageListComponent } from './modules/grocery-list/manage-list/manage-l
     FormsModule,
     NgbModule,
     PantryModule,
-    RecipeModule
+    RecipeModule,
+    GroceryListModule
   ],
   providers: [
     ToastService
@@ -74,6 +75,12 @@ export class AppModule {
 
     const groceryListElem = createCustomElement(GroceryListComponent, { injector: this.injector });
     customElements.define('app-grocery-list', groceryListElem);
+
+    const groceryListDetailElem = createCustomElement(ListDetailComponent, { injector: this.injector });
+    customElements.define('grocery-list-detail', groceryListDetailElem);
+
+    const manageListElem = createCustomElement(ManageListComponent, { injector: this.injector });
+    customElements.define('app-manage-list', manageListElem);
   }
 }
 

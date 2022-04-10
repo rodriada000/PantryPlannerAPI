@@ -3,7 +3,7 @@
     <ngb-highlight result="{{r.name}} ({{r.categoryName}})" [term]="t"></ngb-highlight>
   </div>
   <div *ngIf="isCreateMissingDropdownItem(r)" (click)="openCreateIngredientModal()">
-    <button class="btn btn-outline-secondary">{{r.name}}</button>
+    <button class="btn btn-outline-success">{{r.name}}</button>
   </div>
 </ng-template>
 

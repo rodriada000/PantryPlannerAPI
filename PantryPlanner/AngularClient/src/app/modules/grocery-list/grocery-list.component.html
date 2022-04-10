@@ -17,10 +17,10 @@
   
     <!-- Page Content -->
     <div id="page-content-wrapper" class="pt-3 pl-3">
-      <button class="navbar-toggler bg-light fa-solid fa-bars" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
+      <button class="navbar-toggler bg-light fa-solid fa-bars pb-2" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
       </button>
-  
-      <h4>{{getSelected()?.name}}</h4>
+
+      <grocery-list-detail [selected]="getSelected()"></grocery-list-detail>
   
     </div>
   

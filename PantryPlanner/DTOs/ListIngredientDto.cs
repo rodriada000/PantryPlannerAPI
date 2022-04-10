@@ -13,7 +13,7 @@ namespace PantryPlanner.DTOs
         public long IngredientId { get; set; }
         //public long? AddedFromRecipeId { get; set; }
         public int? Quantity { get; set; }
-        public int SortOrder { get; set; }
+        public int? SortOrder { get; set; }
         public bool IsChecked { get; set; }
 
         #region Additional Properties Not In Model
@@ -51,6 +51,28 @@ namespace PantryPlanner.DTOs
                 // TODO: add RecipeDto
                 //Category = new CategoryDto(listIngredient.Category);
             }
+        }
+
+        internal static KitchenListIngredient Create(ListIngredientDto ingredient)
+        {
+            if (ingredient == null)
+            {
+                return null;
+            }
+
+            return new KitchenListIngredient()
+            {
+                Id = ingredient.Id,
+                KitchenListId = ingredient.KitchenListId,
+                IsChecked = ingredient.IsChecked,
+                SortOrder = ingredient.SortOrder ?? 0,
+                IngredientId = ingredient.IngredientId,
+                Quantity = ingredient.Quantity,
+                KitchenList = new KitchenList()
+                {
+                    KitchenId = ingredient.KitchenId
+                }
+            };
         }
 
         public override string ToString()

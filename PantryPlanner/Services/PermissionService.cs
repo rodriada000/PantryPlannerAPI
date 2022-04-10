@@ -19,6 +19,12 @@ namespace PantryPlanner.Services
 
         #region Kitchen Related Permissions Checks
 
+        internal bool UserHasRightsToKitchenList(PantryPlannerUser user, long kitchenListId)
+        {
+            KitchenList kitchenList = Context.KitchenList.Find(kitchenListId);
+            return UserHasRightsToKitchen(user, kitchenList.KitchenId);
+        }
+
         internal bool UserHasRightsToKitchen(PantryPlannerUser user, long kitchenId)
         {
             Kitchen kitchen = Context.Kitchen.Find(kitchenId);

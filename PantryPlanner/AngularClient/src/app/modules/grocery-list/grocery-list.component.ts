@@ -32,6 +32,7 @@ export class GroceryListComponent implements OnInit {
   ngOnInit(): void {
     this.observingKitchen = this.activeKitchenService.observableKitchen.subscribe(k => {
       if (k !== null && k !== undefined) {
+        console.log(k);
         this.activeKitchen = k;
       }
     });
