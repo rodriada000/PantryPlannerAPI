@@ -27,7 +27,6 @@ export class AddIngredientModalComponent {
     public toastService: ToastService) { }
 
   ngOnInit() {
-    console.log(this.ingredient);
     this.quantity = 1;
     this.notes = "";
   }

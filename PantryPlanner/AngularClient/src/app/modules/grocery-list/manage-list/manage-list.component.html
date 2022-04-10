@@ -1,0 +1,17 @@
+<div *ngIf="!isEditing" class="d-flex justify-content-center ml-1">
+    <button class="btn btn-outline-primary fa-regular fa-square-plus mr-2" (click)="addMode()"></button>
+    <!-- <button class="btn btn-outline-primary fa-solid fa-pencil mr-2" (click)="editSelected()"></button> -->
+    <button  class="btn btn-outline-primary fa-regular fa-trash-can mr-2" (click)="removeSelected()"></button>
+</div>
+
+<div class="ml-2 container" *ngIf="isEditing">
+    <div class="row form-group pt-1 mr-2">
+        <label for="nameInput">Name</label>
+        <input type="text" class="form-control" id="nameInput" [(ngModel)]="newListName" (keydown.Enter)="confirmSave()">
+    </div>
+
+    <div class="row d-flex justify-content-center">
+        <button class="btn btn-outline-success btn-sm mr-2" (click)="confirmSave()">Confirm</button>
+        <button class="btn btn-outline-danger btn-sm mr-2" (click)="cancelEdit()">Cancel</button>
+    </div>
+</div>

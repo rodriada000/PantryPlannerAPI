@@ -134,6 +134,7 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
 
   toggleSortOrder() {
     this.sortBy(this.selectedSort);
+    this.doFilter();
   }
 
   setSelected(index: number, $event) {

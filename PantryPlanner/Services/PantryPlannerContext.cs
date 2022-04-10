@@ -301,7 +301,7 @@ namespace PantryPlanner.Services
                 entity.HasIndex(e => e.KitchenListId)
                     .HasName("fkIdx_178");
 
-                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.Id).HasColumnName("ID").ValueGeneratedOnAdd();
 
                 entity.Property(e => e.KitchenListId).HasColumnName("KitchenListID");
 

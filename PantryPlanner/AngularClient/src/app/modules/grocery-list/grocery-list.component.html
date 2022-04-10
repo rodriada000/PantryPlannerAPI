@@ -1,0 +1,28 @@
+<div class="d-flex" id="wrapper" [ngClass]="!showSideMenu ? 'toggled' : ''">
+
+    <!-- Sidebar -->
+    <div class="bg-light border-right" id="sidebar-wrapper">
+      <div class="list-group list-group-flush pb-2">
+        <a *ngFor="let row of allLists; let index=index" href="#" (click)="switchList(index)" class="list-group-item list-group-item-action" [ngClass]="{'active': index==selectedIndex}">{{row.name}}</a>
+      </div>
+      <div class="list-group list-group-flush container ml-2 pb-2" *ngIf="allLists?.length === 0">
+          <div class="row">
+              <i class="col-1 fa-solid fa-circle-info mt-2"></i>
+              <span class="col btn-sm">You have no grocery lists. Click the '+' button to create one!</span>
+          </div>
+      </div>
+
+      <app-manage-list [activeKitchen]="activeKitchen" [selectedList]="getSelected()"></app-manage-list>
+    </div>
+  
+    <!-- Page Content -->
+    <div id="page-content-wrapper" class="pt-3 pl-3">
+      <button class="navbar-toggler bg-light fa-solid fa-bars" type="button" aria-expanded="false" aria-label="Toggle side menu" (click)="toggleSideMenu()">
+      </button>
+  
+      <h4>{{getSelected()?.name}}</h4>
+  
+    </div>
+  
+  </div>
+  

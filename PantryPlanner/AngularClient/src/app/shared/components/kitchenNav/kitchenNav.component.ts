@@ -74,6 +74,7 @@ export class KitchenNavComponent implements OnInit {
         } else {
           this.activeKitchen.activeKitchen = this.myKitchens[kitchenIndex];
           this.activeKitchenName = this.myKitchens[kitchenIndex].name;
+          this.activeKitchen.setActiveKitchen(this.myKitchens[kitchenIndex]);
         }
 
       } else {
@@ -138,7 +139,6 @@ export class KitchenNavComponent implements OnInit {
 
     this.kitchenUserService.acceptKitchenInvite(selected.kitchenId).subscribe(
       data => {
-        console.log(data);
         this.toastService.showStandard("Accepted invite to " + selected.kitchenName);
         this.pendingKitchens.splice(index, 1);
         this.myKitchens.push(selected.kitchen);
@@ -151,7 +151,6 @@ export class KitchenNavComponent implements OnInit {
   denyInvite(selected: KitchenUser, index: number): void {
     this.kitchenUserService.denyKitchenInvite(selected.kitchenId).subscribe(
       data => {
-        console.log(data);
         this.toastService.showStandard("Denied kitchen invite - removed.");
         this.pendingKitchens.splice(index, 1);
       },

@@ -20,6 +20,10 @@ namespace PantryPlanner.Extensions
             return context.Kitchen.Any(e => e.KitchenId == kitchenId);
         }
 
+        public static bool KitchenListExists(this PantryPlannerContext context, long kitchenListId)
+        {
+            return context.KitchenList.Any(e => e.KitchenListId == kitchenListId);
+        }
 
         public static bool KitchenUserExists(this PantryPlannerContext context, long kitchenUserId)
         {

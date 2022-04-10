@@ -20,12 +20,16 @@ import { ManageUsersComponent } from './modules/pantry/manage-users/manage-users
 
 import { RecipeModule } from './modules/recipe/recipe.module';
 import { RecipeComponent } from './modules/recipe/recipe.component';
+import { GroceryListComponent } from './modules/grocery-list/grocery-list.component';
+import { ManageListComponent } from './modules/grocery-list/manage-list/manage-list.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     KitchenNavComponent,
-    ToastContainerComponent
+    ToastContainerComponent,
+    GroceryListComponent,
+    ManageListComponent
   ],
   imports: [
     BrowserModule,
@@ -67,6 +71,9 @@ export class AppModule {
 
     const recipesElem = createCustomElement(RecipeComponent, { injector: this.injector });
     customElements.define('recipe-root', recipesElem);
+
+    const groceryListElem = createCustomElement(GroceryListComponent, { injector: this.injector });
+    customElements.define('app-grocery-list', groceryListElem);
   }
 }
 

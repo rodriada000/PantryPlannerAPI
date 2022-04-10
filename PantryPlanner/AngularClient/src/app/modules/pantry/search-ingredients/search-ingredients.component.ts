@@ -110,7 +110,6 @@ export class SearchIngredientsComponent implements OnInit {
 
     modalRef.result.then((result) => {
       if (!isNullOrUndefined(result)) {
-        console.log(result);
       }
     });
   }
