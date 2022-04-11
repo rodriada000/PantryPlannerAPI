@@ -1,13 +1,13 @@
 <div class="list-group mr-3">
 
 
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between align-items-end">
         <h4>{{this.selectedName}}</h4>
         
         <div class="d-flex">
-            <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: 130px;"></button>
+            <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: fit-content;"></button>
 
-            <div class="btn-group me-3 pb-2">
+            <div class="btn-group me-3 pb-2" style="height: fit-content">
                 <button type="button" class="btn btn-outline-success fa-solid fa-lg"
                     [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}" (click)="toggleSortOrder()"></button>
                 <div ngbDropdown class="d-inline-block btn-group" role="group">

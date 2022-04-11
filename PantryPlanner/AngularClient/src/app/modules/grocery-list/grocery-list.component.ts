@@ -16,7 +16,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 })
 export class GroceryListComponent implements OnInit {
 
-  public showSideMenu: boolean = false;
+  public showSideMenu: boolean;
   public activeKitchen: Kitchen;
   private observingKitchen: Subscription;
 
@@ -32,6 +32,7 @@ export class GroceryListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.showSideMenu = true;
     const lastSelected: string = localStorage.getItem("LastSelectedKitchenListId");
 
     this.observingKitchen = this.activeKitchenService.observableKitchen.subscribe(k => {
