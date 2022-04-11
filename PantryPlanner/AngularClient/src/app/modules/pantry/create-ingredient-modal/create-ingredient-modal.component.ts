@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import Category from '../../../data/models/Category';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../shared/services/toast.service';
-import { isNullOrUndefined } from 'util';
 import Ingredient from '../../../data/models/Ingredient';
 import IngredientApi from '../../../data/services/ingredientApi.service';
 import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
@@ -70,7 +69,7 @@ export class CreateIngredientModalComponent implements OnInit {
       return;
     }
 
-    if (isNullOrUndefined(this.selectedCategoryId) || this.selectedCategoryId <= 0) {
+    if (this.selectedCategoryId === null || this.selectedCategoryId === undefined || this.selectedCategoryId <= 0) {
       this.toastService.showDanger("Category is required.");
       return;
     }

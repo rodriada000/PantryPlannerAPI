@@ -3,7 +3,6 @@ import RecipeIngredient from '../../../data/models/RecipeIngredient';
 import RecipeStep from '../../../data/models/RecipeStep';
 import { RecipeApiService } from '../../../data/services/recipe-api.service';
 import Recipe from '../../../data/models/Recipe';
-import { isNullOrUndefined } from 'util';
 import { ToastService } from '../../../shared/services/toast.service';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap, switchMap, map, catchError } from 'rxjs/operators';
@@ -97,7 +96,7 @@ export class CreateRecipeComponent implements OnInit {
   saveRecipe(): void {
     this.isSaving = true;
 
-    if (isNullOrUndefined(this.lastSavedRecipe)) {
+    if (this.lastSavedRecipe === null || this.lastSavedRecipe === undefined) {
       this.lastSavedRecipe = new Recipe();
       this.lastSavedRecipe.recipeId = 0;
     }
@@ -163,7 +162,7 @@ export class CreateRecipeComponent implements OnInit {
 
     for (let i = 0; i < this.ingredients.length; i++) {
 
-      if (isNullOrUndefined(this.ingredients[i].ingredient) || this.ingredients[i].ingredient.ingredientId === 0) {
+      if (this.ingredients[i].ingredient === null || this.ingredients[i].ingredient === undefined || this.ingredients[i].ingredient.ingredientId === 0) {
         return; // skip empty ingredients
       }
 

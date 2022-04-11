@@ -4,16 +4,19 @@
     <div class="d-flex justify-content-between">
         <h4>{{this.selectedName}}</h4>
         
-        
-        <div class="btn-group me-3 pb-2">
-            <button type="button" class="btn btn-outline-success fa-solid"
-                [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}"></button>
-            <div ngbDropdown class="d-inline-block btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary" id="dropdownSort" ngbDropdownToggle>Sort By:
-                    {{selectedSort}}</button>
-                <div ngbDropdownMenu aria-labelledby="dropdownSort">
-                    <button ngbDropdownItem>Name</button>
-                    <button ngbDropdownItem>Category</button>
+        <div class="d-flex">
+            <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: 130px;"></button>
+
+            <div class="btn-group me-3 pb-2">
+                <button type="button" class="btn btn-outline-success fa-solid fa-lg"
+                    [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}" (click)="toggleSortOrder()"></button>
+                <div ngbDropdown class="d-inline-block btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" id="dropdownSort" ngbDropdownToggle>Sort By:
+                        {{selectedSort === "name" ? "Name" : "Category"}}</button>
+                    <div ngbDropdownMenu aria-labelledby="dropdownSort">
+                        <button ngbDropdownItem (click)="sortBy('name')">Name</button>
+                        <button ngbDropdownItem (click)="sortBy('category')">Category</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -27,7 +30,7 @@
     </div>
 
     <div class="list-group-item list-group-item-action flex-column align-items-start"
-        *ngFor="let row of allIngredients; let index=index" (click)="setSelected(index, $event)">
+        *ngFor="let row of filteredList; let index=index" (click)="setSelected(index, $event)">
 
         <div class="d-flex w-100 justify-content-between align-items-center" [ngClass]="{'bold-text': hoveredIndex==index}">
             <input type="checkbox" [ngModel]="row.isChecked" (change)="toggleChecked(row)">

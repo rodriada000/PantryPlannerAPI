@@ -92,6 +92,9 @@
 
 
   <ItemGroup>
+    <Content Update="wwwroot\css\styles.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="wwwroot\lib\%40fortawesome\css\fontawesome.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

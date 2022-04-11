@@ -18,8 +18,11 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
 
   public allIngredients: Array<ListIngredient> = [];
+  public filteredList: Array<ListIngredient> = [];
+
+  public filterText: string = "";
   public selectedSortOrder: number = 1;
-  public selectedSort: string = "Name";
+  public selectedSort: string = "name";
   public hoveredIndex: number;
   public isLoading: boolean;
   
@@ -46,8 +49,8 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.itemAddedSub = this.service.observableAddedIngredient.subscribe(newIngredient => {
       if (newIngredient !== null && newIngredient !== undefined) {
         this.allIngredients.push(newIngredient);
-        // this.sortBy(this.selectedSort, false);
-        // this.doFilter();
+        this.sortBy(this.selectedSort, false);
+        this.doFilter();
       }
     });
 
@@ -67,8 +70,8 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
     this.service.getIngredientsForList(this.selected?.kitchenListId).subscribe(data => {
       this.allIngredients = data;
-      // this.doFilter();
-      // this.sortBy('name')
+      this.sortBy('name', false)
+      this.doFilter();
     },
       error => { this.toasts.showDanger(error.message + " - " + error.error); },
       () => { this.isLoading = false; });
@@ -89,8 +92,8 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   toggleSortOrder() {
-    // this.sortBy(this.selectedSort);
-    // this.doFilter();
+    this.sortBy(this.selectedSort);
+    this.doFilter();
   }
 
   quickEditQty(ingredient: ListIngredient, qtyToAdd: number) {
@@ -105,6 +108,8 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   toggleChecked(ingredient: ListIngredient) {
     ingredient.isChecked = !ingredient.isChecked;
     this.updateIngredient(ingredient);
+    this.sortBy(this.selectedSort, false);
+    this.doFilter();
   }
 
   updateIngredient(ingredient: ListIngredient, showToast: boolean = false) {
@@ -123,5 +128,65 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     },
     error => { this.toasts.showDanger(error.message + " - " + error.error); })
   }
+
+  doFilter() {
+    if (this.allIngredients === null || this.allIngredients === undefined) {
+      this.filteredList = [];
+      return;
+    }
+
+    this.filteredList = this.allIngredients.filter(p => this.filterText === "" || (p.ingredient.name.toLowerCase().includes(this.filterText.toLowerCase())));
+
+    if (this.hoveredIndex >= this.filteredList.length) {
+      this.hoveredIndex = -1;
+    }
+  }
+
+  sortBy(field: string, toggleSort: boolean = true): void {
+    field = field.toLowerCase();
+    if (toggleSort) {
+      if (this.selectedSort.toLowerCase() === field) {
+        // toggle sort asc/desc when clicking same field already sorted by
+        this.selectedSortOrder *= -1;
+      } else {
+        this.selectedSortOrder = 1; // set back to A->Z
+      }
+    }
+
+    this.selectedSort = field;
+
+    let checkedItems = this.allIngredients.filter(i => i.isChecked).sort((a, b) => this.sortFn(a,b));
+    let uncheckedItems = this.allIngredients.filter(i => !i.isChecked).sort((a, b) => this.sortFn(a,b));
+
+
+    this.allIngredients = uncheckedItems.concat(checkedItems);
+  }
+
+  sortFn(a: ListIngredient, b: ListIngredient) {
+    let valA: string = a.ingredient.name;
+    let valB: string = b.ingredient.name;
+
+    if (this.selectedSort == 'category') {
+      valA = a.ingredient.categoryName;
+      valB = a.ingredient.categoryName;
+    }
+
+    if (valA.toLowerCase() > valB.toLowerCase()) {
+      return 1 * this.selectedSortOrder;
+    } else if (valA.toLowerCase() < valB.toLowerCase()) {
+      return -1 * this.selectedSortOrder;
+    }
+
+    if (this.selectedSort == 'category') {
+      if (a.ingredient.name.toLowerCase() > b.ingredient.name.toLowerCase()) {
+        return 1 * this.selectedSortOrder;
+      } else if (a.ingredient.name.toLowerCase() < b.ingredient.name.toLowerCase()) {
+        return -1 * this.selectedSortOrder;
+      }
+    }
+
+    return 0;
+  }
+
 
 }

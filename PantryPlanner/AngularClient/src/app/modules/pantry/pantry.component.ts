@@ -6,7 +6,6 @@ import KitchenUserApi from '../../data/services/kitchenUserApi.service';
 import { ToastService } from '../../shared/services/toast.service';
 import KitchenApi from '../../data/services/kitchenApi.service';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { isNullOrUndefined } from 'util';
 import { skipWhile, skipUntil } from 'rxjs/operators';
 import { PantryPageService } from './pantry-page.service';
 
@@ -44,7 +43,7 @@ export class PantryComponent implements OnInit, OnDestroy {
     this.isOwnerOfKitchen = false;
 
     this.observingKitchen = this.activeKitchenService.observableKitchen.pipe(skipWhile(k => !k)).subscribe(k => {
-      if (!isNullOrUndefined(k)) {
+      if (k !== null && k !== undefined) {
         this.activeKitchenName = k.name;
 
         if (this.isManagePantryPageSelected || this.isLeavePantryPageSelected) {

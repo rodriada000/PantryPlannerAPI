@@ -16,7 +16,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 })
 export class GroceryListComponent implements OnInit {
   
-  public showSideMenu: boolean;
+  public showSideMenu: boolean = false;
   public activeKitchen: Kitchen;
   private observingKitchen: Subscription;
 
@@ -53,11 +53,7 @@ export class GroceryListComponent implements OnInit {
   refreshLists() {
     this.listService.getAllGroceryLists().subscribe(lists => {
       this.allLists = lists ?? [];
-      if (this.allLists.length === 0) {
-        this.toggleSideMenu();
-      } else {
-        this.listService.setObservable(this.allLists);
-      }
+      this.listService.setObservable(this.allLists);
     }
     , error => this.toastService.showDanger(error.message));
   }

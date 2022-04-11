@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import Kitchen from '../../data/models/Kitchen';
-import { isNullOrUndefined } from 'util';
 import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
@@ -23,7 +22,7 @@ export class ActiveKitchenService {
   getActiveKitchenId(): number {
     const activeId: string = localStorage.getItem("ActiveKitchenID");
 
-    if (isNullOrUndefined(activeId)) {
+    if (activeId === null || activeId === undefined) {
       return 0;
     }
 

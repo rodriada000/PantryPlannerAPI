@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { isNullOrUndefined } from 'util';
 import Kitchen from '../../../data/models/Kitchen';
 import KitchenUser from '../../../data/models/KitchenUser';
 import KitchenApi from '../../../data/services/kitchenApi.service';
@@ -123,7 +122,7 @@ export class KitchenNavComponent implements OnInit {
 
   setSelectedKitchenAsActive(selected: Kitchen) {
 
-    if (isNullOrUndefined(selected)) {
+    if (selected === null || selected === undefined) {
       return;
     }
 

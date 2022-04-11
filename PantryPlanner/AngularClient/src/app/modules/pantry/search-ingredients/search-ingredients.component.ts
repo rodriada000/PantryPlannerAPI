@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
-import { isNullOrUndefined } from 'util';
 import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
 import IngredientApi from '../../../data/services/ingredientApi.service';
 import Ingredient from '../../../data/models/Ingredient';
@@ -86,7 +85,7 @@ export class SearchIngredientsComponent implements OnInit {
     )
 
   isCreateMissingDropdownItem(dropdownItem: Ingredient): boolean {
-    return !isNullOrUndefined(dropdownItem) && dropdownItem.categoryName === "CreateMissing";
+    return dropdownItem?.categoryName === "CreateMissing";
   }
 
   // don't keep the selected input just clear it out once added
@@ -97,8 +96,8 @@ export class SearchIngredientsComponent implements OnInit {
       return;
     }
 
-    if (isNullOrUndefined(x) || isNullOrUndefined(x.ingredientId)) {
-      console.warn("can not quick add - ingredient is null");
+    if (x === null || x === undefined || x.ingredientId === null || x.ingredientId === undefined) {
+      // console.warn("can not quick add - ingredient is null");
       return;
     }
 
@@ -168,8 +167,8 @@ export class SearchIngredientsComponent implements OnInit {
     modalRef.componentInstance.ingredient = selected;
 
     modalRef.result.then((result) => {
-      if (!isNullOrUndefined(result)) {
-      }
+      // if (!isNullOrUndefined(result)) {
+      // }
     });
   }
 
