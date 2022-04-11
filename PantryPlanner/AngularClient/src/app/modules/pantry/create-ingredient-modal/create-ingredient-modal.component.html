@@ -24,10 +24,16 @@
   </div>
 
   <br />
-  <div class="form-check">
+
+  <div *ngIf="addMode == 'Pantry'" class="form-check">
     <input type="checkbox" class="form-check-input" id="addCheck" [(ngModel)]="isAddToPantry">
     <label class="form-check-label" for="addCheck" placement="top" ngbTooltip="Additionally add this ingredient to your pantry.">Add to Pantry</label>
   </div>
+  <div *ngIf="addMode == 'GroceryList'" class="form-check">
+    <input type="checkbox" class="form-check-input" id="addCheck" [(ngModel)]="isAddToPantry">
+    <label class="form-check-label" for="addCheck" placement="top" ngbTooltip="Additionally add this ingredient to the list.">Add to List</label>
+  </div>
+
   <div class="text-sm-left font-italic text-secondary" *ngIf="isAddToPantry"> The info below is for your pantry; This will not be made public.</div>
 
   <br />
@@ -35,7 +41,7 @@
     <label for="quantityInput">Quantity</label>
     <input type="number" class="form-control" id="quantityInput" [(ngModel)]="quantity">
   </div>
-  <div class="form-group" *ngIf="isAddToPantry">
+  <div class="form-group" *ngIf="isAddToPantry && addMode === 'Pantry'">
     <label for="notesTextarea">Notes</label>
     <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="notes"></textarea>
   </div>

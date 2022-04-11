@@ -1,5 +1,5 @@
 <ng-template #rt let-r="result" let-t="term">
-  <div *ngIf="!isCreateMissingDropdownItem(r)" (click)="openAddModal(r)">
+  <div *ngIf="!isCreateMissingDropdownItem(r)" (click)="itemClicked(r)">
     <ngb-highlight result="{{r.name}} ({{r.categoryName}})" [term]="t"></ngb-highlight>
   </div>
   <div *ngIf="isCreateMissingDropdownItem(r)" (click)="openCreateIngredientModal()">

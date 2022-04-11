@@ -1,3 +1,28 @@
 @import "~@ng-select/ng-select/themes/default.theme.css";
 /* @import "~@fortawesome/fontawesome-free/css/fontawesome.css";
 @import "~@fortawesome/fontawesome-free/css/regular.css"; */
+
+
+.bold-text {
+    font-weight: 600;
+}
+
+.no-border {
+    border: 0;
+}
+
+.primary-icon {
+    color: #007bff;
+}
+
+.primary-icon:hover {
+    color: #115196;
+}
+
+.danger-icon {
+    color: #dc3545;
+}
+
+.danger-icon:hover {
+    color: #9f2430;
+}

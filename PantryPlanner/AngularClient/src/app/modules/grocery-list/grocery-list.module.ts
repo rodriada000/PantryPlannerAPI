@@ -14,7 +14,8 @@ import { FormsModule } from '@angular/forms';
   declarations: [
     ListDetailComponent,
     ManageListComponent,
-    GroceryListComponent],
+    GroceryListComponent
+  ],
   imports: [
     CommonModule,
     FormsModule,

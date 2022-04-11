@@ -1,5 +1,6 @@
 <div class="list-group mr-3">
 
+
     <div class="d-flex justify-content-between">
         <h4>{{this.selectedName}}</h4>
         
@@ -18,26 +19,31 @@
         </div>
     </div>
 
-    <div *ngIf="allIngredients?.length === 0" class="list-group-item list-group-item-action flex-column align-items-start">
-        No items in the {{selectedName}} list ...
-    </div>
-    <pre>{{selected}}</pre>
+    <pantry-search-ingredients class="pb-3" [addMode]="'GroceryList'" [activeList]="selected"></pantry-search-ingredients>
 
-    <h4>{{this.selectedName}}</h4>
+    <div *ngIf="allIngredients?.length === 0" class="d-flex justify-content-center pt-2 align-items-center">
+        <i class="fa-xl fa-solid fa-beer-mug-empty pr-2" style="color: #9f794b;"></i>
+        <span>It seems {{selectedName}} is empty ... Here's a beer.</span>
+    </div>
 
     <div class="list-group-item list-group-item-action flex-column align-items-start"
         *ngFor="let row of allIngredients; let index=index" (click)="setSelected(index, $event)">
-        <div class="d-flex w-100 justify-content-between" [ngClass]="{'bold-text': hoveredIndex==index}">
-            <input type="checkbox" [ngModel]="row.isChecked">
+
+        <div class="d-flex w-100 justify-content-between align-items-center" [ngClass]="{'bold-text': hoveredIndex==index}">
+            <input type="checkbox" [ngModel]="row.isChecked" (change)="toggleChecked(row)">
             <div (click)="unselect(index, $event)">{{row.ingredient.name}}</div>
             <div class="d-flex justify-content-end">
                 <button *ngIf="hoveredIndex==index"
-                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-minus pl-0 pr-0 mr-1"
+                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-minus fa-lg pl-0 pr-0 mr-1"
                     (click)="quickEditQty(row, -1)"></button>
-                <small class="text-muted">Qty: {{row.quantity}}</small>
+                <small class="text-muted" [ngClass]="{'bold-text': hoveredIndex==index}">Qty: {{row.quantity}}</small>
                 <button *ngIf="hoveredIndex==index"
-                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-plus pl-0 pr-0 ml-1"
+                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-plus fa-lg pl-0 pr-0 ml-1 mr-2"
                     (click)="quickEditQty(row, 1)"></button>
+
+                <button *ngIf="hoveredIndex==index"
+                    class="btn danger-icon no-border btn-sm fa-regular fa-trash-can fa-lg pl-0 pr-0 ml-1"
+                    (click)="removeFromList(row, index)"></button>
             </div>
         </div>
     </div>

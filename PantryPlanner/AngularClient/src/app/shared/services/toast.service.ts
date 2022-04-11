@@ -15,7 +15,7 @@ export class ToastService {
   }
 
   showStandard(msg: string) {
-    this.show(msg);
+    this.show(msg, { classname: 'bg-info text-light', delay: 5000 });
   }
 
   showSuccess(msg: string) {

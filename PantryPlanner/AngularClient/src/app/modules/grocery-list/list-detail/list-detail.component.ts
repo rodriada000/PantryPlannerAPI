@@ -32,12 +32,10 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
     if (changes.selected && changes.selected.currentValue !== null && changes.selected.currentValue !== undefined) {
       this.selected = changes.selected.currentValue;
       this.selectedName = this.selected.name;
-      this.cdr.detectChanges();
-      console.log(this.selected, this.selectedName);
+      this.refreshList();
     }
   }
 
@@ -96,7 +94,34 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   quickEditQty(ingredient: ListIngredient, qtyToAdd: number) {
+    if (ingredient.quantity + qtyToAdd <= 0) {
+      return; // cant have 0 or negative qty
+    }
 
+    ingredient.quantity += qtyToAdd;
+    this.updateIngredient(ingredient);
+  }
+
+  toggleChecked(ingredient: ListIngredient) {
+    ingredient.isChecked = !ingredient.isChecked;
+    this.updateIngredient(ingredient);
+  }
+
+  updateIngredient(ingredient: ListIngredient, showToast: boolean = false) {
+    this.service.updateListIngredient(ingredient).subscribe(response => {
+      if (showToast) {
+        this.toasts.showSuccess("Updated " + ingredient.ingredient.name + ".");
+      }
+    },
+    error => { this.toasts.showDanger(error.message + " - " + error.error); })
+  }
+
+  removeFromList(ingredient: ListIngredient, index: number) {
+    this.service.removeListIngredient(ingredient).subscribe(data => {
+      this.toasts.showStandard("Removed " + ingredient.ingredient.name + " from list.");
+      this.allIngredients.splice(index, 1);
+    },
+    error => { this.toasts.showDanger(error.message + " - " + error.error); })
   }
 
 }

@@ -60,14 +60,14 @@ export class AppModule {
     const pantryElem = createCustomElement(PantryComponent, { injector: this.injector });
     customElements.define('pantry-root', pantryElem);
 
-    const searchElement = createCustomElement(SearchIngredientsComponent, { injector: this.injector });
-    customElements.define('pantry-search-ingredients', searchElement);
+    // const searchElement = createCustomElement(SearchIngredientsComponent, { injector: this.injector });
+    // customElements.define('pantry-search-ingredients', searchElement);
 
-    const myIngredElement = createCustomElement(MyIngredientsComponent, { injector: this.injector });
-    customElements.define('pantry-my-ingredients', myIngredElement);
+    // const myIngredElement = createCustomElement(MyIngredientsComponent, { injector: this.injector });
+    // customElements.define('pantry-my-ingredients', myIngredElement);
 
-    const manageUElement = createCustomElement(ManageUsersComponent, { injector: this.injector });
-    customElements.define('pantry-manage-users', manageUElement);
+    // const manageUElement = createCustomElement(ManageUsersComponent, { injector: this.injector });
+    // customElements.define('pantry-manage-users', manageUElement);
 
 
     const recipesElem = createCustomElement(RecipeComponent, { injector: this.injector });
@@ -76,11 +76,11 @@ export class AppModule {
     const groceryListElem = createCustomElement(GroceryListComponent, { injector: this.injector });
     customElements.define('app-grocery-list', groceryListElem);
 
-    const groceryListDetailElem = createCustomElement(ListDetailComponent, { injector: this.injector });
-    customElements.define('grocery-list-detail', groceryListDetailElem);
+    // const groceryListDetailElem = createCustomElement(ListDetailComponent, { injector: this.injector });
+    // customElements.define('grocery-list-detail', groceryListDetailElem);
 
-    const manageListElem = createCustomElement(ManageListComponent, { injector: this.injector });
-    customElements.define('app-manage-list', manageListElem);
+    // const manageListElem = createCustomElement(ManageListComponent, { injector: this.injector });
+    // customElements.define('app-manage-list', manageListElem);
   }
 }
 

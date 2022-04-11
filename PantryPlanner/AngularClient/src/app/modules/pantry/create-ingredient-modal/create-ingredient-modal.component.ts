@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import Category from '../../../data/models/Category';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastService } from '../../../shared/services/toast.service';
@@ -8,6 +8,9 @@ import IngredientApi from '../../../data/services/ingredientApi.service';
 import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
 import KitchenIngredient from '../../../data/models/KitchenIngredient';
 import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
+import KitchenList from 'src/app/data/models/KitchenList';
+import ListIngredient from 'src/app/data/models/ListIngredient';
+import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
 
 @Component({
   selector: 'app-create-ingredient-modal',
@@ -16,6 +19,9 @@ import { ActiveKitchenService } from '../../../shared/services/active-kitchen.se
 })
 export class CreateIngredientModalComponent implements OnInit {
 
+  public addMode: string = "Pantry"; // "Pantry" or "GroceryList"
+  public activeList: KitchenList;
+  
   public name: string;
   public description: string;
   public selectedCategoryId: number;
@@ -31,10 +37,12 @@ export class CreateIngredientModalComponent implements OnInit {
     private activeModal: NgbActiveModal,
     private toastService: ToastService,
     private apiService: IngredientApi,
+    private listIngredientService: ListIngredientApiService,
     private kitchenIngredientApi: KitchenIngredientApi,
     private activeKitchen: ActiveKitchenService) { }
 
   ngOnInit(): void {
+    
     this.name = this.name ?? "";
     this.description = "";
     this.isPublic = true;
@@ -82,24 +90,51 @@ export class CreateIngredientModalComponent implements OnInit {
         this.activeModal.close(data);
 
         if (this.isAddToPantry) {
-          const toPantry: KitchenIngredient = this.kitchenIngredientApi.createEmpty(data, this.activeKitchen.getActiveKitchenId());
-          toPantry.quantity = this.quantity;
-          toPantry.note = this.notes;
-
-          this.kitchenIngredientApi.addIngredientToKitchen(toPantry).subscribe(
-            data => {
-              this.kitchenIngredientApi.setAddedIngredient(data);
-              this.toastService.showSuccess("Added to pantry - " + toAdd.name);
-            },
-            error => {
-              this.toastService.showDanger("Could not add " + toAdd.name + " to pantry - " + error.error);
-            });
+          if (this.addMode === 'Pantry') {
+            this.addToPantry(data);
+          } else {
+            this.addToGroceryList(data);
+          }
         }
 
       },
       error => {
         this.toastService.showDanger("Could not create ingredient - " + error.error);
         this.isAdding = false;
+      });
+  }
+
+  private addToGroceryList(x: Ingredient) {
+    const toAdd: ListIngredient = this.listIngredientService.createEmpty(x, this.activeList);
+
+    if (toAdd.kitchenId === 0 || toAdd.kitchenListId === 0) {
+      this.toastService.showDanger("Cannot add to list - id is 0");
+      return;
+    }
+
+    this.listIngredientService.addIngredientToList(toAdd).subscribe(data => {
+      this.listIngredientService.setAddedIngredient(data);
+      this.toastService.showSuccess("Added " + x.name);
+    },
+      resp => {
+        this.toastService.showDanger(resp.error);
+        this.listIngredientService.setAddedIngredient(null);
+      },
+    );
+  }
+
+  private addToPantry(toAdd: Ingredient) {
+    const toPantry: KitchenIngredient = this.kitchenIngredientApi.createEmpty(toAdd, this.activeKitchen.getActiveKitchenId());
+    toPantry.quantity = this.quantity;
+    toPantry.note = this.notes;
+
+    this.kitchenIngredientApi.addIngredientToKitchen(toPantry).subscribe(
+      data => {
+        this.kitchenIngredientApi.setAddedIngredient(data);
+        this.toastService.showSuccess("Added to pantry - " + toAdd.name);
+      },
+      error => {
+        this.toastService.showDanger("Could not add " + toAdd.name + " to pantry - " + error.error);
       });
   }
 

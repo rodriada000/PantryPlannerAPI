@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, tap, switchMap, catchError, map } from 'rxjs/operators';
@@ -11,6 +11,9 @@ import KitchenIngredient from '../../../data/models/KitchenIngredient';
 import { ToastService } from '../../../shared/services/toast.service';
 import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
 import { CreateIngredientModalComponent } from '../create-ingredient-modal/create-ingredient-modal.component';
+import ListIngredient from 'src/app/data/models/ListIngredient';
+import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
+import KitchenList from 'src/app/data/models/KitchenList';
 
 @Component({
   selector: 'pantry-search-ingredients',
@@ -18,8 +21,15 @@ import { CreateIngredientModalComponent } from '../create-ingredient-modal/creat
   styleUrls: ['./search-ingredients.component.css']
 })
 export class SearchIngredientsComponent implements OnInit {
+  @Input()
+  public addMode: string = "Pantry"; // "Pantry" or "GroceryList"
+
+  @Input()
+  public activeList: KitchenList;
 
   public isSearching: boolean;
+  public isSaving: boolean = false;
+
   public searchFailed: boolean;
   public searchText: string;
   public searchResults: Array<Ingredient>
@@ -28,6 +38,7 @@ export class SearchIngredientsComponent implements OnInit {
   constructor(
     private apiService: IngredientApi,
     private kitchenIngredientApi: KitchenIngredientApi,
+    private listIngredientService: ListIngredientApiService,
     private modalService: NgbModal,
     private activeKitchen: ActiveKitchenService,
     private toastService: ToastService) { }
@@ -37,6 +48,14 @@ export class SearchIngredientsComponent implements OnInit {
     this.searchResults = [];
     this.isSearching = false;
     this.searchFailed = false;
+  }
+
+  itemClicked(x: Ingredient): void {
+    if (this.addMode === 'GroceryList') {
+      this.addToGroceryList(x);
+    } else {
+      this.openAddModal(x);
+    }
   }
 
   doSearch = (text$: Observable<string>) =>
@@ -71,7 +90,7 @@ export class SearchIngredientsComponent implements OnInit {
   }
 
   // don't keep the selected input just clear it out once added
-  // adds the ingredient to kitchen with quantity 1 and no notes
+  // adds the ingredient to list with quantity 1
   quickAdd = (x: Ingredient) => {
 
     if (this.modalService.hasOpenModals()) {
@@ -83,6 +102,21 @@ export class SearchIngredientsComponent implements OnInit {
       return;
     }
 
+    if (this.addMode === "Pantry") {
+      this.addToKitchen(x);
+    } else {
+      this.addToGroceryList(x);
+    }
+
+    return "";
+  };
+
+  addToKitchen(x: Ingredient) {
+    if (this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
+
     const toAdd: KitchenIngredient = this.kitchenIngredientApi.createEmpty(x, this.activeKitchen.getActiveKitchenId());
 
     if (toAdd.kitchenId === 0) {
@@ -93,15 +127,40 @@ export class SearchIngredientsComponent implements OnInit {
     this.kitchenIngredientApi.addIngredientToKitchen(toAdd).subscribe(data => {
       this.kitchenIngredientApi.setAddedIngredient(data);
       this.toastService.showSuccess("Added " + x.name);
+      this.isSaving = false;
     },
       resp => {
         this.toastService.showDanger(resp.error);
         this.kitchenIngredientApi.setAddedIngredient(null);
+        this.isSaving = false;
       },
     );
+  }
 
-    return "";
-  };
+  addToGroceryList(x: Ingredient) {
+    if (this.isSaving) {
+      return;
+    }
+    this.isSaving = true;
+
+    const toAdd: ListIngredient = this.listIngredientService.createEmpty(x, this.activeList);
+
+    if (toAdd.kitchenId === 0 || toAdd.kitchenListId === 0) {
+      this.toastService.showDanger("Cannot add to list - id is 0");
+      return;
+    }
+    this.listIngredientService.addIngredientToList(toAdd).subscribe(data => {
+      this.listIngredientService.setAddedIngredient(data);
+      this.toastService.showSuccess("Added " + x.name);
+      this.isSaving = false;
+    },
+      resp => {
+        this.toastService.showDanger(resp.error);
+        this.listIngredientService.setAddedIngredient(null);
+        this.isSaving = false;
+      },
+    );
+  }
 
 
   openAddModal(selected: Ingredient): void {
@@ -117,6 +176,8 @@ export class SearchIngredientsComponent implements OnInit {
   openCreateIngredientModal(): void {
     const modalRef = this.modalService.open(CreateIngredientModalComponent);
     modalRef.componentInstance.name = this.searchText;
+    modalRef.componentInstance.addMode = this.addMode;
+    modalRef.componentInstance.activeList = this.activeList;
   }
 
 }

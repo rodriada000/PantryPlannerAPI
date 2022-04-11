@@ -52,6 +52,7 @@ namespace PantryPlanner.Services
 
             return Context.KitchenListIngredient.Where(k => k.KitchenListId == listId)
                                                 .Include(i => i.Ingredient).ThenInclude(i => i.Category)
+                                                .Include(k => k.KitchenList)
                                                 .ToList();
         }
 
@@ -112,7 +113,7 @@ namespace PantryPlanner.Services
 
             KitchenListIngredient ingredientToAdd = ListIngredientDto.Create(newIngredient);
 
-            return AddKitchenListIngredient(ingredientToAdd, user);
+            return AddKitchenListIngredient(ingredientToAdd, newIngredient.KitchenId, user);
         }
 
         /// <summary>
@@ -120,7 +121,7 @@ namespace PantryPlanner.Services
         /// </summary>
         /// <param name="newIngredient"> ingredient to add </param>
         /// <param name="user"> user who is adding ingredient </param>
-        public KitchenListIngredient AddKitchenListIngredient(KitchenListIngredient newIngredient, PantryPlannerUser user)
+        public KitchenListIngredient AddKitchenListIngredient(KitchenListIngredient newIngredient, long kitchenId, PantryPlannerUser user)
         {
             if (user == null)
             {
@@ -131,8 +132,6 @@ namespace PantryPlanner.Services
             {
                 throw new ArgumentNullException(nameof(newIngredient));
             }
-
-            long kitchenId = newIngredient.KitchenList?.KitchenId ?? 0;
 
             if (!Context.KitchenExists(kitchenId))
             {
@@ -169,9 +168,15 @@ namespace PantryPlanner.Services
             }
 
 
-            if (newIngredient.SortOrder < 0)
+            if (newIngredient.SortOrder < 0 || newIngredient.Id == 0)
             {
-                newIngredient.SortOrder = Context.KitchenListIngredient.Where(k => k.KitchenListId == newIngredient.KitchenListId).Max(i => i.SortOrder) + 1;
+                if (Context.KitchenListIngredient.Any(k => k.KitchenListId == newIngredient.KitchenListId))
+                {
+                    newIngredient.SortOrder = Context.KitchenListIngredient.Where(k => k.KitchenListId == newIngredient.KitchenListId).Max(i => i.SortOrder) + 1;
+                } else
+                {
+                    newIngredient.SortOrder = 0;
+                }
             }
 
             Context.KitchenListIngredient.Add(newIngredient);
@@ -229,7 +234,9 @@ namespace PantryPlanner.Services
 
             ingredientToAdd.SortOrder = Context.KitchenListIngredient.Where(k => k.KitchenListId == kitchenListId).Max(i => i.SortOrder) + 1;
 
-            return AddKitchenListIngredient(ingredientToAdd, user);
+            KitchenList list = ListService.GetKitchenListById(kitchenListId, user);
+
+            return AddKitchenListIngredient(ingredientToAdd, list.KitchenId, user);
         }
 
         #endregion
@@ -277,6 +284,8 @@ namespace PantryPlanner.Services
             {
                 ingredientToUpdate.SortOrder = ingredientDto.SortOrder.Value;
             }
+
+            ingredientToUpdate.IsChecked = ingredientDto.IsChecked;
 
             Context.Entry(ingredientToUpdate).State = EntityState.Modified;
             await Context.SaveChangesAsync().ConfigureAwait(false);

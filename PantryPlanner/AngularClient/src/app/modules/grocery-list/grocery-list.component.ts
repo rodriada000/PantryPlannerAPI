@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import { skipWhile } from 'rxjs/operators';
 import Kitchen from 'src/app/data/models/Kitchen';
 import KitchenList from 'src/app/data/models/KitchenList';
+import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
 import GroceryListApi from 'src/app/data/services/grocery-list.service';
 import KitchenUserApi from 'src/app/data/services/kitchenUserApi.service';
 import { ActiveKitchenService } from 'src/app/shared/services/active-kitchen.service';
@@ -25,6 +26,7 @@ export class GroceryListComponent implements OnInit {
   constructor(
     private activeKitchenService: ActiveKitchenService,
     private listService: GroceryListApi,
+    private ingredientService: ListIngredientApiService,
     private toastService: ToastService,
     private kitchenUserApi: KitchenUserApi,
   ) { }
@@ -32,7 +34,6 @@ export class GroceryListComponent implements OnInit {
   ngOnInit(): void {
     this.observingKitchen = this.activeKitchenService.observableKitchen.subscribe(k => {
       if (k !== null && k !== undefined) {
-        console.log(k);
         this.activeKitchen = k;
       }
     });

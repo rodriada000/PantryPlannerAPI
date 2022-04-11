@@ -67,11 +67,7 @@ namespace PantryPlanner.DTOs
                 IsChecked = ingredient.IsChecked,
                 SortOrder = ingredient.SortOrder ?? 0,
                 IngredientId = ingredient.IngredientId,
-                Quantity = ingredient.Quantity,
-                KitchenList = new KitchenList()
-                {
-                    KitchenId = ingredient.KitchenId
-                }
+                Quantity = ingredient.Quantity
             };
         }
 
