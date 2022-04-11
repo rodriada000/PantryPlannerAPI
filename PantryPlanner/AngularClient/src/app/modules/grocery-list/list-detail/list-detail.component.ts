@@ -3,6 +3,7 @@ import { Subscription } from 'rxjs';
 import KitchenList from 'src/app/data/models/KitchenList';
 import ListIngredient from 'src/app/data/models/ListIngredient';
 import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
+import KitchenIngredientApi from 'src/app/data/services/kitchenIngredientApi.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
@@ -30,6 +31,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   constructor(
     private service: ListIngredientApiService,
+    private pantryService: KitchenIngredientApi,
     private toasts: ToastService,
     private cdr: ChangeDetectorRef
   ) { }
@@ -186,6 +188,30 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     return 0;
+  }
+
+  confirmAddToPantry() {
+    if (confirm('Are you sure you want to add checked items to the pantry?')) {
+      this.addCheckedToPantry();
+    }
+  }
+
+  addCheckedToPantry() {
+    this.allIngredients.forEach(i => {
+      if (!i.isChecked) {
+        return;
+      }
+
+      let k = this.pantryService.createEmpty(i.ingredient, this.selected.kitchenId);
+      k.quantity = i.quantity ?? 1;
+
+      this.pantryService.addIngredientToKitchen(k).subscribe(data => {
+        this.pantryService.setAddedIngredient(data);
+      }, error => {
+        this.toasts.showDanger('could not add to pantry - ' + error.message);
+      });
+      
+    })
   }
 
 

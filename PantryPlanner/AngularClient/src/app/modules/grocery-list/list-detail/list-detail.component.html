@@ -5,7 +5,9 @@
         <h4>{{this.selectedName}}</h4>
         
         <div class="d-flex">
-            <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: fit-content;"></button>
+            <button class="btn btn-outline-primary fa-solid fa-cart-plus fa-lg mr-4 mb-2" (click)="confirmAddToPantry()" style="width: fit-content;" ngbTooltip="Add Checked Items to Pantry"></button>
+
+            <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: fit-content;" ngbTooltip="Refresh List"></button>
 
             <div class="btn-group me-3 pb-2" style="height: fit-content">
                 <button type="button" class="btn btn-outline-success fa-solid fa-lg"

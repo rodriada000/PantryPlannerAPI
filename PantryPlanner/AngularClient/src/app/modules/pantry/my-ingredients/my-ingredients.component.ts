@@ -71,8 +71,8 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
 
     this.apiService.getIngredientsForKitchen(this.activeKitchen.getActiveKitchenId()).subscribe(data => {
       this.myIngredients = data;
-      this.doFilter();
       this.sortBy('name')
+      this.doFilter();
     },
       error => { this.toasts.showDanger(error.message + " - " + error.error); },
       () => { this.isLoading = false; });

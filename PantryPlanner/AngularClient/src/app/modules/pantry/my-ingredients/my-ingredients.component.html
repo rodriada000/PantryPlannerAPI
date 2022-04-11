@@ -6,11 +6,11 @@
   <input class="form-control" placeholder="Filter Ingredients" type="text" maxlength="100" [(ngModel)]="filterText" (ngModelChange)="doFilter()"/>
 </div>
 <div class="list-group mr-3">
-  <div class="d-flex justify-content-between">
+  <div class="d-flex justify-content-between align-items-end">
     <h4>Pantry Ingredients</h4>
 
     <div class="btn-group me-3 pb-2">
-      <button type="button" class="btn btn-outline-success fa-solid" [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}" (click)="toggleSortOrder()"></button>
+      <button type="button" class="btn btn-outline-success fa-solid" style="height: fit-content" [ngClass]="{'fa-arrow-up-a-z': selectedSortOrder == 1, 'fa-arrow-down-a-z': selectedSortOrder == -1}" (click)="toggleSortOrder()"></button>
       <div ngbDropdown class="d-inline-block btn-group" role="group">
         <button type="button" class="btn btn-outline-primary" id="dropdownSort" ngbDropdownToggle>Sort By: {{selectedSort}}</button>
         <div ngbDropdownMenu aria-labelledby="dropdownSort">
