@@ -15,7 +15,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
   styleUrls: ['./grocery-list.component.css']
 })
 export class GroceryListComponent implements OnInit {
-  
+
   public showSideMenu: boolean = false;
   public activeKitchen: Kitchen;
   private observingKitchen: Subscription;
@@ -32,6 +32,8 @@ export class GroceryListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const lastSelected: string = localStorage.getItem("LastSelectedKitchenListId");
+
     this.observingKitchen = this.activeKitchenService.observableKitchen.subscribe(k => {
       if (k !== null && k !== undefined) {
         this.activeKitchen = k;
@@ -39,12 +41,24 @@ export class GroceryListComponent implements OnInit {
     });
 
     this.listService.observableList.subscribe(k => {
-      if (k !== null && k !== undefined) {
-        this.allLists = k;
-        if (this.selectedIndex >= this.allLists.length && this.allLists.length !== 0) {
+      if (k === null || k === undefined) {
+        return;
+      }
+
+      this.allLists = k;
+
+      if (this.allLists.length !== 0) {
+        this.selectedIndex = 0;
+        
+        if (lastSelected !== null && lastSelected !== undefined) {
+          this.selectedIndex = this.allLists.findIndex(k => k.kitchenListId === parseInt(lastSelected));
+        }
+        
+        if (this.selectedIndex >= this.allLists.length) {
           this.selectedIndex = 0;
         }
       }
+
     })
 
     this.refreshLists();
@@ -55,11 +69,12 @@ export class GroceryListComponent implements OnInit {
       this.allLists = lists ?? [];
       this.listService.setObservable(this.allLists);
     }
-    , error => this.toastService.showDanger(error.message));
+      , error => this.toastService.showDanger(error.message));
   }
 
   switchList(index: number) {
     this.selectedIndex = index;
+    localStorage.setItem("LastSelectedKitchenListId", this.allLists[index]?.kitchenListId?.toString());
   }
 
   getSelected(): KitchenList {
@@ -69,7 +84,7 @@ export class GroceryListComponent implements OnInit {
 
     return this.allLists[this.selectedIndex];
   }
-  
+
   ngOnDestroy(): void {
     this.observingKitchen?.unsubscribe();
   }
