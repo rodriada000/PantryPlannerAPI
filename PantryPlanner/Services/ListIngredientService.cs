@@ -50,7 +50,7 @@ namespace PantryPlanner.Services
                 throw new PermissionsException("You do not have rights to this kitchen");
             }
 
-            return Context.KitchenListIngredient.Where(k => k.KitchenListId == listId)
+            return Context.KitchenListIngredient.Where(k => k.KitchenListId == listId && !k.IsDeleted)
                                                 .Include(i => i.Ingredient).ThenInclude(i => i.Category)
                                                 .Include(k => k.KitchenList)
                                                 .ToList();
@@ -173,15 +173,32 @@ namespace PantryPlanner.Services
                 if (Context.KitchenListIngredient.Any(k => k.KitchenListId == newIngredient.KitchenListId))
                 {
                     newIngredient.SortOrder = Context.KitchenListIngredient.Where(k => k.KitchenListId == newIngredient.KitchenListId).Max(i => i.SortOrder) + 1;
-                } else
+                }
+                else
                 {
                     newIngredient.SortOrder = 0;
                 }
             }
 
+            // check if the ingredient has been deleted - just need to update instead of add
+            KitchenListIngredient existingIngredient = Context.KitchenListIngredient.Where(i => i.KitchenListId == newIngredient.KitchenListId && i.IngredientId == newIngredient.IngredientId && i.IsDeleted)
+                                                                                    .Include(i => i.Category)
+                                                                                    .Include(i => i.KitchenList)
+                                                                                    .Include(i => i.Ingredient).ThenInclude(j => j.Category)
+                                                                                    .FirstOrDefault();
+
+            if (existingIngredient != null)
+            {
+                existingIngredient.IsDeleted = false;
+                existingIngredient.IsChecked = false;
+                Context.Entry(existingIngredient).State = EntityState.Modified;
+                Context.SaveChanges();
+
+                return existingIngredient;
+            }
+
             Context.KitchenListIngredient.Add(newIngredient);
             Context.SaveChanges();
-
 
             if (newIngredient.Ingredient == null)
             {
@@ -290,6 +307,8 @@ namespace PantryPlanner.Services
                 ingredientToUpdate.Note = ingredientDto.Note;
             }
 
+            CreateCategoryIfNotExists(ingredientDto);
+
             if (ingredientDto.CategoryId != null)
             {
                 ingredientToUpdate.CategoryId = ingredientDto.CategoryId;
@@ -301,6 +320,26 @@ namespace PantryPlanner.Services
             await Context.SaveChangesAsync().ConfigureAwait(false);
 
             return true;
+        }
+
+        private void CreateCategoryIfNotExists(ListIngredientDto ingredientDto)
+        {
+            if (ingredientDto.CategoryId.GetValueOrDefault(0) == 0 && !string.IsNullOrWhiteSpace(ingredientDto?.Category?.Name))
+            {
+                int typeId = Context.CategoryType.Where(i => i.Name == "ListIngredient").Select(c => c.CategoryTypeId).FirstOrDefault();
+
+                Category newCat = new Category()
+                {
+                    Name = ingredientDto.Category.Name,
+                    CreatedByKitchenId = ingredientDto.KitchenId,
+                    CategoryTypeId = typeId
+                };
+
+                Context.Category.Add(newCat);
+                Context.SaveChanges();
+
+                ingredientDto.CategoryId = newCat.CategoryId;
+            }
         }
 
         #endregion
@@ -344,7 +383,9 @@ namespace PantryPlanner.Services
                 throw new PermissionsException($"You do not have rights to delete this ingredient");
             }
 
-            Context.KitchenListIngredient.Remove(ingredientToDelete);
+            ingredientToDelete.IsDeleted = true;
+
+            Context.Entry(ingredientToDelete).State = EntityState.Modified;
             Context.SaveChanges();
 
             return ingredientToDelete;

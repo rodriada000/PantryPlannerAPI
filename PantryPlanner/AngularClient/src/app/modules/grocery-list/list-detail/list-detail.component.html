@@ -1,3 +1,13 @@
+<ng-template #rt let-r="result" let-t="term">
+    <!-- <div *ngIf="!isCreateMissingDropdownItem(r)" (click)="itemClicked(r)">
+      <ngb-highlight result="{{r.name}}" [term]="t"></ngb-highlight>
+    </div>
+    <div *ngIf="isCreateMissingDropdownItem(r)" (click)="itemClicked(r)">
+      <button class="btn btn-outline-success">{{r.name}}</button>
+    </div> -->
+</ng-template>
+  
+
 <div class="list-group mr-3">
 
 
@@ -5,7 +15,7 @@
         <h4>{{this.selectedName}}</h4>
         
         <div class="d-flex">
-            <button class="btn btn-outline-primary fa-solid fa-cart-plus fa-lg mr-4 mb-2" (click)="confirmAddToPantry()" style="width: fit-content;" ngbTooltip="Add Checked Items to Pantry"></button>
+            <button class="btn btn-outline-primary fa-solid fa-file-import fa-lg mr-4 mb-2" (click)="confirmAddToPantry()" style="width: fit-content;" ngbTooltip="Add Checked Items to Pantry"></button>
 
             <button class="btn btn-outline-primary fa-solid fa-arrows-rotate fa-lg mr-2 mb-2" (click)="refreshList()" style="width: fit-content;" ngbTooltip="Refresh List"></button>
 
@@ -49,25 +59,19 @@
                 </div>
             </div>
         </div>
-        <div class="d-flect justify-content-center ml-4" *ngIf="hoveredIndex != index">
+        <div class="d-flect justify-content-center ml-5" *ngIf="hoveredIndex != index">
             <span class="light-text">{{row.note}}</span>
         </div>
         <div *ngIf="hoveredIndex == index" class="pt-2">
-            <span *ngIf="!isEditing" class="ml-4">{{row.note}}</span>
+            <span *ngIf="!isEditing && row.note" class="ml-4 light-text">{{row.note}}</span>
 
             <div *ngIf="isEditing" class="form-group ml-4">
               <textarea class="form-control" id="notesTextarea" rows="1" [(ngModel)]="row.note" placeholder="Notes"></textarea>
             </div>
 
-            <div class="form-group pt-1 ml-4 mb-2">
-                <ng-select [items]="categories"
-                           bindLabel="name"
-                           bindValue="categoryId"
-                           placeholder="Select Category"
-                           [disabled]="!isEditing"
-                           [(ngModel)]="row.categoryId">
-                </ng-select>
-            </div>
+            <!-- <div  class="form-group pt-1 ml-4 mb-2">
+                <input class="form-control" placeholder="Category" type="text" maxlength="50" [(ngModel)]="lastCatSearch" [ngbTypeahead]="doCatSearch" [resultTemplate]="rt" />
+            </div> -->
       
             
             <div class="d-flex justify-content-end">

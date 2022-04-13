@@ -1,5 +1,7 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren } from '@angular/core';
+import { NgSelectComponent } from '@ng-select/ng-select';
+import { Observable, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, switchMap, tap } from 'rxjs/operators';
 import Category from 'src/app/data/models/Category';
 import KitchenList from 'src/app/data/models/KitchenList';
 import ListIngredient from 'src/app/data/models/ListIngredient';
@@ -14,6 +16,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 })
 export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
+
   @Input()
   public selected: KitchenList;
   public selectedName: string = "";
@@ -23,6 +26,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   public filteredList: Array<ListIngredient> = [];
   public categories: Array<Category> = [];
 
+  public lastCatSearch: string;
   public filterText: string = "";
   public selectedSortOrder: number = 1;
   public selectedSort: string = "name";
@@ -55,7 +59,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.itemAddedSub = this.service.observableAddedIngredient.subscribe(newIngredient => {
       if (newIngredient !== null && newIngredient !== undefined) {
         this.allIngredients.push(newIngredient);
-        this.sortBy(this.selectedSort, false);
+        this.sortBy(this.selectedSort);
         this.doFilter();
       }
     });
@@ -76,7 +80,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
     this.service.getIngredientsForList(this.selected?.kitchenListId).subscribe(data => {
       this.allIngredients = data;
-      this.sortBy('name', false)
+      this.sortBy('name')
       this.doFilter();
     },
       error => { this.toasts.showDanger(error.message + " - " + error.error); },
@@ -99,14 +103,14 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   toggleSortOrder() {
-    this.sortBy(this.selectedSort);
+    this.sortBy(this.selectedSort, true);
     this.doFilter();
   }
 
   toggleChecked(ingredient: ListIngredient) {
     ingredient.isChecked = !ingredient.isChecked;
     this.updateIngredient(ingredient);
-    this.sortBy(this.selectedSort, false);
+    this.sortBy(this.selectedSort);
     this.doFilter();
   }
 
@@ -123,6 +127,8 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     this.service.removeListIngredient(ingredient).subscribe(data => {
       this.toasts.showStandard("Removed " + ingredient.ingredient.name + " from list.");
       this.allIngredients.splice(index, 1);
+      this.sortBy(this.selectedSort);
+      this.doFilter();
     },
     error => { this.toasts.showDanger(error.message + " - " + error.error); })
   }
@@ -140,7 +146,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     }
   }
 
-  sortBy(field: string, toggleSort: boolean = true): void {
+  sortBy(field: string, toggleSort: boolean = false): void {
     field = field.toLowerCase();
     if (toggleSort) {
       if (this.selectedSort.toLowerCase() === field) {
@@ -268,5 +274,57 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
     $event.stopPropagation();
   }
 
+  // onBlur() {
+  //   console.log('blurred')
+  // }
+
+  // onKeyDown($event: KeyboardEvent) {
+  //   if ($event.key === 'Enter' || $event.key === 'Tab') {
+  //     console.log('keydown', this.lastCatSearch, this.categories);
+  //     if (this.lastCatSearch && this.categories.findIndex(c => c.name.toLowerCase() === this.lastCatSearch.toLowerCase()) === -1) {
+  //       let newCat = new Category();
+  //       newCat.name = this.lastCatSearch;
+  //       this.categories = [...this.categories, newCat];
+        
+  //       this.filteredList[this.hoveredIndex].category = newCat;
+  //       console.log(this.categories, this.filteredList[this.hoveredIndex].category);
+  //       this.lastCatSearch = null;
+  //       return false;
+  //     }
+  //   }
+
+  //   return true;
+  // }
+
+  doCatSearch(text$: Observable<string>) {
+
+  }
+
+  // doCatSearch = (text$: Observable<string>) =>
+  // text$.pipe(
+  //   debounceTime(300),
+  //   distinctUntilChanged(),
+  //   tap(() => this.isSearching = true),
+  //   switchMap(term => term === "" || term.length < 2 ? of([]) :
+  //     this.service.getIngredientsByName(term).pipe(
+  //       tap(() => this.searchFailed = false),
+  //       map(r => r.slice(0, 20)),
+  //       map(r => {
+  //         const createMissing: Ingredient = new Ingredient();
+  //         createMissing.name = "Create Missing Ingredient";
+  //         createMissing.categoryName = "CreateMissing";
+  //         r.push(createMissing);
+
+  //         return r;
+  //       }),
+  //       catchError(() => {
+  //         this.searchFailed = true;
+  //         return of([]);
+  //       }))
+  //   ),
+  //   tap(() => {
+  //     this.isSearching = false;
+  //   })
+  // )
 
 }

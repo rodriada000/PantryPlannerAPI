@@ -14,6 +14,7 @@ namespace PantryPlanner.Models
         public int SortOrder { get; set; }
         public bool IsChecked { get; set; }
         public long? CategoryId { get; set; }
+        public bool IsDeleted { get; set; }
 
         public virtual Category Category { get; set; }
         public virtual Ingredient Ingredient { get; set; }

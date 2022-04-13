@@ -131,7 +131,7 @@ namespace PantryPlanner.Extensions
 
         public static bool IngredientExistsForKitchenList(this PantryPlannerContext context, long ingredientId, long kitchenListId)
         {
-            return context.KitchenListIngredient.Any(i => i.KitchenListId == kitchenListId && i.IngredientId == ingredientId);
+            return context.KitchenListIngredient.Any(i => i.KitchenListId == kitchenListId && i.IngredientId == ingredientId && !i.IsDeleted);
         }
 
 
