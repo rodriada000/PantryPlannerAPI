@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import { Subscription } from 'rxjs';
+import Category from 'src/app/data/models/Category';
 import KitchenList from 'src/app/data/models/KitchenList';
 import ListIngredient from 'src/app/data/models/ListIngredient';
 import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
@@ -20,20 +21,23 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   public allIngredients: Array<ListIngredient> = [];
   public filteredList: Array<ListIngredient> = [];
+  public categories: Array<Category> = [];
 
   public filterText: string = "";
   public selectedSortOrder: number = 1;
   public selectedSort: string = "name";
   public hoveredIndex: number;
   public isLoading: boolean;
+  public isEditing: boolean = false;
+  public isSaving: boolean = false;
   
   private itemAddedSub: Subscription;
+  origIngredient: ListIngredient;
 
   constructor(
     private service: ListIngredientApiService,
     private pantryService: KitchenIngredientApi,
-    private toasts: ToastService,
-    private cdr: ChangeDetectorRef
+    private toasts: ToastService
   ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -81,6 +85,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
 
   setSelected(index: number, $event) {
     if (this.hoveredIndex != index) {
+      this.cancelEdit(this.filteredList[this.hoveredIndex], $event);
       this.hoveredIndex = index;
     }
   }
@@ -96,15 +101,6 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
   toggleSortOrder() {
     this.sortBy(this.selectedSort);
     this.doFilter();
-  }
-
-  quickEditQty(ingredient: ListIngredient, qtyToAdd: number) {
-    if (ingredient.quantity + qtyToAdd <= 0) {
-      return; // cant have 0 or negative qty
-    }
-
-    ingredient.quantity += qtyToAdd;
-    this.updateIngredient(ingredient);
   }
 
   toggleChecked(ingredient: ListIngredient) {
@@ -212,6 +208,64 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
       });
       
     })
+  }
+
+  editIngredient(ingredient: ListIngredient, $event): void {
+    this.isEditing = true;
+    this.origIngredient = { ...ingredient };
+    $event.preventDefault();
+    $event.stopPropagation();
+  }
+
+  quickEditQty(ingredient: ListIngredient, qtyToAdd: number) {
+    if (this.isSaving) {
+      return;
+    }
+
+    if (ingredient.quantity + qtyToAdd <= 0) {
+      return; // cant have 0 or negative qty
+    }
+
+    ingredient.quantity += qtyToAdd;
+    this.saveEdit(ingredient, false);
+  }
+
+  saveEdit(ingredient: ListIngredient, showToast: boolean = true): void {
+    if (this.isSaving) {
+      return;
+    }
+    
+    if (ingredient.quantity <= 0) {
+      return; // cant have 0 or negative qty
+    }
+
+    this.isSaving = true;
+
+    this.service.updateListIngredient(ingredient).subscribe(data => {
+      if (showToast) {
+        this.toasts.showSuccess("Updated " + ingredient.ingredient.name);
+      }
+      this.isEditing = false;
+      this.isSaving = false;
+    },
+      error => {
+        this.toasts.showDanger("Could not update - " + error.error);
+        this.isEditing = false;
+        this.isSaving = false;
+      });
+  }
+
+  cancelEdit(ingredient: ListIngredient, $event): void {
+    if (ingredient === null || ingredient === undefined || !this.isEditing) {
+      return;
+    }
+
+    ingredient.note = this.origIngredient?.note;
+    ingredient.quantity = this.origIngredient?.quantity;
+    this.origIngredient = null;
+    this.isEditing = false;
+    $event.preventDefault();
+    $event.stopPropagation();
   }
 
 

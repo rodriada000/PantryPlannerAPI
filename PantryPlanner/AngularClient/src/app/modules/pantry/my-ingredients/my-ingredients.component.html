@@ -27,29 +27,25 @@
     <div class="d-flex w-100 justify-content-between" [ngClass]="{'bold-text': hoveredIndex==index}">
       <div (click)="unselect(index, $event)">{{row.ingredient.name}}</div>
       <div class="d-flex justify-content-end">
-        <button *ngIf="hoveredIndex==index && !isEditing" class="btn primary-icon no-border btn-sm fa-solid fa-lg fa-circle-minus pl-0 pr-0 mr-1" (click)="quickEditQty(row, -1)"></button>
+        <button *ngIf="hoveredIndex==index" class="btn primary-icon no-border btn-sm fa-solid fa-lg fa-circle-minus pl-0 pr-0 mr-1" (click)="quickEditQty(row, -1)"></button>
         <small class="text-muted" [ngClass]="{'bold-text': hoveredIndex==index}">Qty: {{row.quantity}}</small>
-        <button *ngIf="hoveredIndex==index && !isEditing" class="btn primary-icon no-border btn-sm fa-solid fa-lg fa-circle-plus pl-0 pr-0 ml-1" (click)="quickEditQty(row, 1)"></button>
+        <button *ngIf="hoveredIndex==index" class="btn primary-icon no-border btn-sm fa-solid fa-lg fa-circle-plus pl-0 pr-0 ml-1" (click)="quickEditQty(row, 1)"></button>
       </div>
     </div>
-    <div *ngIf="hoveredIndex==index">
+    <div *ngIf="hoveredIndex==index" class="pt-2">
       <p *ngIf="!isEditing">{{row.note}}</p>
 
-      <div *ngIf="isEditing" class="form-group pt-1">
-        <label for="quantityInput">Quantity</label>
-        <input type="number" class="form-control" id="quantityInput" [(ngModel)]="row.quantity" (keydown.Enter)="saveEdit(row)">
-      </div>
       <div *ngIf="isEditing" class="form-group">
-        <label for="notesTextarea">Notes</label>
-        <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="row.note"></textarea>
+        <textarea class="form-control" id="notesTextarea" rows="3" [(ngModel)]="row.note" placeholder="Notes"></textarea>
       </div>
 
-      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-cart-arrow-down mr-2" (click)="addToGroceryList(row, $event)" disabled="true"></div>
-      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-pencil mr-2" (click)="editIngredient(row, $event)"></div>
-      <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-regular fa-trash-can" (click)="removeFromKitchen(row, index, $event)"></div>
-
-      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
-      <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row, $event)">Cancel</div>
+      <div class="d-flex justify-content-end">
+        <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-cart-arrow-down mr-2" (click)="addToGroceryList(row, $event)" disabled="true"></div>
+        <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-pencil mr-2" (click)="editIngredient(row, $event)"></div>
+        <div role="button" *ngIf="!isEditing" class="btn btn-outline-danger fa-regular fa-trash-can danger-icon" (click)="removeFromKitchen(row, index, $event)"></div>
+        <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
+        <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row, $event)">Cancel</div>
+      </div>
     </div>
   </div>
 </div>

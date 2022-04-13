@@ -34,22 +34,49 @@
     <div class="list-group-item list-group-item-action flex-column align-items-start"
         *ngFor="let row of filteredList; let index=index" (click)="setSelected(index, $event)">
 
-        <div class="d-flex w-100 justify-content-between align-items-center" [ngClass]="{'bold-text': hoveredIndex==index}">
+        <div class="d-flex justify-content-between align-items-center" [ngClass]="{'bold-text': hoveredIndex==index}">
             <input type="checkbox" [ngModel]="row.isChecked" (change)="toggleChecked(row)">
-            <div (click)="unselect(index, $event)">{{row.ingredient.name}}</div>
-            <div class="d-flex justify-content-end">
-                <button *ngIf="hoveredIndex==index"
-                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-minus fa-lg pl-0 pr-0 mr-1"
-                    (click)="quickEditQty(row, -1)"></button>
-                <small class="text-muted" [ngClass]="{'bold-text': hoveredIndex==index}">Qty: {{row.quantity}}</small>
-                <button *ngIf="hoveredIndex==index"
-                    class="btn primary-icon no-border btn-sm fa-solid fa-circle-plus fa-lg pl-0 pr-0 ml-1 mr-2"
-                    (click)="quickEditQty(row, 1)"></button>
-
-                <button *ngIf="hoveredIndex==index"
-                    class="btn danger-icon no-border btn-sm fa-regular fa-trash-can fa-lg pl-0 pr-0 ml-1"
-                    (click)="removeFromList(row, index)"></button>
+            <div class="d-flex justify-content-between align-items-start col-12">
+                <div (click)="unselect(index, $event)">{{row.ingredient.name}}</div>
+                <div class="d-flex justify-content-end">
+                    <button *ngIf="hoveredIndex == index"
+                        class="btn primary-icon no-border btn-sm fa-solid fa-circle-minus fa-lg pl-0 pr-0 mr-1"
+                        (click)="quickEditQty(row, -1)"></button>
+                    <small class="text-muted pr-0" [ngClass]="{'bold-text': hoveredIndex==index}" style="white-space: nowrap;">Qty: {{row.quantity}}</small>
+                    <button *ngIf="hoveredIndex == index"
+                        class="btn primary-icon no-border btn-sm fa-solid fa-circle-plus fa-lg pl-0 pr-0 ml-1 mr-2"
+                        (click)="quickEditQty(row, 1)"></button>
+                </div>
             </div>
         </div>
+        <div class="d-flect justify-content-center ml-4" *ngIf="hoveredIndex != index">
+            <span class="light-text">{{row.note}}</span>
+        </div>
+        <div *ngIf="hoveredIndex == index" class="pt-2">
+            <span *ngIf="!isEditing" class="ml-4">{{row.note}}</span>
+
+            <div *ngIf="isEditing" class="form-group ml-4">
+              <textarea class="form-control" id="notesTextarea" rows="1" [(ngModel)]="row.note" placeholder="Notes"></textarea>
+            </div>
+
+            <div class="form-group pt-1 ml-4 mb-2">
+                <ng-select [items]="categories"
+                           bindLabel="name"
+                           bindValue="categoryId"
+                           placeholder="Select Category"
+                           [disabled]="!isEditing"
+                           [(ngModel)]="row.categoryId">
+                </ng-select>
+            </div>
+      
+            
+            <div class="d-flex justify-content-end">
+                <div role="button" *ngIf="!isEditing" class="btn btn-outline-primary fa-solid fa-pencil mr-2" (click)="editIngredient(row, $event)"></div>
+                <div role="button" *ngIf="!isEditing" class="btn btn-outline-danger fa-regular fa-trash-can danger-icon" (click)="removeFromList(row, index)"></div>
+                <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="saveEdit(row)">Save</div>
+                <div role="button" *ngIf="isEditing" class="btn btn-link btn-sm" (click)="cancelEdit(row, $event)">Cancel</div>
+            </div>
+        </div>
+
     </div>
 </div>

@@ -285,6 +285,16 @@ namespace PantryPlanner.Services
                 ingredientToUpdate.SortOrder = ingredientDto.SortOrder.Value;
             }
 
+            if (!string.IsNullOrEmpty(ingredientDto.Note))
+            {
+                ingredientToUpdate.Note = ingredientDto.Note;
+            }
+
+            if (ingredientDto.CategoryId != null)
+            {
+                ingredientToUpdate.CategoryId = ingredientDto.CategoryId;
+            }
+
             ingredientToUpdate.IsChecked = ingredientDto.IsChecked;
 
             Context.Entry(ingredientToUpdate).State = EntityState.Modified;

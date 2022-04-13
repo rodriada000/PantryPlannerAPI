@@ -539,6 +539,11 @@ namespace PantryPlanner.Services
                 kitchenIngredientToUpdate.Quantity = ingredientDto.Quantity;
             }
 
+            if (ingredientDto.CategoryId != null)
+            {
+                kitchenIngredientToUpdate.CategoryId = ingredientDto.CategoryId;
+            }
+
             kitchenIngredientToUpdate.LastUpdated = DateTime.UtcNow;
 
             Context.Entry(kitchenIngredientToUpdate).State = EntityState.Modified;

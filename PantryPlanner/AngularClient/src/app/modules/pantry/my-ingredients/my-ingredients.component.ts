@@ -224,6 +224,10 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
   }
 
   cancelEdit(ingredient: KitchenIngredient, $event): void {
+    if (ingredient === null || ingredient === undefined || !this.isEditing) {
+      return;
+    }
+
     ingredient.note = this.origIngredient.note;
     ingredient.quantity = this.origIngredient.quantity;
     this.origIngredient = null;

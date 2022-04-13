@@ -13,11 +13,16 @@ namespace PantryPlanner.DTOs
         public long IngredientId { get; set; }
         //public long? AddedFromRecipeId { get; set; }
         public int? Quantity { get; set; }
+        public string Note { get; set; }
+
         public int? SortOrder { get; set; }
         public bool IsChecked { get; set; }
+        public long? CategoryId { get; set; }
+
 
         #region Additional Properties Not In Model
 
+        public CategoryDto Category { get; set; }
         public IngredientDto Ingredient { get; set; }
         public long KitchenId { get; set; }
 
@@ -43,13 +48,18 @@ namespace PantryPlanner.DTOs
             Quantity = listIngredient.Quantity;
             SortOrder = listIngredient.SortOrder;
             IsChecked = listIngredient.IsChecked;
+            Note = listIngredient.Note;
 
             Ingredient = new IngredientDto(listIngredient.Ingredient);
+
+            if (listIngredient.CategoryId != null)
+            {
+                Category = new CategoryDto(listIngredient.Category);
+            }
 
             if (listIngredient.Recipe != null)
             {
                 // TODO: add RecipeDto
-                //Category = new CategoryDto(listIngredient.Category);
             }
         }
 

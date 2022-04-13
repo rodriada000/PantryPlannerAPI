@@ -1,3 +1,4 @@
+import Category from "./Category";
 import Ingredient from "./Ingredient";
 
 export default class ListIngredient {
@@ -8,6 +9,9 @@ export default class ListIngredient {
   quantity?: number;
   sortOrder: number;
   isChecked: boolean;
+  note: string;
+  categoryId?: number;
   ingredient: Ingredient;
+  category: Category;
 }
 

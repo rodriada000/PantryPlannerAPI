@@ -20,11 +20,11 @@ namespace PantryPlanner
             var host = CreateWebHostBuilder(args).Build();
 
             // UNCOMMENT WHEN MIGRATION NEEDED ON NEXT DEPLOY
-            //using (var scope = host.Services.CreateScope())
-            //{
-            //    var db = scope.ServiceProvider.GetRequiredService<PantryPlannerContext>();
-            //    db.Database.Migrate();
-            //}
+            using (var scope = host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<PantryPlannerContext>();
+                db.Database.Migrate();
+            }
 
             host.Run();
         }
