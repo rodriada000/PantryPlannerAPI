@@ -210,7 +210,7 @@ export class ListDetailComponent implements OnInit, OnDestroy, OnChanges {
       this.pantryService.addIngredientToKitchen(k).subscribe(data => {
         this.pantryService.setAddedIngredient(data);
       }, error => {
-        this.toasts.showDanger('could not add to pantry - ' + error.message);
+        this.toasts.showDanger('could not add ' + i.ingredient?.name + ' to pantry - ' + error.error);
       });
       
     })

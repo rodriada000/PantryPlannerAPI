@@ -1,10 +1,14 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import KitchenIngredientApi from '../../../data/services/kitchenIngredientApi.service';
 import { ActiveKitchenService } from '../../../shared/services/active-kitchen.service';
 import KitchenIngredient from '../../../data/models/KitchenIngredient';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../../shared/services/toast.service';
 import { PantryPageService } from '../pantry-page.service';
+import GroceryListApi from 'src/app/data/services/grocery-list.service';
+import KitchenList from 'src/app/data/models/KitchenList';
+import ListIngredientApiService from 'src/app/data/services/grocery-list-ingredient.service';
+import ListIngredient from 'src/app/data/models/ListIngredient';
 
 @Component({
   selector: 'pantry-my-ingredients',
@@ -29,8 +33,15 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
   private itemAddedSub: Subscription;
   private pageSelection: Subscription;
   private origIngredient: KitchenIngredient;
+  kitchenLists: Array<KitchenList> = [];
+  selectedListIndex: number = 0;
 
-  constructor(public apiService: KitchenIngredientApi, public activeKitchen: ActiveKitchenService, public toasts: ToastService, private cdRef:ChangeDetectorRef, private pageService: PantryPageService) { }
+  constructor(private apiService: KitchenIngredientApi, 
+    private activeKitchen: ActiveKitchenService, 
+    private toasts: ToastService, 
+    private listService: GroceryListApi, 
+    private listIngredient: ListIngredientApiService,
+    private pageService: PantryPageService) { }
   
   ngOnInit(): void {
     this.isLoading = false;
@@ -63,8 +74,15 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
         this.doFilter();
       }
     });
+
+    this.getKitchenLists()
   }
 
+  getKitchenLists() {
+    this.listService.getAllGroceryLists().subscribe(k => {
+      this.kitchenLists = k;
+    });
+  }
 
   refreshIngredients(): void {
     this.isLoading = true;
@@ -237,6 +255,16 @@ export class MyIngredientsComponent implements OnInit, OnDestroy {
   }
 
   addToGroceryList(ingredient: KitchenIngredient, $event): void {
+    let toAdd = this.listIngredient.createEmpty(ingredient.ingredient, this.kitchenLists[this.selectedListIndex])
+    toAdd.quantity = ingredient.quantity;
+
+    this.listIngredient.addIngredientToList(toAdd).subscribe(resp => {
+      this.toasts.showSuccess("Added to list: " + this.kitchenLists[this.selectedListIndex].name);
+    },
+    error => {
+      this.toasts.showDanger("Failed to add to list - " + error.error)
+    });
+
     $event.preventDefault();
     $event.stopPropagation();
   }
